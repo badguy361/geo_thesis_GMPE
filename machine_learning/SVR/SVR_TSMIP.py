@@ -17,8 +17,10 @@ df = pd.read_csv("../../../TSMIP_FF.csv")
 
 # 篩選資料
 # filtered_df = df[(abs(df.Vs30-300)<1) & (df['MW'] > 3) & (df['MW'] < 5)]
-
-x = df.loc[:,['Vs30','MW','Rrup']]
+df['lnVs30'] = np.log(df['Vs30'])
+df['lnRrup'] = np.log(df['Rrup'])
+# x = df.loc[:,['Vs30','MW','Rrup']]
+x = df.loc[:,['lnVs30','MW','lnRrup']]
 y = df['PGA']
 
 x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=10, train_size=0.8)
@@ -27,7 +29,7 @@ svr_rbf = GridSearchCV(SVR(kernel='rbf', gamma=0.1),
                    cv=5,
                    param_grid={
                        "C": [1e0, 1e1, 1e2, 1e3],
-                       "gamma": np.logspace(-2, 2, 5)
+                       "gamma": np.logspace(-10, -5, 6)
                    },
                    n_jobs=-1)
 # svr_rbf = SVR(C=1e3, kernel='rbf', gamma='auto')
@@ -54,7 +56,7 @@ for mean, stdev, param in zip(means, stds, params):
 plt.scatter(x_test[:,0], y_test, marker='o',facecolors='none',edgecolors='b', label= 'Data') #數據點
 plt.scatter(x_test[:,0], svr_predict,marker='o',facecolors='none',edgecolors='r', \
     label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, grid_result.best_score_)) #迴歸線
-plt.xlabel('Vs30')
+plt.xlabel('lnVs30')
 plt.ylabel('svr_predict')
 plt.title('Support Vector Regression')
 plt.legend()
@@ -76,7 +78,7 @@ plt.show()
 plt.scatter(x_test[:,2], y_test, marker='o',facecolors='none',edgecolors='b', label= 'Data') #數據點
 plt.scatter(x_test[:,2], svr_predict,marker='o',facecolors='none',edgecolors='r', \
     label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, grid_result.best_score_)) #迴歸線
-plt.xlabel('Rrup')
+plt.xlabel('lnRrup')
 plt.ylabel('svr_predict')
 plt.title('Support Vector Regression')
 plt.legend()

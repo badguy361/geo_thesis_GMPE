@@ -48,28 +48,28 @@ y = df['PGA']
 
 x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=10, train_size=0.8)
 
-# follow the paper
-C = max(abs(y_train.mean() + 3 * y_train.std()),abs(y_train.mean() - 3 * y_train.std()))
+# # follow the paper
+# C = max(abs(y_train.mean() + 3 * y_train.std()),abs(y_train.mean() - 3 * y_train.std()))
 
-m = y_train.max()-y_train.min()
-k = 17
-p = m * (0.3 ** (1/k))
-gamma = 1 / (2 * (p**2))
-epsilon = 3* 0.18 * (np.log(29896)/29896)**(1/2)
+# m = y_train.max()-y_train.min()
+# k = 17
+# p = m * (0.3 ** (1/k))
+# gamma = 1 / (2 * (p**2))
+# epsilon = 3* 0.18 * (np.log(29896)/29896)**(1/2)
 
-# 用paper方法當SVR參數，效果顯著
-svr_rbf = SVR(C=C, kernel='rbf', gamma=gamma, epsilon=epsilon)
-# Cross_validation計算成績
-scores = cross_val_score(svr_rbf,x,y,cv=5,scoring=two_scorer())
-print(scores)
+# # 用paper方法當SVR參數，效果顯著
+# svr_rbf = SVR(C=C, kernel='rbf', gamma=gamma, epsilon=epsilon)
+# # Cross_validation計算成績
+# scores = cross_val_score(svr_rbf,x,y,cv=5,scoring=two_scorer())
+# print(scores)
 
 # GridSearch找最佳參數
 svr_rbf = GridSearchCV(SVR(kernel='rbf', gamma=0.1),
                    cv=6,
                    param_grid={
-                       "C": [1e0, 1e1, 1e2, 1e3],
-                       "gamma": np.logspace(-10, -5, 6)
-                    #    "epsilon": [1e-2]
+                       "C": [1.5],
+                       "gamma": [1.7],
+                       "epsilon": np.linspace(1e-3,1e-1,20)
                    },
                    scoring=two_scorer(),
                    n_jobs=-1)

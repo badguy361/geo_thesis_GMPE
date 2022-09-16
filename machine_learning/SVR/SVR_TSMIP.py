@@ -7,6 +7,27 @@ from sklearn.svm import SVR
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import r2_score, mean_squared_error, make_scorer
+
+def MSE(y_true,y_pred):
+    mse = mean_squared_error(y_true, y_pred)
+    print('MSE: %2.3f' % mse)
+    return mse
+
+def R2(y_true,y_pred):    
+    r2 = r2_score(y_true, y_pred)
+    print('R2: %2.3f' % r2)
+    return r2
+
+def two_score(y_true,y_pred):    
+    MSE(y_true,y_pred) #set score here and not below if using MSE in GridCV
+    score = R2(y_true,y_pred)
+    return score
+
+def two_scorer():
+    return make_scorer(two_score, greater_is_better=True) # change for false if using MSE
+
+
 df = pd.read_csv("../../../TSMIP_FF.csv")
 # df.head(3)
 
@@ -36,37 +57,39 @@ p = m * (0.3 ** (1/k))
 gamma = 1 / (2 * (p**2))
 epsilon = 3* 0.18 * (np.log(29896)/29896)**(1/2)
 
-# GridSearch找最佳參數
-# svr_rbf = GridSearchCV(SVR(kernel='rbf', gamma=0.1),
-#                    cv=6,
-#                    param_grid={
-#                        "C": [1e0, 1e1, 1e2, 1e3],
-#                        "gamma": np.logspace(-10, -5, 6)
-#                    },
-#                    n_jobs=-1)
-
+# 用paper方法當SVR參數，效果顯著
 svr_rbf = SVR(C=C, kernel='rbf', gamma=gamma, epsilon=epsilon)
+# Cross_validation計算成績
+scores = cross_val_score(svr_rbf,x,y,cv=5,scoring=two_scorer())
+print(scores)
 
-# 計算成績
-# scores = cross_val_score(svr_rbf,x,y,cv=5,scoring='accuracy')
-# print(scores)
-
+# GridSearch找最佳參數
+svr_rbf = GridSearchCV(SVR(kernel='rbf', gamma=0.1),
+                   cv=6,
+                   param_grid={
+                       "C": [1e0, 1e1, 1e2, 1e3],
+                       "gamma": np.logspace(-10, -5, 6)
+                    #    "epsilon": [1e-2]
+                   },
+                   scoring=two_scorer(),
+                   n_jobs=-1)
 t0 = time.time()
 grid_result = svr_rbf.fit(x_train,y_train)
 fit_time = time.time() - t0
 svr_predict = svr_rbf.predict(x_test)
-score = svr_rbf.score(x_test,y_test)
 
 # 評估，打分數
+score = svr_rbf.score(x_test,y_test)
 print("accuracy_score : ",score)
 
-# print(f"最佳準確率: {grid_result.best_score_}，最佳參數組合：{grid_result.best_params_}")
-# # 取得 cross validation 的平均準確率及標準差
-# means = grid_result.cv_results_['mean_test_score']
-# stds = grid_result.cv_results_['std_test_score']
-# params = grid_result.cv_results_['params']
-# for mean, stdev, param in zip(means, stds, params):
-#     print(f"平均準確率: {mean}, 標準差: {stdev}, 參數組合: {param}")
+# GridSearchCV打分數
+print(f"最佳準確率: {grid_result.best_score_}，最佳參數組合：{grid_result.best_params_}")
+# 取得 cross validation 的平均準確率及標準差
+means = grid_result.cv_results_['mean_test_score']
+stds = grid_result.cv_results_['std_test_score']
+params = grid_result.cv_results_['params']
+for mean, stdev, param in zip(means, stds, params):
+    print(f"平均準確率: {mean}, 標準差: {stdev}, 參數組合: {param}")
 
 
 # 依照欄位大小排序，為了畫圖好看

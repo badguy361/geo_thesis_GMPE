@@ -3,7 +3,7 @@ import sklearn
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
 import sklearn.datasets
-
+import pymysql
 
 # Define an objective function to be minimized.
 def objective(trial):
@@ -26,9 +26,10 @@ def objective(trial):
 
     return error  # An objective value linked with the Trial object.
 
+study_name = 'example-study'
+study = optuna.create_study(study_name=study_name, storage="mysql://root@localhost/optuna_test")  # Create a new study.
+study.optimize(objective, n_trials=3)  # Invoke optimization of the objective function.
 
-study = optuna.create_study()  # Create a new study.
-study.optimize(objective, n_trials=100)  # Invoke optimization of the objective function.
 
 print(study.best_params)
 print(study.best_value)

@@ -42,11 +42,19 @@ df = pd.read_csv("../../../TSMIP_FF.csv")
 # filtered_df = df[(abs(df.Vs30-300)<1) & (df['MW'] > 3) & (df['MW'] < 5)]
 df['lnVs30'] = np.log(df['Vs30'])
 df['lnRrup'] = np.log(df['Rrup'])
+df['log10Vs30'] = np.log10(df['Vs30'])
+df['log10Rrup'] = np.log10(df['Rrup'])
+df['fault.type'] = df['fault.type'].str.replace("RO", "1")
+df['fault.type'] = df['fault.type'].str.replace("RV", "1")
+df['fault.type'] = df['fault.type'].str.replace("NM", "2")
+df['fault.type'] = df['fault.type'].str.replace("NO", "2")
+df['fault.type'] = df['fault.type'].str.replace("SS", "3")
+df['fault.type'] = pd.to_numeric(df['fault.type'])
 # x = df.loc[:,['Vs30','MW','Rrup']]
 x = df.loc[:,['lnVs30','MW','lnRrup']]
-y = df['PGA']
+y = df['PGA'] 
 
-x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=10, train_size=0.8)
+#x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=10, train_size=0.8)
 
 # # follow the paper
 # C = max(abs(y_train.mean() + 3 * y_train.std()),abs(y_train.mean() - 3 * y_train.std()))
@@ -59,17 +67,17 @@ x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_s
 
 # # 用paper方法當SVR參數，效果顯著
 svr_rbf = SVR(C=0.29, kernel='rbf', epsilon=0.02)
-t0 = time.time()
-grid_result = svr_rbf.fit(x_train,y_train)
-fit_time = time.time() - t0
-svr_predict = svr_rbf.predict(x_test)
-# 評估，打分數
-score = svr_rbf.score(x_test,y_test)
-print("accuracy_score : ",score)
+# t0 = time.time()
+# grid_result = svr_rbf.fit(x_train,y_train)
+# fit_time = time.time() - t0
+# svr_predict = svr_rbf.predict(x_test)
+# # 評估，打分數
+# score = svr_rbf.score(x_test,y_test)
+# print("accuracy_score : ",score)
 
 # # Cross_validation計算成績
-# scores = cross_val_score(svr_rbf,x,y,cv=5,scoring=two_scorer())
-# print(scores)
+scores = cross_val_score(svr_rbf,x,y,cv=5,scoring=two_scorer())
+print("R2 scores:",scores)
 
 # GridSearch找最佳參數
 # svr_rbf = GridSearchCV(SVR(kernel='rbf', gamma=0.1),
@@ -103,39 +111,42 @@ print("accuracy_score : ",score)
 
 
 # 計算Vs30_residual
-residual = svr_predict - y_test
-plt.scatter(x_test[:,0], residual ,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
-plt.xlabel('lnVs30')
-plt.ylabel('Predict_PGA(g)')
-plt.title('Support Vector Regression')
-plt.legend()
-plt.savefig(f'Vs30-SVR_predict_residual.png',dpi=300)
-plt.show()
+# residual = svr_predict - y_test
+# plt.scatter(x_test[:,0], residual ,marker='o',facecolors='none',edgecolors='r', \
+#     label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+# plt.xlabel('lnVs30(km)')
+# plt.ylabel('Predict_PGA(g)')
+# plt.title('Support Vector Regression')
+# plt.legend()
+# plt.savefig(f'Vs30-SVR_predict_residual.png',dpi=300)
+# plt.show()
 
-# 計算Mw_residual
-residual = svr_predict - y_test
-plt.scatter(x_test[:,1], residual ,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
-plt.xlabel('Mw')
-plt.ylabel('Predict_PGA(g)')
-plt.title('Support Vector Regression')
-plt.legend()
-plt.savefig(f'Mw-SVR_predict_residual.png',dpi=300)
-plt.show()
+# # 計算Mw_residual
+# residual = svr_predict - y_test
+# plt.scatter(x_test[:,1], residual ,marker='o',facecolors='none',edgecolors='r', \
+#     label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+# plt.xlabel('Mw')
+# plt.ylabel('Predict_PGA(g)')
+# plt.title('Support Vector Regression')
+# plt.legend()
+# plt.savefig(f'Mw-SVR_predict_residual.png',dpi=300)
+# plt.show()
 
-# 計算Rrup_residual
-residual = svr_predict - y_test
-plt.scatter(x_test[:,2], residual ,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
-plt.xlabel('Rrup')
-plt.ylabel('Predict_PGA(g)')
-plt.title('Support Vector Regression')
-plt.legend()
-plt.savefig(f'Rrup-SVR_predict_residual.png',dpi=300)
-plt.show()
+# # 計算Rrup_residual
+# residual = svr_predict - y_test
+# plt.scatter(x_test[:,2], residual ,marker='o',facecolors='none',edgecolors='r', \
+#     label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+# plt.xlabel('lnRrup(km)')
+# plt.ylabel('Predict_PGA(g)')
+# plt.title('Support Vector Regression')
+# plt.legend()
+# plt.savefig(f'Rrup-SVR_predict_residual.png',dpi=300)
+# plt.show()
 
-# # plt Vs30 and svr_predict relationship
+
+
+
+# # 畫 Vs30 and svr_predict 關係圖
 # plt.scatter(x_test[:,0], y_test, marker='o',facecolors='none',edgecolors='b', label= 'Data') #數據點
 # plt.scatter(x_test[:,0], svr_predict,marker='o',facecolors='none',edgecolors='r', \
 #     label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線

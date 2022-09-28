@@ -11,8 +11,8 @@ from sklearn.metrics import r2_score
 # Define an objective function to be minimized.
 def objective(trial):
     # Invoke suggest methods of a Trial object to generate hyperparameters.
-    svr_c = trial.suggest_float('svr_c', 1e-2, 2)
-    svr_epsilon = trial.suggest_float('svr_epsilon', 1e-3, 1)
+    svr_c = trial.suggest_loguniform('svr_c', 1e-2, 1e2)
+    svr_epsilon = trial.suggest_loguniform('svr_epsilon', 1e-3, 1e3)
     regressor_obj = SVR(C=svr_c,epsilon=svr_epsilon)
 
     df = pd.read_csv("../../../TSMIP_FF.csv")
@@ -30,7 +30,8 @@ def objective(trial):
 
     return error  # An objective value linked with the Trial object.
 
-study_name = 'SVR_TSMIP_1'
+#ToDo
+study_name = 'SVR_TSMIP_2'
 study = optuna.create_study(study_name=study_name, storage="mysql://root@localhost/SVR_TSMIP",direction="maximize")  # Create a new study.
 study.optimize(objective, n_trials=100)  # Invoke optimization of the objective function.
 

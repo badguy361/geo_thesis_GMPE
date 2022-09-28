@@ -50,7 +50,10 @@ df['fault.type'] = df['fault.type'].str.replace("NM", "2")
 df['fault.type'] = df['fault.type'].str.replace("NO", "2")
 df['fault.type'] = df['fault.type'].str.replace("SS", "3")
 df['fault.type'] = pd.to_numeric(df['fault.type'])
-# x = df.loc[:,['Vs30','MW','Rrup']]
+
+# 對資料標準化
+df['PGA'] = (df['PGA'] - df['PGA'].mean()) / df['PGA'].std()
+
 x = df.loc[:,['lnVs30','MW','lnRrup']]
 y = df['PGA'] 
 

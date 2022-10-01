@@ -7,12 +7,15 @@ import sklearn.datasets
 import pandas as pd
 import numpy as np
 from sklearn.metrics import r2_score
+from optuna.visualization import plot_optimization_history
+import plotly
+from optuna.visualization import plot_param_importances
 
 # Define an objective function to be minimized.
 def objective(trial):
     # Invoke suggest methods of a Trial object to generate hyperparameters.
-    svr_c = trial.suggest_loguniform('svr_c', 1e-2, 1e2)
-    svr_epsilon = trial.suggest_loguniform('svr_epsilon', 1e-3, 1e3)
+    svr_c = trial.suggest_loguniform('svr_c', 1e-3, 2)
+    svr_epsilon = trial.suggest_loguniform('svr_epsilon', 1e-3, 1e-2)
     regressor_obj = SVR(C=svr_c,epsilon=svr_epsilon)
 
     df = pd.read_csv("../../../TSMIP_FF.csv")
@@ -31,9 +34,18 @@ def objective(trial):
     return error  # An objective value linked with the Trial object.
 
 #ToDo
-study_name = 'SVR_TSMIP_2'
+study_name = 'SVR_TSMIP_3'
 study = optuna.create_study(study_name=study_name, storage="mysql://root@localhost/SVR_TSMIP",direction="maximize")  # Create a new study.
 study.optimize(objective, n_trials=100)  # Invoke optimization of the objective function.
 
 print("study.best_params",study.best_params)
 print("study.best_value",study.best_value)
+
+loaded_study = optuna.load_study(study_name=study_name, storage="mysql://root@localhost/SVR_TSMIP")
+plotly_config = {"staticPlot": True}
+
+fig = plot_optimization_history(loaded_study)
+fig.show(config=plotly_config)
+
+fig = plot_param_importances(loaded_study)
+fig.show(config=plotly_config)

@@ -51,17 +51,18 @@ df['fault.type'] = df['fault.type'].str.replace("NM", "2")
 df['fault.type'] = df['fault.type'].str.replace("NO", "2")
 df['fault.type'] = df['fault.type'].str.replace("SS", "3")
 df['fault.type'] = pd.to_numeric(df['fault.type'])
+df['lnPGA(gal)'] = np.log(df['PGA']*980)
 
 # 對資料標準化
 # df['PGA'] = (df['PGA'] - df['PGA'].mean()) / df['PGA'].std()
 
-x = df.loc[:,['lnVs30','MW','lnRrup']]
-y = df['PGA'] 
+x = df.loc[:,['lnVs30','MW','lnRrup','fault.type']]
+y = df['lnPGA(gal)'] 
 
-x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=10, train_size=0.8)
+x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=5, train_size=0.8, shuffle=True)
 
 # # 用paper方法當SVR參數，效果顯著
-randomForestModel = RandomForestRegressor(n_estimators=100, criterion = 'mse')
+randomForestModel = RandomForestRegressor(n_estimators=1000, criterion = 'squared_error',n_jobs=-1)
 t0 = time.time()
 grid_result = randomForestModel.fit(x_train,y_train)
 fit_time = time.time() - t0
@@ -71,5 +72,5 @@ score = randomForestModel.score(x_test,y_test)
 print("accuracy_score : ",score)
 
 # # Cross_validation計算成績
-scores = cross_val_score(randomForestModel,x,y,cv=5,scoring=two_scorer())
+scores = cross_val_score(randomForestModel,x,y,cv=6,scoring=two_scorer())
 print("R2 scores:",scores)

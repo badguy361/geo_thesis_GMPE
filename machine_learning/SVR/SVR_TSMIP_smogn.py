@@ -40,6 +40,8 @@ TSMIP_df = pd.read_csv("../../../TSMIP_FF.csv")
 TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn.csv")
 
 TSMIP_df['lnVs30'] = np.log(TSMIP_df['Vs30'])
+TSMIP_df = TSMIP_df[(TSMIP_df['Rrup']<1000) & (TSMIP_df['Rrup']>10)]
+TSMIP_df = TSMIP_df[TSMIP_df['MW']<6.8] # 試看看跟paper一樣的資料分布
 TSMIP_df['lnRrup'] = np.log(TSMIP_df['Rrup'])
 TSMIP_df['Mw_size'] = np.zeros(len(TSMIP_df['lnRrup']))
 TSMIP_df['log10Vs30'] = np.log10(TSMIP_df['Vs30'])
@@ -50,6 +52,7 @@ TSMIP_df['fault.type'] = TSMIP_df['fault.type'].str.replace("NM", "2")
 TSMIP_df['fault.type'] = TSMIP_df['fault.type'].str.replace("NO", "2")
 TSMIP_df['fault.type'] = TSMIP_df['fault.type'].str.replace("SS", "3")
 TSMIP_df['fault.type'] = pd.to_numeric(TSMIP_df['fault.type'])
+TSMIP_df['lnPGA(gal)'] = np.log(TSMIP_df['PGA']*980)
 
 TSMIP_smogn_df['lnVs30'] = np.log(TSMIP_smogn_df['Vs30'])
 TSMIP_smogn_df['lnRrup'] = np.log(TSMIP_smogn_df['Rrup'])
@@ -62,6 +65,7 @@ TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace("NM", "2
 TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace("NO", "2")
 TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace("SS", "3")
 TSMIP_smogn_df['fault.type'] = pd.to_numeric(TSMIP_smogn_df['fault.type'])
+TSMIP_smogn_df['lnPGA(gal)'] = np.log(TSMIP_smogn_df['PGA']*980)
 
 #################################################################
 
@@ -78,30 +82,34 @@ TSMIP_smogn_ori_df['fault.type'] = TSMIP_smogn_ori_df['fault.type'].str.replace(
 TSMIP_smogn_ori_df['fault.type'] = TSMIP_smogn_ori_df['fault.type'].str.replace("NO", "2")
 TSMIP_smogn_ori_df['fault.type'] = TSMIP_smogn_ori_df['fault.type'].str.replace("SS", "3")
 TSMIP_smogn_ori_df['fault.type'] = pd.to_numeric(TSMIP_smogn_ori_df['fault.type'])
+TSMIP_smogn_ori_df['lnPGA(gal)'] = np.log(TSMIP_smogn_ori_df['PGA']*980)
 
-# 對資料標準化
-# df['PGA'] = (df['PGA'] - df['PGA'].mean()) / df['PGA'].std()
+################################## start train ######################################
 
-# x_test = TSMIP_df.loc[:,['lnVs30','MW','lnRrup']]
-# y_test = TSMIP_df['PGA']
+# TSMIP_df原本的資料 , TSMIP_smogn_df SMOGN出來的資料 TSMIP_smogn_ori_df 融合兩個的資料
+x = TSMIP_df.loc[:,['lnVs30','MW','lnRrup']]
+y = TSMIP_df['lnPGA(gal)']
 
-x = TSMIP_smogn_ori_df.loc[:,['lnVs30','MW','lnRrup']]
-y = TSMIP_smogn_ori_df['PGA']
+# x = TSMIP_smogn_ori_df.loc[:,['lnVs30','MW','lnRrup']]
+# y = TSMIP_smogn_ori_df['lnPGA(gal)']
 
-x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=10, train_size=0.8)
+# x_smogn = TSMIP_smogn_df.loc[:,['lnVs30','MW','lnRrup']]
+# y_smogn = TSMIP_smogn_df['lnPGA(gal)']
 
-svr_rbf = SVR(C=0.46, kernel='rbf', epsilon=0.0008)
+x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=10, train_size=0.8, shuffle=True)
+
+svr_rbf = SVR(C=0.22, kernel='rbf', epsilon=0.0008)
 t0 = time.time()
-grid_result = svr_rbf.fit(x,y)
+grid_result = svr_rbf.fit(x_train,y_train)
 fit_time = time.time() - t0
 svr_predict = svr_rbf.predict(x_test)
 # 評估，打分數
 score = svr_rbf.score(x_test,y_test)
-print("accuracy_score : ",score)
+print("初步得到的分數: ",score)
 
 # # Cross_validation計算成績
-scores = cross_val_score(svr_rbf,x,y,cv=5,scoring=two_scorer())
-print("R2 scores:",scores)
+scores = cross_val_score(svr_rbf,x,y,cv=6,scoring=two_scorer())
+print("CV後 R2 scores:",scores)
 
 
 # ################### Rrup Mw distribution ###########################
@@ -201,4 +209,20 @@ plt.ylabel('svr_predict')
 plt.title('Support Vector Regression')
 plt.legend()
 plt.savefig(f'Rrup-SVR_SMOGN_predict.png',dpi=300)
+plt.show()
+
+###################### 預測PGA和實際PGA #####################
+plt.grid(linestyle=':')
+plt.scatter(y_test, svr_predict,marker='o',facecolors='none',edgecolors='r', \
+    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線.
+x=[0,2,4,6,8,10]
+y=[0,2,4,6,8,10]
+plt.plot(x, y, color='blue')
+plt.xlabel('Measured PGA')
+plt.ylabel('svr_Predict PGA')
+plt.ylim(0,10)
+plt.xlim(0,10)
+plt.title('Support Vector Regression')
+plt.legend()
+plt.savefig(f'PGA_comparison_SMOGN_predict.png',dpi=300)
 plt.show()

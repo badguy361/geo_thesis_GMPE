@@ -18,15 +18,21 @@ def objective(trial):
     svr_epsilon = trial.suggest_loguniform('svr_epsilon', 1e-3, 1e-2)
     regressor_obj = SVR(C=svr_c,epsilon=svr_epsilon)
 
-    df = pd.read_csv("../../../TSMIP_FF.csv")
+    df = pd.read_csv("../../../TSMIP_smogn.csv")
+    df_test = pd.read_csv("../../../TSMIP_FF.csv")
     df['lnVs30'] = np.log(df['Vs30'])
     df['lnRrup'] = np.log(df['Rrup'])
     x = df.loc[:,['lnVs30','MW','lnRrup']]
     y = df['PGA']
 
-    X_train, X_val, y_train, y_val = train_test_split(x, y, random_state=0)
+    df_test['lnVs30'] = np.log(df_test['Vs30'])
+    df_test['lnRrup'] = np.log(df_test['Rrup'])
+    x_test = df_test.loc[:,['lnVs30','MW','lnRrup']]
+    y_test = df_test['PGA']
 
-    regressor_obj.fit(X_train, y_train)
+    X_train, X_val, y_train, y_val = train_test_split(x, y, random_state=0, train_size=0.8)
+
+    regressor_obj.fit(x, y)
     y_pred = regressor_obj.predict(X_val)
 
     error = r2_score(y_val, y_pred)
@@ -34,7 +40,9 @@ def objective(trial):
     return error  # An objective value linked with the Trial object.
 
 #ToDo
-study_name = 'SVR_TSMIP_3'
+#SVR_TSMIP_4 新增SMOGN資料
+#SVR_TSMIP_5 SMOGN資料當訓練集 原本資料切20%當測試集
+study_name = 'SVR_TSMIP_5'
 study = optuna.create_study(study_name=study_name, storage="mysql://root@localhost/SVR_TSMIP",direction="maximize")  # Create a new study.
 study.optimize(objective, n_trials=100)  # Invoke optimization of the objective function.
 

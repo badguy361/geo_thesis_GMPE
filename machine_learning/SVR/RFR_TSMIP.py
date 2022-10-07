@@ -62,31 +62,31 @@ TSMIP_df['lnPGA(gal)'] = np.log(TSMIP_df['PGA']*980)
 x_SMOGN = TSMIP_smogn_df.loc[:,['lnVs30','MW','lnRrup','fault.type']]
 y_SMOGN = TSMIP_smogn_df['lnPGA(gal)'] 
 
-x = TSMIP_smogn_df.loc[:,['lnVs30','MW','lnRrup','fault.type']]
-y = TSMIP_smogn_df['lnPGA(gal)'] 
+x = TSMIP_df.loc[:,['lnVs30','MW','lnRrup','fault.type']]
+y = TSMIP_df['lnPGA(gal)'] 
 
 x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=50, train_size=0.8, shuffle=True)
 
 randomForestModel = RandomForestRegressor(n_estimators=1000, criterion = 'squared_error',max_depth=20, n_jobs=-1)
 t0 = time.time()
-grid_result = randomForestModel.fit(x_SMOGN,y_SMOGN)
+grid_result = randomForestModel.fit(x_train,y_train)
 fit_time = time.time() - t0
-randomForest_predict = randomForestModel.predict(x)
+randomForest_predict = randomForestModel.predict(x_test)
 # 評估，打分數
-score = randomForestModel.score(x,y)
+score = randomForestModel.score(x_test,y_test)
 print("accuracy_score : ",score)
 
 # # Cross_validation計算成績
-scores = cross_val_score(randomForestModel,x,y,cv=3,n_jobs=-1)
+scores = cross_val_score(randomForestModel,x_test,y_test,cv=3,n_jobs=-1)
 print("R2 scores:",scores)
 
 
 plt.grid(linestyle=':')
-plt.scatter(y, randomForest_predict,marker='o',facecolors='none',edgecolors='r', \
+plt.scatter(y_test, randomForest_predict,marker='o',facecolors='none',edgecolors='r', \
     label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線.
-x=[0,2,4,6,8,10]
-y=[0,2,4,6,8,10]
-plt.plot(x, y, color='blue')
+x_line=[0,2,4,6,8,10]
+y_line=[0,2,4,6,8,10]
+plt.plot(x_line, y_line, color='blue')
 plt.xlabel('Measured PGA')
 plt.ylabel('randomForest_predict PGA')
 plt.ylim(0,10)
@@ -94,4 +94,15 @@ plt.xlim(0,10)
 plt.title('Random Forest Regressor')
 plt.legend()
 plt.savefig(f'PGA_comparison_SMOGN_predict.png',dpi=300)
+plt.show()
+
+plt.grid(linestyle=':')
+plt.scatter(x_test[:,2], y_test, marker='o',facecolors='none',edgecolors='b', label= 'Data') #數據點
+plt.scatter(x_test[:,2], randomForest_predict,marker='o',facecolors='none',edgecolors='r', \
+    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+plt.xlabel('lnRrup')
+plt.ylabel('randomForest_predict')
+plt.title('Support Vector Regression')
+plt.legend()
+plt.savefig(f'Rrup-SVR_SMOGN_predict.png',dpi=300)
 plt.show()

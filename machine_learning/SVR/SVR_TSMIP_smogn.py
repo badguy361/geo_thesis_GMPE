@@ -87,20 +87,20 @@ TSMIP_smogn_ori_df['lnPGA(gal)'] = np.log(TSMIP_smogn_ori_df['PGA']*980)
 ################################## start train ######################################
 
 # TSMIP_df原本的資料 , TSMIP_smogn_df SMOGN出來的資料 TSMIP_smogn_ori_df 融合兩個的資料
-x = TSMIP_df.loc[:,['lnVs30','MW','lnRrup']]
+x = TSMIP_df.loc[:,['lnVs30','MW','lnRrup','fault.type']]
 y = TSMIP_df['lnPGA(gal)']
 
 # x = TSMIP_smogn_ori_df.loc[:,['lnVs30','MW','lnRrup']]
 # y = TSMIP_smogn_ori_df['lnPGA(gal)']
 
-x_SMOGN = TSMIP_smogn_df.loc[:,['lnVs30','MW','lnRrup']]
+x_SMOGN = TSMIP_smogn_df.loc[:,['lnVs30','MW','lnRrup','fault.type']]
 y_SMOGN = TSMIP_smogn_df['lnPGA(gal)']
 
-x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=69, train_size=0.8, shuffle=True)
+x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=60, train_size=0.8, shuffle=True)
 
 svr_rbf = SVR(C=1.99, kernel='rbf', epsilon=0.001)
 t0 = time.time()
-grid_result = svr_rbf.fit(x_SMOGN,y_SMOGN)
+grid_result = svr_rbf.fit(x_train,y_train)
 fit_time = time.time() - t0
 svr_predict = svr_rbf.predict(x_test)
 # 評估，打分數

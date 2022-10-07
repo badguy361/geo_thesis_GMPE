@@ -29,48 +29,69 @@ def two_scorer():
     return make_scorer(two_score, greater_is_better=True) # change for false if using MSE
 
 
-df = pd.read_csv("../../../TSMIP_FF.csv")
-# df.head(3)
+TSMIP_smogn_df = pd.read_csv("../../../TSMIP_SMOGN.csv")
+TSMIP_df = pd.read_csv("../../../TSMIP_FF_copy.csv")
 
-# 篩選資料 - mask方法
-# df_mask_Vs30=abs(df['Vs30']-300) < 1
-# df_mask_Mw=df['MW'] > 3
-# df_mask_Mw=df['MW'] < 4
-# filtered_df = df[df_mask_Vs30]
-# filtered_df.head(10)
+TSMIP_smogn_df['lnVs30'] = np.log(TSMIP_smogn_df['Vs30'])
+TSMIP_smogn_df['lnRrup'] = np.log(TSMIP_smogn_df['Rrup'])
+TSMIP_smogn_df['log10Vs30'] = np.log10(TSMIP_smogn_df['Vs30'])
+TSMIP_smogn_df['log10Rrup'] = np.log10(TSMIP_smogn_df['Rrup'])
+TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace("RO", "1")
+TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace("RV", "1")
+TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace("NM", "2")
+TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace("NO", "2")
+TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace("SS", "3")
+TSMIP_smogn_df['fault.type'] = pd.to_numeric(TSMIP_smogn_df['fault.type'])
+TSMIP_smogn_df['lnPGA(gal)'] = np.log(TSMIP_smogn_df['PGA']*980)
 
-# 篩選資料
-# filtered_df = df[(abs(df.Vs30-300)<1) & (df['MW'] > 3) & (df['MW'] < 5)]
-df['lnVs30'] = np.log(df['Vs30'])
-df['lnRrup'] = np.log(df['Rrup'])
-df['log10Vs30'] = np.log10(df['Vs30'])
-df['log10Rrup'] = np.log10(df['Rrup'])
-df['fault.type'] = df['fault.type'].str.replace("RO", "1")
-df['fault.type'] = df['fault.type'].str.replace("RV", "1")
-df['fault.type'] = df['fault.type'].str.replace("NM", "2")
-df['fault.type'] = df['fault.type'].str.replace("NO", "2")
-df['fault.type'] = df['fault.type'].str.replace("SS", "3")
-df['fault.type'] = pd.to_numeric(df['fault.type'])
-df['lnPGA(gal)'] = np.log(df['PGA']*980)
+TSMIP_df['lnVs30'] = np.log(TSMIP_df['Vs30'])
+TSMIP_df['lnRrup'] = np.log(TSMIP_df['Rrup'])
+TSMIP_df['log10Vs30'] = np.log10(TSMIP_df['Vs30'])
+TSMIP_df['log10Rrup'] = np.log10(TSMIP_df['Rrup'])
+TSMIP_df['fault.type'] = TSMIP_df['fault.type'].str.replace("RO", "1")
+TSMIP_df['fault.type'] = TSMIP_df['fault.type'].str.replace("RV", "1")
+TSMIP_df['fault.type'] = TSMIP_df['fault.type'].str.replace("NM", "2")
+TSMIP_df['fault.type'] = TSMIP_df['fault.type'].str.replace("NO", "2")
+TSMIP_df['fault.type'] = TSMIP_df['fault.type'].str.replace("SS", "3")
+TSMIP_df['fault.type'] = pd.to_numeric(TSMIP_df['fault.type'])
+TSMIP_df['lnPGA(gal)'] = np.log(TSMIP_df['PGA']*980)
 
 # 對資料標準化
 # df['PGA'] = (df['PGA'] - df['PGA'].mean()) / df['PGA'].std()
 
-x = df.loc[:,['lnVs30','MW','lnRrup','fault.type']]
-y = df['lnPGA(gal)'] 
+x_SMOGN = TSMIP_smogn_df.loc[:,['lnVs30','MW','lnRrup','fault.type']]
+y_SMOGN = TSMIP_smogn_df['lnPGA(gal)'] 
 
-x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=5, train_size=0.8, shuffle=True)
+x = TSMIP_smogn_df.loc[:,['lnVs30','MW','lnRrup','fault.type']]
+y = TSMIP_smogn_df['lnPGA(gal)'] 
 
-# # 用paper方法當SVR參數，效果顯著
-randomForestModel = RandomForestRegressor(n_estimators=1000, criterion = 'squared_error',n_jobs=-1)
+x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=50, train_size=0.8, shuffle=True)
+
+randomForestModel = RandomForestRegressor(n_estimators=1000, criterion = 'squared_error',max_depth=20, n_jobs=-1)
 t0 = time.time()
-grid_result = randomForestModel.fit(x_train,y_train)
+grid_result = randomForestModel.fit(x_SMOGN,y_SMOGN)
 fit_time = time.time() - t0
-svr_predict = randomForestModel.predict(x_test)
+randomForest_predict = randomForestModel.predict(x)
 # 評估，打分數
-score = randomForestModel.score(x_test,y_test)
+score = randomForestModel.score(x,y)
 print("accuracy_score : ",score)
 
 # # Cross_validation計算成績
-scores = cross_val_score(randomForestModel,x,y,cv=6,scoring=two_scorer())
+scores = cross_val_score(randomForestModel,x,y,cv=3,n_jobs=-1)
 print("R2 scores:",scores)
+
+
+plt.grid(linestyle=':')
+plt.scatter(y, randomForest_predict,marker='o',facecolors='none',edgecolors='r', \
+    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線.
+x=[0,2,4,6,8,10]
+y=[0,2,4,6,8,10]
+plt.plot(x, y, color='blue')
+plt.xlabel('Measured PGA')
+plt.ylabel('randomForest_predict PGA')
+plt.ylim(0,10)
+plt.xlim(0,10)
+plt.title('Random Forest Regressor')
+plt.legend()
+plt.savefig(f'PGA_comparison_SMOGN_predict.png',dpi=300)
+plt.show()

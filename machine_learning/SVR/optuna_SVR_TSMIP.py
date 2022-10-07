@@ -18,21 +18,17 @@ def objective(trial):
     svr_epsilon = trial.suggest_loguniform('svr_epsilon', 1e-3, 1e-2)
     regressor_obj = SVR(C=svr_c,epsilon=svr_epsilon)
 
-    df = pd.read_csv("../../../TSMIP_smogn.csv")
-    df_test = pd.read_csv("../../../TSMIP_FF.csv")
-    df['lnVs30'] = np.log(df['Vs30'])
-    df['lnRrup'] = np.log(df['Rrup'])
-    x = df.loc[:,['lnVs30','MW','lnRrup']]
-    y = df['PGA']
-
-    df_test['lnVs30'] = np.log(df_test['Vs30'])
-    df_test['lnRrup'] = np.log(df_test['Rrup'])
-    x_test = df_test.loc[:,['lnVs30','MW','lnRrup']]
-    y_test = df_test['PGA']
+    # df = pd.read_csv("../../../TSMIP_smogn.csv")
+    TSMIP_df = pd.read_csv("../../../TSMIP_FF.csv")
+    TSMIP_df['lnVs30'] = np.log(TSMIP_df['Vs30'])
+    TSMIP_df['lnRrup'] = np.log(TSMIP_df['Rrup'])
+    TSMIP_df['lnPGA(gal)'] = np.log(TSMIP_df['PGA']*980)
+    x = TSMIP_df.loc[:,['lnVs30','MW','lnRrup']]
+    y = TSMIP_df['lnPGA(gal)']
 
     X_train, X_val, y_train, y_val = train_test_split(x, y, random_state=0, train_size=0.8)
 
-    regressor_obj.fit(x, y)
+    regressor_obj.fit(X_train, y_train)
     y_pred = regressor_obj.predict(X_val)
 
     error = r2_score(y_val, y_pred)
@@ -42,7 +38,8 @@ def objective(trial):
 #ToDo
 #SVR_TSMIP_4 新增SMOGN資料
 #SVR_TSMIP_5 SMOGN資料當訓練集 原本資料切20%當測試集
-study_name = 'SVR_TSMIP_5'
+#SVR_TSMIP_6 從頭來過，把y改成ln(PGA)，找TSMIP的最佳解
+study_name = 'SVR_TSMIP_6'
 study = optuna.create_study(study_name=study_name, storage="mysql://root@localhost/SVR_TSMIP",direction="maximize")  # Create a new study.
 study.optimize(objective, n_trials=100)  # Invoke optimization of the objective function.
 

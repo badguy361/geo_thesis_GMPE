@@ -67,9 +67,9 @@ y = TSMIP_df['lnPGA(gal)']
 
 x_train, x_test, y_train, y_test = train_test_split(x.values, y.values, random_state=50, train_size=0.8, shuffle=True)
 
-randomForestModel = RandomForestRegressor(n_estimators=1000, criterion = 'squared_error',max_depth=20, n_jobs=-1)
+randomForestModel = RandomForestRegressor(n_estimators=100, criterion = 'squared_error', n_jobs=-1)
 t0 = time.time()
-grid_result = randomForestModel.fit(x_train,y_train)
+grid_result = randomForestModel.fit(x_SMOGN,y_SMOGN)
 fit_time = time.time() - t0
 randomForest_predict = randomForestModel.predict(x_test)
 # 評估，打分數
@@ -81,9 +81,47 @@ scores = cross_val_score(randomForestModel,x_test,y_test,cv=3,n_jobs=-1)
 print("R2 scores:",scores)
 
 
+
+# 畫 Vs30 and randomForest_predict 關係圖
+plt.grid(linestyle=':')
+plt.scatter(x_test[:,2], y_test, marker='o',facecolors='none',edgecolors='b', label= 'Data') #數據點
+plt.scatter(x_test[:,2], randomForest_predict,marker='o',facecolors='none',edgecolors='r', \
+    label='randomForest (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+plt.xlabel('lnRrup')
+plt.ylabel('randomForest_predict')
+plt.title('Random Forest Regressor')
+plt.legend()
+plt.savefig(f'Rrup-RF_SMOGN_predict.png',dpi=300)
+plt.show()
+
+# plt Mw and randomForest_predict relationship
+plt.grid(linestyle=':')
+plt.scatter(x_test[:,1], y_test, marker='o',facecolors='none',edgecolors='b', label= 'Data') #數據點
+plt.scatter(x_test[:,1], randomForest_predict,marker='o',facecolors='none',edgecolors='r', \
+    label='randomForest (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+plt.xlabel('Mw')
+plt.ylabel('randomForest_predict')
+plt.title('Random Forest Regressor')
+plt.legend()
+plt.savefig(f'Mw-RF_SMOGN_predict.png',dpi=300)
+plt.show()
+
+# # 計算Mw_residual
+plt.grid(linestyle=':')
+residual = randomForest_predict - y_test
+plt.scatter(x_test[:,1], residual ,marker='o',facecolors='none',edgecolors='r', \
+    label='randomForest (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+plt.xlabel('Mw')
+plt.ylabel('Predict_PGA(g)')
+plt.title('Random Forest Regressor')
+plt.legend()
+plt.savefig(f'Mw-RF_SMOGN_predict_residual.png',dpi=300)
+plt.show()
+
+###################### 預測PGA和實際PGA #####################
 plt.grid(linestyle=':')
 plt.scatter(y_test, randomForest_predict,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線.
+    label='randomForest (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線.
 x_line=[0,2,4,6,8,10]
 y_line=[0,2,4,6,8,10]
 plt.plot(x_line, y_line, color='blue')
@@ -94,15 +132,4 @@ plt.xlim(0,10)
 plt.title('Random Forest Regressor')
 plt.legend()
 plt.savefig(f'PGA_comparison_SMOGN_predict.png',dpi=300)
-plt.show()
-
-plt.grid(linestyle=':')
-plt.scatter(x_test[:,2], y_test, marker='o',facecolors='none',edgecolors='b', label= 'Data') #數據點
-plt.scatter(x_test[:,2], randomForest_predict,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
-plt.xlabel('lnRrup')
-plt.ylabel('randomForest_predict')
-plt.title('Support Vector Regression')
-plt.legend()
-plt.savefig(f'Rrup-SVR_SMOGN_predict.png',dpi=300)
 plt.show()

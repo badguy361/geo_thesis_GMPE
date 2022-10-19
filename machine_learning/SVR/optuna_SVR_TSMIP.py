@@ -70,8 +70,8 @@ def objective(trial):
 #SVR_TSMIP_4 新增SMOGN資料
 #SVR_TSMIP_5 SMOGN資料當訓練集 原本資料切20%當測試集
 #SVR_TSMIP_6 從頭來過，把y改成ln(PGA)，找TSMIP的最佳解 -> C=1.99 epsilon=0.001
-#SVR_TSMIP_7 y改成ln(PGA)，SMOGN資料當訓練集 原本資料切20%當測試集，並新增fault.type參數
-study_name = 'SVR_TSMIP_7'
+#SVR_TSMIP_7 y改成ln(PGA)，SMOGN資料當訓練集 原本資料切20%當測試集，並新增fault.type參數 -> 成效反而比較差
+study_name = 'SVR_TSMIP_6'
 study = optuna.create_study(study_name=study_name,
                             storage="mysql://root@localhost/SVR_TSMIP",
                             direction="maximize")  # Create a new study.

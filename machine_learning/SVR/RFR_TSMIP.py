@@ -85,7 +85,7 @@ randomForestModel = RandomForestRegressor(n_estimators=100,
                                           criterion='squared_error',
                                           n_jobs=-1)
 t0 = time.time()
-grid_result = randomForestModel.fit(x_SMOGN, y_SMOGN)
+grid_result = randomForestModel.fit(x_train, y_train)
 fit_time = time.time() - t0
 randomForest_predict = randomForestModel.predict(x_test)
 # 評估，打分數

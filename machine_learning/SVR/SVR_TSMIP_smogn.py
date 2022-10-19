@@ -107,8 +107,9 @@ TSMIP_smogn_ori_df['lnPGA(gal)'] = np.log(TSMIP_smogn_ori_df['PGA'] * 980)
 x = TSMIP_df.loc[:, ['lnVs30', 'MW', 'lnRrup', 'fault.type']]
 y = TSMIP_df['lnPGA(gal)']
 
-# x = TSMIP_smogn_ori_df.loc[:,['lnVs30','MW','lnRrup']]
-# y = TSMIP_smogn_ori_df['lnPGA(gal)']
+x_smogn_ori = TSMIP_smogn_ori_df.loc[:,
+                                     ['lnVs30', 'MW', 'lnRrup', 'fault.type']]
+y_smogn_ori = TSMIP_smogn_ori_df['lnPGA(gal)']
 
 x_SMOGN = TSMIP_smogn_df.loc[:, ['lnVs30', 'MW', 'lnRrup', 'fault.type']]
 y_SMOGN = TSMIP_smogn_df['lnPGA(gal)']
@@ -132,7 +133,8 @@ print("初步得到的分數: ", score)
 scores = cross_val_score(svr_rbf, x, y, cv=6, scoring=two_scorer())
 print("CV後 R2 scores:", scores)
 
-# ################### Rrup Mw distribution ###########################
+# ################### SMOGN_data distribution ###########################
+# 1. Rrup Mw distribution
 
 # plt.grid(color='gray', linestyle = '--',linewidth=0.5)
 # plt.scatter(TSMIP_df['Rrup'], TSMIP_df['MW'], marker='o',facecolors='none',edgecolors='b', label= 'Data') #數據點
@@ -145,71 +147,97 @@ print("CV後 R2 scores:", scores)
 # plt.savefig(f'TSMIP_SMOGN Data distribution.png',dpi=300)
 # plt.show()
 
-# ################### Vs30 Number of ground motion ###########################
+# 2. Vs30 Number of ground motion distribution
 
 # plt.grid(color='gray', linestyle = '--',linewidth=0.5)
-# plt.hist(TSMIP_df['Vs30'], bins=20, edgecolor="yellow", color="green")
+# plt.hist(TSMIP_smogn_df['Vs30'], bins=20, edgecolor="yellow", color="green")
 # plt.xlabel('Vs30(m/s)')
 # plt.ylabel('Number of record')
+# plt.ylim(0,9000)
 # plt.title('TSMIP_SMOGN Vs30 distribution')
-# plt.legend()
-# plt.savefig(f'TSMIP_SMOGN Vs30 distribution.png',dpi=300)
+# plt.savefig('TSMIP_SMOGN Vs30 distribution.png',dpi=300)
 # plt.show()
 
-########################## 計算Vs30_residual #########################
-residual = svr_predict - y_test
-plt.grid(linestyle=':')
-plt.scatter(x_test[:,0], residual ,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
-plt.xlabel('lnVs30(km)')
-plt.ylabel('Predict_PGA(g)')
-plt.title('Support Vector Regression')
-plt.legend()
-plt.savefig(f'Vs30-SVR_SMOGN_predict_residual.png', dpi=300)
+######################### residual #########################
+# 1. 計算Vs30_residual
+residual = (svr_predict - y_test) * 980
+plt.grid(linestyle=':', color='darkgrey')
+plt.scatter(np.exp(x_test[:, 0]),
+            residual,
+            marker='o',
+            facecolors='none',
+            edgecolors='r')  #迴歸線
+plt.xscale("log")
+plt.yscale("log")
+plt.xlim(1e2, 1e3)
+plt.ylim(1e-1, 1e4)
+plt.xlabel('Vs30(m/s)')
+plt.ylabel('Residual_PGA(cm/s^2)')
+plt.title('SVR Predict Residual R:accuracy: %.3f' % (score))
+plt.savefig(f'Vs30-SVR_predict_residual.png', dpi=300)
 plt.show()
 
-# # 計算Mw_residual
-plt.grid(linestyle=':')
-residual = svr_predict - y_test
-plt.scatter(x_test[:,1], residual ,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+# 2. 計算Mw_residual
+residual = (svr_predict - y_test) * 980
+plt.grid(linestyle=':', color='darkgrey')
+plt.scatter(x_test[:, 1],
+            residual,
+            marker='o',
+            facecolors='none',
+            edgecolors='r')  #迴歸線
+plt.xlim(3, 8)
+plt.ylim(1e-1, 1e4)
 plt.xlabel('Mw')
-plt.ylabel('Predict_PGA(g)')
-plt.title('Support Vector Regression')
-plt.legend()
-plt.savefig(f'Mw-SVR_SMOGN_predict_residual.png', dpi=300)
+plt.yscale("log")
+plt.ylabel('Residual_PGA(cm/s^2)')
+plt.title('SVR Predict Residual R:accuracy: %.3f' % (score))
+plt.savefig(f'Mw-SVR_predict_residual.png', dpi=300)
 plt.show()
 
-# # 計算Rrup_residual
-plt.grid(linestyle=':')
-residual = svr_predict - y_test
-plt.scatter(x_test[:,2], residual ,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
-plt.xlabel('lnRrup(km)')
-plt.ylabel('Predict_PGA(g)')
-plt.title('Support Vector Regression')
-plt.legend()
-plt.savefig(f'Rrup-SVR_SMOGN_predict_residual.png', dpi=300)
+# 3. 計算Rrup_residual
+residual = (svr_predict - y_test) * 980
+plt.grid(linestyle=':', color='darkgrey')
+plt.scatter(np.exp(x_test[:, 2]),
+            residual,
+            marker='o',
+            facecolors='none',
+            edgecolors='r')  #迴歸線
+plt.xscale("log")
+plt.yscale("log")
+plt.xlim(1e0, 1e3)
+plt.ylim(1e-1, 1e4)
+plt.xlabel('Rrup(km)')
+plt.ylabel('Residual_PGA(cm/s^2)')
+plt.title('SVR Predict Residual R:accuracy: %.3f' % (score))
+plt.savefig(f'Rrup-SVR_predict_residual.png', dpi=300)
 plt.show()
 
-# 畫 Vs30 and svr_predict 關係圖
-plt.grid(linestyle=':')
-plt.scatter(x_test[:, 0],
+######################### 畫svr_predict 關係圖 #########################
+# 1. Vs30 and svr_predict 關係圖
+plt.grid(linestyle=':', color='darkgrey')
+plt.scatter(np.exp(x_test[:, 0]),
             y_test,
             marker='o',
             facecolors='none',
             edgecolors='b',
-            label='Data')  #數據點
-plt.scatter(x_test[:,0], svr_predict,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
-plt.xlabel('lnVs30')
-plt.ylabel('svr_predict')
-plt.title('Support Vector Regression')
-plt.legend()
-plt.savefig(f'Vs30-SVR_SMOGN_predict.png', dpi=300)
+            label='True Value')  #數據點
+plt.scatter(np.exp(x_test[:, 0]),
+            svr_predict,
+            marker='o',
+            facecolors='none',
+            edgecolors='r',
+            label='Predict Value')  #迴歸線
+plt.xscale("log")
+plt.yscale("log")
+plt.xlim(1e2, 1e3)
+plt.ylim(1e-1, 1e4)
+plt.xlabel('Vs30(m/s)')
+plt.ylabel('PGA(cm/s^2)')
+plt.title('SVR Predict Distribution R:accuracy: %.3f' % (score))
+plt.savefig(f'Vs30-SVR_predict.png', dpi=300)
 plt.show()
 
-# plt Mw and svr_predict relationship
+# 2. Mw and svr_predict relationship
 plt.grid(linestyle=':')
 plt.scatter(x_test[:, 1],
             y_test,
@@ -226,7 +254,7 @@ plt.legend()
 plt.savefig(f'Mw-SVR_SMOGN_predict.png', dpi=300)
 plt.show()
 
-# plt Rrup and svr_predict relationship
+# 3. Rrup and svr_predict relationship
 plt.grid(linestyle=':')
 plt.scatter(x_test[:, 2],
             y_test,

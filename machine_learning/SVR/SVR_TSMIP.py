@@ -55,12 +55,13 @@ df['fault.type'] = df['fault.type'].str.replace("NM", "2")
 df['fault.type'] = df['fault.type'].str.replace("NO", "2")
 df['fault.type'] = df['fault.type'].str.replace("SS", "3")
 df['fault.type'] = pd.to_numeric(df['fault.type'])
+df['lnPGA(gal)'] = np.log(df['PGA'] * 980)
 
 # 對資料標準化
 # df['PGA'] = (df['PGA'] - df['PGA'].mean()) / df['PGA'].std()
 
-x = df.loc[:, ['lnVs30', 'MW', 'lnRrup']]
-y = df['PGA']
+x = df.loc[:, ['lnVs30', 'MW', 'lnRrup',"fault.type"]]
+y = df['lnPGA(gal)']
 
 x_train, x_test, y_train, y_test = train_test_split(x.values,
                                                     y.values,
@@ -77,7 +78,7 @@ x_train, x_test, y_train, y_test = train_test_split(x.values,
 # epsilon = 3* 0.18 * (np.log(29896)/29896)**(1/2)
 
 # # 用paper方法當SVR參數，效果顯著
-svr_rbf = SVR(C=0.46, kernel='rbf', epsilon=0.0008)
+svr_rbf = SVR(C=1.99, kernel='rbf', epsilon=0.001)
 t0 = time.time()
 grid_result = svr_rbf.fit(x_train, y_train)
 fit_time = time.time() - t0

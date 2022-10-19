@@ -125,38 +125,15 @@ t0 = time.time()
 grid_result = svr_rbf.fit(x_train, y_train)
 fit_time = time.time() - t0
 svr_predict = svr_rbf.predict(x_test)
+svr_predict_train = svr_rbf.predict(x_train)
 # 評估，打分數
 score = svr_rbf.score(x_test, y_test)
+score_train = svr_rbf.score(x_train, y_train)
 print("初步得到的分數: ", score)
 
 # # Cross_validation計算成績
 scores = cross_val_score(svr_rbf, x, y, cv=6, scoring=two_scorer())
 print("CV後 R2 scores:", scores)
-
-# ################### SMOGN_data distribution ###########################
-# 1. Rrup Mw distribution
-
-# plt.grid(color='gray', linestyle = '--',linewidth=0.5)
-# plt.scatter(TSMIP_df['Rrup'], TSMIP_df['MW'], marker='o',facecolors='none',edgecolors='b', label= 'Data') #數據點
-# plt.xscale("log")
-# plt.xlim(1e-1,1e3)
-# plt.xlabel('Rrup')
-# plt.ylabel('Mw')
-# plt.title('TSMIP_SMOGN Data distribution')
-# plt.legend()
-# plt.savefig(f'TSMIP_SMOGN Data distribution.png',dpi=300)
-# plt.show()
-
-# 2. Vs30 Number of ground motion distribution
-
-# plt.grid(color='gray', linestyle = '--',linewidth=0.5)
-# plt.hist(TSMIP_smogn_df['Vs30'], bins=20, edgecolor="yellow", color="green")
-# plt.xlabel('Vs30(m/s)')
-# plt.ylabel('Number of record')
-# plt.ylim(0,9000)
-# plt.title('TSMIP_SMOGN Vs30 distribution')
-# plt.savefig('TSMIP_SMOGN Vs30 distribution.png',dpi=300)
-# plt.show()
 
 ######################### residual #########################
 # 1. 計算Vs30_residual
@@ -171,8 +148,8 @@ plt.xscale("log")
 plt.xlim(1e2, 2 * 1e3)
 plt.ylim(-3, 3)
 plt.xlabel('Vs30(m/s)')
-plt.ylabel('Residual_PGA(cm/s^2)')
-plt.title('SVR Predict Residual R:accuracy: %.3f' % (score))
+plt.ylabel('Residual_lnPGA(cm/s^2)')
+plt.title('SVR Predict Residual R2 score: %.3f' % (score))
 plt.savefig(f'Vs30-SVR_predict_residual.png', dpi=300)
 plt.show()
 
@@ -187,8 +164,8 @@ plt.scatter(x_test[:, 1],
 plt.xlim(3, 8)
 plt.ylim(-3, 3)
 plt.xlabel('Mw')
-plt.ylabel('Residual_PGA(cm/s^2)')
-plt.title('SVR Predict Residual R:accuracy: %.3f' % (score))
+plt.ylabel('Residual_lnPGA(cm/s^2)')
+plt.title('SVR Predict Residual R2 score: %.3f' % (score))
 plt.savefig(f'Mw-SVR_predict_residual.png', dpi=300)
 plt.show()
 
@@ -201,40 +178,41 @@ plt.scatter(np.exp(x_test[:, 2]),
             facecolors='none',
             edgecolors='r')  #迴歸線
 plt.xscale("log")
-plt.xlim(1e0, 1e3)
+plt.xlim(5 * 1e0, 1e3)
 plt.ylim(-3, 3)
 plt.xlabel('Rrup(km)')
-plt.ylabel('Residual_PGA(cm/s^2)')
-plt.title('SVR Predict Residual R:accuracy: %.3f' % (score))
+plt.ylabel('Residual_lnPGA(cm/s^2)')
+plt.title('SVR Predict Residual R2 score: %.3f' % (score))
 plt.savefig(f'Rrup-SVR_predict_residual.png', dpi=300)
 plt.show()
 
 ######################### 畫svr_predict 關係圖 #########################
 # 1. Vs30 and svr_predict 關係圖
 plt.grid(linestyle=':', color='darkgrey')
-plt.scatter(x_test[:, 0],
+plt.scatter(np.exp(x_test[:, 0]),
             y_test,
             marker='o',
             facecolors='none',
             edgecolors='b',
             label='True Values')  #數據點
-plt.scatter(x_test[:, 0],
+plt.scatter(np.exp(x_test[:, 0]),
             svr_predict,
             marker='o',
             facecolors='none',
             edgecolors='r',
             label='Predict Values')  #迴歸線
 plt.xscale("log")
-plt.xlim(1e-1, 1e3)
+plt.xlim(1e2, 2 * 1e3)
 # plt.ylim(-2, 3)
 plt.xlabel('Vs30(m/s)')
 plt.ylabel('lnPGA(cm/s^2)')
-plt.title('SVR Predict Distribution R:accuracy: %.3f' % (score))
+plt.title('Vs30-SVR_predict Distribution R2 score: %.3f' % (score))
+plt.legend()
 plt.savefig(f'Vs30-SVR_predict.png', dpi=300)
 plt.show()
 
 # 2. Mw and svr_predict relationship
-plt.grid(linestyle=':')
+plt.grid(linestyle=':', color='darkgrey')
 plt.scatter(x_test[:, 1],
             y_test,
             marker='o',
@@ -249,43 +227,70 @@ plt.scatter(x_test[:, 1],
             label='Predict Values')  #迴歸線
 plt.yscale("log")
 plt.xlim(3, 8)
-plt.ylim(1e-3, 1e4)
+# plt.ylim(1e-3, 1e4)
 plt.xlabel('Mw')
-plt.ylabel('PGA(cm/s^2)')
-plt.title('Support Vector Regression')
+plt.ylabel('lnPGA(cm/s^2)')
+plt.title('Mw-SVR_predict Distribution R2 score: %.3f' % (score))
 plt.legend()
-plt.savefig(f'Mw-SVR_SMOGN_predict.png', dpi=300)
+plt.savefig(f'Mw-SVR_predict.png', dpi=300)
 plt.show()
 
 # 3. Rrup and svr_predict relationship
-plt.grid(linestyle=':')
-plt.scatter(x_test[:, 2],
+plt.grid(linestyle=':', color='darkgrey')
+plt.scatter(np.exp(x_test[:, 2]),
             y_test,
             marker='o',
             facecolors='none',
             edgecolors='b',
-            label='Data')  #數據點
-plt.scatter(x_test[:,2], svr_predict,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+            label='True Values')  #數據點
+plt.scatter(np.exp(x_test[:, 2]),
+            svr_predict,
+            marker='o',
+            facecolors='none',
+            edgecolors='r',
+            label='Predict Values')  #迴歸線
+plt.xscale("log")
+plt.yscale("log")
 plt.xlabel('lnRrup')
-plt.ylabel('svr_predict')
-plt.title('Support Vector Regression')
+plt.ylabel('lnPGA(cm/s^2)')
+plt.title('Rrup-SVR_predict Distribution R2 score: %.3f' % (score))
 plt.legend()
-plt.savefig(f'Rrup-SVR_SMOGN_predict.png', dpi=300)
+plt.savefig(f'Rrup-SVR_predict.png', dpi=300)
 plt.show()
 
 ###################### 預測PGA和實際PGA #####################
-plt.grid(linestyle=':')
-plt.scatter(y_test, svr_predict,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線.
-x = [0, 2, 4, 6, 8, 10]
-y = [0, 2, 4, 6, 8, 10]
+# training subset
+plt.grid(linestyle=':', color='darkgrey')
+plt.scatter(y_train, svr_predict_train, marker='o', facecolors='none',
+            edgecolors='r',label="Data")  #迴歸線.
+x = [-5, 10]
+y = [-5, 10]
 plt.plot(x, y, color='blue')
-plt.xlabel('Measured PGA')
-plt.ylabel('svr_Predict PGA')
-plt.ylim(0, 10)
-plt.xlim(0, 10)
-plt.title('Support Vector Regression')
+plt.xlabel('Measured ln(PGA)(cm/s^2)')
+plt.ylabel('SVR_Predict ln(PGA)(cm/s^2)')
+plt.ylim(-5, 10)
+plt.xlim(-5, 10)
+plt.text(6,-2,f"R2 score = {round(score_train,2)}")
+plt.text(6,-1,f"MAE = 0.38")
 plt.legend()
-plt.savefig(f'PGA_comparison_SMOGN_predict.png', dpi=300)
+plt.title('Measured_Predict Distribution')
+plt.savefig(f'Measured_Predict Training Subset.png', dpi=300)
+plt.show()
+
+# testing subset
+plt.grid(linestyle=':', color='darkgrey')
+plt.scatter(y_test, svr_predict, marker='o', facecolors='none',
+            edgecolors='r',label="Data")  #迴歸線.
+x = [-5, 10]
+y = [-5, 10]
+plt.plot(x, y, color='blue')
+plt.xlabel('Measured ln(PGA)(cm/s^2)')
+plt.ylabel('SVR_Predict ln(PGA)(cm/s^2)')
+plt.ylim(-5, 10)
+plt.xlim(-5, 10)
+plt.text(6,-2,f"R2 score = {round(score,2)}")
+plt.text(6,-1,f"MAE = 0.40")
+plt.legend()
+plt.title('Measured_Predict Distribution')
+plt.savefig(f'Measured_Predict Testing Subset.png', dpi=300)
 plt.show()

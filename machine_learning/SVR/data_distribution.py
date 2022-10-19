@@ -13,17 +13,17 @@ df['lnPGA'] = np.log(df['PGA'] * 980)
 ################### PGA Vs30 distribution ###########################
 
 plt.grid(color='gray', linestyle='--', linewidth=0.5)
-plt.scatter(df['lnVs30'],
+plt.scatter(df['Vs30'],
             df['lnPGA'],
             marker='o',
             facecolors='none',
             edgecolors='b',
             label='Data')  #數據點
-# plt.xscale("log")
-plt.yscale("log")
-# plt.xlim(3, 8)
+plt.xscale("log")
+# plt.yscale("log")
+plt.xlim(1e2, 2*1e3)
 # plt.ylim(1e-1, 1e3)
-plt.xlabel('lnVs30')
+plt.xlabel('Vs30')
 plt.ylabel('lnPGA')
 plt.title('TSMIP Vs30 PGA distribution(1992-2014)')
 plt.legend()
@@ -54,17 +54,17 @@ plt.show()
 ################### PGA Rrup distribution ###########################
 
 plt.grid(color='gray', linestyle='--', linewidth=0.5)
-plt.scatter(df['lnRrup'],
+plt.scatter(df['Rrup'],
             df['lnPGA'],
             marker='o',
             facecolors='none',
             edgecolors='b',
             label='Data')  #數據點
-# plt.xscale("log")
+plt.xscale("log")
 plt.yscale("log")
 # plt.xlim(1e-1, 1e3)
 # plt.ylim(1e-1, 1e3)
-plt.xlabel('lnRrup')
+plt.xlabel('Rrup')
 plt.ylabel('lnPGA')
 plt.title('TSMIP Rrup PGA distribution(1992-2014)')
 plt.legend()

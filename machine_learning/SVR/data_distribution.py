@@ -8,6 +8,69 @@ df = pd.read_csv("../../../TSMIP_FF.csv")
 df['lnVs30'] = np.log(df['Vs30'])
 df['lnRrup'] = np.log(df['Rrup'])
 df['Mw_size'] = np.zeros(len(df['lnRrup']))
+df['lnPGA'] = np.log(df['PGA'] * 980)
+
+################### PGA Vs30 distribution ###########################
+
+plt.grid(color='gray', linestyle='--', linewidth=0.5)
+plt.scatter(df['lnVs30'],
+            df['lnPGA'],
+            marker='o',
+            facecolors='none',
+            edgecolors='b',
+            label='Data')  #數據點
+# plt.xscale("log")
+plt.yscale("log")
+# plt.xlim(3, 8)
+# plt.ylim(1e-1, 1e3)
+plt.xlabel('lnVs30')
+plt.ylabel('lnPGA')
+plt.title('TSMIP Vs30 PGA distribution(1992-2014)')
+plt.legend()
+plt.savefig(f'TSMIP Vs30 PGA distribution(1992-2014).png', dpi=300)
+plt.show()
+
+################### PGA Mw distribution ###########################
+
+plt.grid(color='gray', linestyle='--', linewidth=0.5)
+plt.scatter(df['MW'],
+            df['lnPGA'],
+            marker='o',
+            facecolors='none',
+            edgecolors='b',
+            label='Data')  #數據點
+# plt.xscale("log")
+plt.yscale("log")
+plt.xlim(3, 8)
+# plt.ylim(1e-1, 1e3)
+plt.xlabel('Mw')
+plt.ylabel('lnPGA')
+plt.title('TSMIP Mw PGA distribution(1992-2014)')
+plt.legend()
+plt.savefig(f'TSMIP Mw PGA distribution(1992-2014).png', dpi=300)
+plt.show()
+
+
+################### PGA Rrup distribution ###########################
+
+plt.grid(color='gray', linestyle='--', linewidth=0.5)
+plt.scatter(df['lnRrup'],
+            df['lnPGA'],
+            marker='o',
+            facecolors='none',
+            edgecolors='b',
+            label='Data')  #數據點
+# plt.xscale("log")
+plt.yscale("log")
+# plt.xlim(1e-1, 1e3)
+# plt.ylim(1e-1, 1e3)
+plt.xlabel('lnRrup')
+plt.ylabel('lnPGA')
+plt.title('TSMIP Rrup PGA distribution(1992-2014)')
+plt.legend()
+plt.savefig(f'TSMIP Rrup PGA distribution(1992-2014).png', dpi=300)
+plt.show()
+
 ################### Rrup Mw distribution ###########################
 
 plt.grid(color='gray', linestyle='--', linewidth=0.5)

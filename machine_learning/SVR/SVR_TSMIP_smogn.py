@@ -160,7 +160,7 @@ print("CV後 R2 scores:", scores)
 
 ######################### residual #########################
 # 1. 計算Vs30_residual
-residual = (svr_predict - y_test) * 980
+residual = svr_predict - y_test
 plt.grid(linestyle=':', color='darkgrey')
 plt.scatter(np.exp(x_test[:, 0]),
             residual,
@@ -168,9 +168,8 @@ plt.scatter(np.exp(x_test[:, 0]),
             facecolors='none',
             edgecolors='r')  #迴歸線
 plt.xscale("log")
-plt.yscale("log")
-plt.xlim(1e2, 1e3)
-plt.ylim(1e-1, 1e4)
+plt.xlim(1e2, 2 * 1e3)
+plt.ylim(-3, 3)
 plt.xlabel('Vs30(m/s)')
 plt.ylabel('Residual_PGA(cm/s^2)')
 plt.title('SVR Predict Residual R:accuracy: %.3f' % (score))
@@ -178,7 +177,7 @@ plt.savefig(f'Vs30-SVR_predict_residual.png', dpi=300)
 plt.show()
 
 # 2. 計算Mw_residual
-residual = (svr_predict - y_test) * 980
+residual = svr_predict - y_test
 plt.grid(linestyle=':', color='darkgrey')
 plt.scatter(x_test[:, 1],
             residual,
@@ -186,16 +185,15 @@ plt.scatter(x_test[:, 1],
             facecolors='none',
             edgecolors='r')  #迴歸線
 plt.xlim(3, 8)
-plt.ylim(1e-1, 1e4)
+plt.ylim(-3, 3)
 plt.xlabel('Mw')
-plt.yscale("log")
 plt.ylabel('Residual_PGA(cm/s^2)')
 plt.title('SVR Predict Residual R:accuracy: %.3f' % (score))
 plt.savefig(f'Mw-SVR_predict_residual.png', dpi=300)
 plt.show()
 
 # 3. 計算Rrup_residual
-residual = (svr_predict - y_test) * 980
+residual = svr_predict - y_test
 plt.grid(linestyle=':', color='darkgrey')
 plt.scatter(np.exp(x_test[:, 2]),
             residual,
@@ -203,9 +201,8 @@ plt.scatter(np.exp(x_test[:, 2]),
             facecolors='none',
             edgecolors='r')  #迴歸線
 plt.xscale("log")
-plt.yscale("log")
 plt.xlim(1e0, 1e3)
-plt.ylim(1e-1, 1e4)
+plt.ylim(-3, 3)
 plt.xlabel('Rrup(km)')
 plt.ylabel('Residual_PGA(cm/s^2)')
 plt.title('SVR Predict Residual R:accuracy: %.3f' % (score))
@@ -215,24 +212,23 @@ plt.show()
 ######################### 畫svr_predict 關係圖 #########################
 # 1. Vs30 and svr_predict 關係圖
 plt.grid(linestyle=':', color='darkgrey')
-plt.scatter(np.exp(x_test[:, 0]),
+plt.scatter(x_test[:, 0],
             y_test,
             marker='o',
             facecolors='none',
             edgecolors='b',
-            label='True Value')  #數據點
-plt.scatter(np.exp(x_test[:, 0]),
+            label='True Values')  #數據點
+plt.scatter(x_test[:, 0],
             svr_predict,
             marker='o',
             facecolors='none',
             edgecolors='r',
-            label='Predict Value')  #迴歸線
+            label='Predict Values')  #迴歸線
 plt.xscale("log")
-plt.yscale("log")
-plt.xlim(1e2, 1e3)
-plt.ylim(1e-1, 1e4)
+plt.xlim(1e-1, 1e3)
+# plt.ylim(-2, 3)
 plt.xlabel('Vs30(m/s)')
-plt.ylabel('PGA(cm/s^2)')
+plt.ylabel('lnPGA(cm/s^2)')
 plt.title('SVR Predict Distribution R:accuracy: %.3f' % (score))
 plt.savefig(f'Vs30-SVR_predict.png', dpi=300)
 plt.show()
@@ -244,11 +240,18 @@ plt.scatter(x_test[:, 1],
             marker='o',
             facecolors='none',
             edgecolors='b',
-            label='Data')  #數據點
-plt.scatter(x_test[:,1], svr_predict,marker='o',facecolors='none',edgecolors='r', \
-    label='SVR (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+            label='True Values')  #數據點
+plt.scatter(x_test[:, 1],
+            svr_predict,
+            marker='o',
+            facecolors='none',
+            edgecolors='r',
+            label='Predict Values')  #迴歸線
+plt.yscale("log")
+plt.xlim(3, 8)
+plt.ylim(1e-3, 1e4)
 plt.xlabel('Mw')
-plt.ylabel('svr_predict')
+plt.ylabel('PGA(cm/s^2)')
 plt.title('Support Vector Regression')
 plt.legend()
 plt.savefig(f'Mw-SVR_SMOGN_predict.png', dpi=300)

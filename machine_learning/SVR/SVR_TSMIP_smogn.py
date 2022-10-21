@@ -135,6 +135,85 @@ print("初步得到的分數: ", score)
 scores = cross_val_score(svr_rbf, x, y, cv=6, scoring=two_scorer())
 print("CV後 R2 scores:", scores)
 
+######################### trainsubset & testsubset distribution #########################
+# 1.PGA Vs30 distribution 
+plt.grid(color='gray', linestyle='--', linewidth=0.5)
+plt.scatter(np.exp(x_train[:, 0]),
+            np.exp(y_train),
+            marker='o',
+            facecolors='none',
+            edgecolors='grey',
+            label='Training Subset')  #數據點
+plt.scatter(np.exp(x_test[:, 0]),
+            np.exp(y_test),
+            marker='o',
+            facecolors='none',
+            edgecolors='red',
+            label='Testing Subset')  #數據點
+plt.xscale("log")
+plt.yscale("log")
+plt.xlim(1e2, 2*1e3)
+plt.ylim(1e-1, 1e4)
+plt.xlabel('Vs30(m/s)')
+plt.ylabel('PGA(cm/s^2)')
+plt.title('TSMIP_train_test_subset Vs30 PGA distribution')
+plt.legend()
+plt.savefig(f'TSMIP_train_test_subset Vs30 PGA distribution.png', dpi=300)
+plt.show()
+
+# 2.PGA Mw distribution 
+
+plt.grid(color='gray', linestyle='--', linewidth=0.5)
+plt.scatter(x_train[:, 1],
+            np.exp(y_train),
+            marker='o',
+            facecolors='none',
+            edgecolors='grey',
+            label='Training Subset')  #數據點
+plt.scatter(x_test[:, 1],
+            np.exp(y_test),
+            marker='o',
+            facecolors='none',
+            edgecolors='red',
+            label='Testing Subset')  #數據點
+# plt.xscale("log")
+plt.yscale("log")
+plt.xlim(3, 8)
+plt.ylim(1e-1, 1e4)
+plt.xlabel('Mw')
+plt.ylabel('PGA(cm/s^2)')
+plt.title('TSMIP_train_test_subset Mw PGA distribution')
+plt.legend()
+plt.savefig(f'TSMIP_train_test_subset Mw PGA distribution.png', dpi=300)
+plt.show()
+
+
+# 3.PGA Rrup distribution
+
+plt.grid(color='gray', linestyle='--', linewidth=0.5)
+plt.scatter(np.exp(x_train[:, 2]),
+            np.exp(y_train),
+            marker='o',
+            facecolors='none',
+            edgecolors='grey',
+            label='Training Subset')  #數據點
+plt.scatter(np.exp(x_test[:, 2]),
+            np.exp(y_test),
+            marker='o',
+            facecolors='none',
+            edgecolors='red',
+            label='Testing Subset')  #數據點
+plt.xscale("log")
+plt.yscale("log")
+plt.xlim(1e0, 1e3)
+plt.ylim(1e-1, 1e4)
+plt.xlabel('Rrup(km)')
+plt.ylabel('PGA(cm/s^2)')
+plt.title('TSMIP_train_test_subset Rrup PGA distribution')
+plt.legend()
+plt.savefig(f'TSMIP_train_test_subset Rrup PGA distribution.png', dpi=300)
+plt.show()
+
 ######################### residual #########################
 # 1. 計算Vs30_residual
 residual = svr_predict - y_test
@@ -396,6 +475,9 @@ plt.show()
 
 ###################### 預測PGA和實際PGA #####################
 # training subset
+residual = svr_predict_train - y_train
+residual_total_mean = np.mean(residual)
+residual_total_std = np.std(residual)
 plt.grid(linestyle=':', color='darkgrey')
 plt.scatter(y_train,
             svr_predict_train,
@@ -406,6 +488,8 @@ plt.scatter(y_train,
 x = [-5, 10]
 y = [-5, 10]
 plt.plot(x, y, color='blue')
+plt.plot(x, y+residual_total_std, color='blue',linestyle='--')
+plt.plot(x, y-residual_total_std, color='blue',linestyle='--')
 plt.xlabel('Measured ln(PGA)(cm/s^2)')
 plt.ylabel('SVR_Predict ln(PGA)(cm/s^2)')
 plt.ylim(-5, 10)
@@ -418,6 +502,9 @@ plt.savefig(f'Measured_Predict Training Subset.png', dpi=300)
 plt.show()
 
 # testing subset
+residual = svr_predict - y_test
+residual_total_mean = np.mean(residual)
+residual_total_std = np.std(residual)
 plt.grid(linestyle=':', color='darkgrey')
 plt.scatter(y_test,
             svr_predict,
@@ -428,6 +515,8 @@ plt.scatter(y_test,
 x = [-5, 10]
 y = [-5, 10]
 plt.plot(x, y, color='blue')
+plt.plot(x, y+residual_total_std, color='blue',linestyle='--')
+plt.plot(x, y-residual_total_std, color='blue',linestyle='--')
 plt.xlabel('Measured ln(PGA)(cm/s^2)')
 plt.ylabel('SVR_Predict ln(PGA)(cm/s^2)')
 plt.ylim(-5, 10)

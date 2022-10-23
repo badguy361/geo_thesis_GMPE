@@ -20,22 +20,22 @@ def objective(trial):
     svr_gamma = trial.suggest_float('svr_gamma', 1e-3, 10)
     regressor_obj = SVR(C=svr_c, epsilon=svr_epsilon, gamma=svr_gamma)
 
-    # TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn.csv")
+    TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn.csv")
     TSMIP_df = pd.read_csv("../../../TSMIP_FF.csv")
 
-    # TSMIP_smogn_df['lnVs30'] = np.log(TSMIP_smogn_df['Vs30'])
-    # TSMIP_smogn_df['lnRrup'] = np.log(TSMIP_smogn_df['Rrup'])
-    # TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
-    #     "RO", "1")
-    # TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
-    #     "RV", "1")
-    # TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
-    #     "NM", "2")
-    # TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
-    #     "NO", "2")
-    # TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
-    #     "SS", "3")
-    # TSMIP_smogn_df['fault.type'] = pd.to_numeric(TSMIP_smogn_df['fault.type'])
+    TSMIP_smogn_df['lnVs30'] = np.log(TSMIP_smogn_df['Vs30'])
+    TSMIP_smogn_df['lnRrup'] = np.log(TSMIP_smogn_df['Rrup'])
+    TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
+        "RO", "1")
+    TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
+        "RV", "1")
+    TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
+        "NM", "2")
+    TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
+        "NO", "2")
+    TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
+        "SS", "3")
+    TSMIP_smogn_df['fault.type'] = pd.to_numeric(TSMIP_smogn_df['fault.type'])
     # TSMIP_smogn_df['lnPGA(gal)'] = np.log(TSMIP_smogn_df['PGA'] * 980)
 
     TSMIP_df['lnVs30'] = np.log(TSMIP_df['Vs30'])
@@ -59,7 +59,7 @@ def objective(trial):
                                                       random_state=0,
                                                       train_size=0.8)
 
-    regressor_obj.fit(X_train, y_train)
+    regressor_obj.fit(x, y)
     y_pred = regressor_obj.predict(X_val)
 
     error = r2_score(y_val, y_pred)
@@ -74,7 +74,8 @@ def objective(trial):
 #SVR_TSMIP_7 y改成ln(PGA)，SMOGN資料當訓練集 原本資料切20%當測試集，並新增fault.type參數 -> 成效反而比較差
 #SVR_TSMIP_8 y改成ln(PGA)，原本資料當訓練集 原本資料切20%當測試集，並新增gamma讓他跑分
 #SVR_TSMIP_9 擴大gamma範圍讓他跑分
-study_name = 'SVR_TSMIP_9'
+#SVR_TSMIP_10 改用SMOGN資料集，並加入gamma讓他跑分
+study_name = 'SVR_TSMIP_10'
 study = optuna.create_study(study_name=study_name,
                             storage="mysql://root@localhost/SVR_TSMIP",
                             direction="maximize")  # Create a new study.

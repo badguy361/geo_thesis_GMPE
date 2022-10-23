@@ -119,16 +119,17 @@ x_train, x_test, y_train, y_test = train_test_split(x.values,
                                                     random_state=60,
                                                     train_size=0.8,
                                                     shuffle=True)
-
-svr_rbf = SVR(C=1.03, kernel='rbf', epsilon=0.01, gamma=6.62)
+# TSMIP_train TSMIP_test C:1.03 epsilon:0.01 gamma:6.62
+# SMOGN_train TSMIP_test C:1.96 epsilon:0.001 gamma:9.78
+svr_rbf = SVR(C=1.96, kernel='rbf', epsilon=0.001, gamma=9.78)
 t0 = time.time()
-grid_result = svr_rbf.fit(x_train, y_train)
+grid_result = svr_rbf.fit(x_smogn_ori, y_smogn_ori)
 fit_time = time.time() - t0
 svr_predict = svr_rbf.predict(x_test)
-svr_predict_train = svr_rbf.predict(x_train)
+svr_predict_train = svr_rbf.predict(x_smogn_ori)
 # 評估，打分數
 score = svr_rbf.score(x_test, y_test)
-score_train = svr_rbf.score(x_train, y_train)
+score_train = svr_rbf.score(x_smogn_ori, y_smogn_ori)
 print("初步得到的分數: ", score)
 
 # # Cross_validation計算成績
@@ -156,9 +157,9 @@ plt.xlim(1e2, 2*1e3)
 plt.ylim(1e-1, 1e4)
 plt.xlabel('Vs30(m/s)')
 plt.ylabel('PGA(cm/s^2)')
-plt.title('TSMIP_train_test_subset Vs30 PGA distribution')
+plt.title('SMOGN_train_test_subset Vs30 PGA distribution')
 plt.legend()
-plt.savefig(f'TSMIP_train_test_subset Vs30 PGA distribution.png', dpi=300)
+plt.savefig(f'SMOGN_train_test_subset Vs30 PGA distribution.png', dpi=300)
 plt.show()
 
 # 2.PGA Mw distribution 
@@ -182,9 +183,9 @@ plt.xlim(3, 8)
 plt.ylim(1e-1, 1e4)
 plt.xlabel('Mw')
 plt.ylabel('PGA(cm/s^2)')
-plt.title('TSMIP_train_test_subset Mw PGA distribution')
+plt.title('SMOGN_train_test_subset Mw PGA distribution')
 plt.legend()
-plt.savefig(f'TSMIP_train_test_subset Mw PGA distribution.png', dpi=300)
+plt.savefig(f'SMOGN_train_test_subset Mw PGA distribution.png', dpi=300)
 plt.show()
 
 
@@ -209,9 +210,9 @@ plt.xlim(1e0, 1e3)
 plt.ylim(1e-1, 1e4)
 plt.xlabel('Rrup(km)')
 plt.ylabel('PGA(cm/s^2)')
-plt.title('TSMIP_train_test_subset Rrup PGA distribution')
+plt.title('SMOGN_train_test_subset Rrup PGA distribution')
 plt.legend()
-plt.savefig(f'TSMIP_train_test_subset Rrup PGA distribution.png', dpi=300)
+plt.savefig(f'SMOGN_train_test_subset Rrup PGA distribution.png', dpi=300)
 plt.show()
 
 ######################### residual #########################
@@ -279,8 +280,8 @@ plt.xlim(1e2, 2 * 1e3)
 plt.ylim(-3, 3)
 plt.xlabel('Vs30(m/s)')
 plt.ylabel('Residual_lnPGA(cm/s^2)')
-plt.title('SVR Predict Residual R2 score: %.3f' % (score))
-plt.savefig(f'Vs30-SVR_predict_residual.png', dpi=300)
+plt.title('SMOGN SVR Predict Residual R2 score: %.3f' % (score))
+plt.savefig(f'SMOGN Vs30-SVR_predict_residual.png', dpi=300)
 plt.show()
 
 # 2. 計算Mw_residual
@@ -338,8 +339,8 @@ plt.xlim(3, 8)
 plt.ylim(-3, 3)
 plt.xlabel('Mw')
 plt.ylabel('Residual_lnPGA(cm/s^2)')
-plt.title('SVR Predict Residual R2 score: %.3f' % (score))
-plt.savefig(f'Mw-SVR_predict_residual.png', dpi=300)
+plt.title('SMOGN SVR Predict Residual R2 score: %.3f' % (score))
+plt.savefig(f'SMOGN Mw-SVR_predict_residual.png', dpi=300)
 plt.show()
 
 # 3. 計算Rrup_residual
@@ -397,8 +398,8 @@ plt.xlim(5 * 1e0, 1e3)
 plt.ylim(-3, 3)
 plt.xlabel('Rrup(km)')
 plt.ylabel('Residual_lnPGA(cm/s^2)')
-plt.title('SVR Predict Residual R2 score: %.3f' % (score))
-plt.savefig(f'Rrup-SVR_predict_residual.png', dpi=300)
+plt.title('SMOGN SVR Predict Residual R2 score: %.3f' % (score))
+plt.savefig(f'SMOGN Rrup-SVR_predict_residual.png', dpi=300)
 plt.show()
 
 ######################### 畫svr_predict 關係圖 #########################
@@ -421,9 +422,9 @@ plt.xlim(1e2, 2 * 1e3)
 # plt.ylim(-2, 3)
 plt.xlabel('Vs30(m/s)')
 plt.ylabel('lnPGA(cm/s^2)')
-plt.title('Vs30-SVR_predict Distribution R2 score: %.3f' % (score))
+plt.title('SMOGN Vs30-SVR_predict Distribution R2 score: %.3f' % (score))
 plt.legend()
-plt.savefig(f'Vs30-SVR_predict.png', dpi=300)
+plt.savefig(f'SMOGN Vs30-SVR_predict.png', dpi=300)
 plt.show()
 
 # 2. Mw and svr_predict relationship
@@ -445,9 +446,9 @@ plt.xlim(3, 8)
 # plt.ylim(1e-3, 1e4)
 plt.xlabel('Mw')
 plt.ylabel('lnPGA(cm/s^2)')
-plt.title('Mw-SVR_predict Distribution R2 score: %.3f' % (score))
+plt.title('SMOGN Mw-SVR_predict Distribution R2 score: %.3f' % (score))
 plt.legend()
-plt.savefig(f'Mw-SVR_predict.png', dpi=300)
+plt.savefig(f'SMOGN Mw-SVR_predict.png', dpi=300)
 plt.show()
 
 # 3. Rrup and svr_predict relationship
@@ -468,18 +469,18 @@ plt.xscale("log")
 plt.yscale("log")
 plt.xlabel('lnRrup')
 plt.ylabel('lnPGA(cm/s^2)')
-plt.title('Rrup-SVR_predict Distribution R2 score: %.3f' % (score))
+plt.title('SMOGN Rrup-SVR_predict Distribution R2 score: %.3f' % (score))
 plt.legend()
-plt.savefig(f'Rrup-SVR_predict.png', dpi=300)
+plt.savefig(f'SMOGN Rrup-SVR_predict.png', dpi=300)
 plt.show()
 
 ###################### 預測PGA和實際PGA #####################
 # training subset
-residual = svr_predict_train - y_train
+residual = svr_predict_train - y_smogn_ori
 residual_total_mean = np.mean(residual)
 residual_total_std = np.std(residual)
 plt.grid(linestyle=':', color='darkgrey')
-plt.scatter(y_train,
+plt.scatter(y_smogn_ori,
             svr_predict_train,
             marker='o',
             facecolors='none',
@@ -497,8 +498,8 @@ plt.xlim(-5, 10)
 plt.text(6, -2, f"R2 score = {round(score_train,2)}")
 plt.text(6, -1, f"MAE = 0.38")
 plt.legend()
-plt.title('Measured_Predict Distribution')
-plt.savefig(f'Measured_Predict Training Subset.png', dpi=300)
+plt.title('SMOGN Measured_Predict Distribution')
+plt.savefig(f'SMOGN Measured_Predict Training Subset.png', dpi=300)
 plt.show()
 
 # testing subset
@@ -524,6 +525,6 @@ plt.xlim(-5, 10)
 plt.text(6, -2, f"R2 score = {round(score,2)}")
 plt.text(6, -1, f"MAE = 0.40")
 plt.legend()
-plt.title('Measured_Predict Distribution')
-plt.savefig(f'Measured_Predict Testing Subset.png', dpi=300)
+plt.title('SMOGN Measured_Predict Distribution')
+plt.savefig(f'SMOGN Measured_Predict Testing Subset.png', dpi=300)
 plt.show()

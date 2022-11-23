@@ -84,7 +84,7 @@ x_train, x_test, y_train, y_test = train_test_split(x.values,
 
 randomForestModel = RandomForestRegressor(n_estimators=100,
                                           criterion='squared_error',
-                                          max_depth=5,
+                                          max_depth=3,
                                           bootstrap=True,
                                           oob_score=True,
                                         #   verbose=True,

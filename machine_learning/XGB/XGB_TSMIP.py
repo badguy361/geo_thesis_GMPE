@@ -1,4 +1,4 @@
-from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
 import pandas as pd
 import time
 import numpy as np
@@ -11,6 +11,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score, mean_squared_error, make_scorer
 from sklearn.tree import plot_tree
 from dtreeviz.trees import dtreeviz
+
 
 def MSE(y_true, y_pred):
     mse = mean_squared_error(y_true, y_pred)
@@ -82,28 +83,27 @@ x_train, x_test, y_train, y_test = train_test_split(x.values,
                                                     train_size=0.8,
                                                     shuffle=True)
 
-randomForestModel = RandomForestRegressor(n_estimators=100,
-                                          criterion='squared_error',
-                                          bootstrap=True,
-                                          oob_score=True,
-                                        #   verbose=True,
-                                          n_jobs=-1)
+XGBModel = XGBRegressor(
+    n_estimators=1000,
+    max_depth=10,
+    n_jobs=-1)
 t0 = time.time()
-grid_result = randomForestModel.fit(x_SMOGN, y_SMOGN)
-print("oob_score :", grid_result.oob_score_)
+grid_result = XGBModel.fit(x_train, y_train)
 print("feature importances :", grid_result.feature_importances_)
 fit_time = time.time() - t0
-randomForest_predict = randomForestModel.predict(x_test)
+randomForest_predict = XGBModel.predict(x_test)
 # 評估，打分數
-score = randomForestModel.score(x_test, y_test)
+score = XGBModel.score(x_test, y_test)
 print("test_R2_score :", score)
 
 # # Cross_validation計算成績
-scores = cross_val_score(randomForestModel, x_train, y_train, cv=6, n_jobs=-1)
+scores = cross_val_score(XGBModel, x_train, y_train, cv=6, n_jobs=-1)
 print("cross_val R2 score:", scores)
 ###################### visual tree #########################
 
-viz = dtreeviz(randomForestModel.estimators_[0], x_SMOGN, y_SMOGN,
+viz = dtreeviz(XGBModel.estimators_[0],
+               x_SMOGN,
+               y_SMOGN,
                feature_names=['lnVs30', 'MW', 'lnRrup', 'fault.type'],
                title="100th decision tree - TSMIP SMOGN data")
 viz.save("decision_tree_house.svg")

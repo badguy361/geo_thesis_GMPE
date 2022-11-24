@@ -70,10 +70,10 @@ TSMIP_df['lnPGA(gal)'] = np.log(TSMIP_df['PGA'] * 980)
 # 對資料標準化
 # df['PGA'] = (df['PGA'] - df['PGA'].mean()) / df['PGA'].std()
 
-x_SMOGN = TSMIP_smogn_df.loc[:, ['lnVs30', 'MW', 'lnRrup', 'fault.type']]
+x_SMOGN = TSMIP_smogn_df.loc[:, ['lnVs30', 'MW', 'lnRrup', 'fault.type','STA_Lon_X','STA_Lat_Y']]
 y_SMOGN = TSMIP_smogn_df['lnPGA(gal)']
 
-x = TSMIP_df.loc[:, ['lnVs30', 'MW', 'lnRrup', 'fault.type']]
+x = TSMIP_df.loc[:, ['lnVs30', 'MW', 'lnRrup', 'fault.type','STA_Lon_X','STA_Lat_Y']]
 y = TSMIP_df['lnPGA(gal)']
 
 x_train, x_test, y_train, y_test = train_test_split(x.values,
@@ -89,7 +89,7 @@ randomForestModel = RandomForestRegressor(n_estimators=100,
                                         #   verbose=True,
                                           n_jobs=-1)
 t0 = time.time()
-grid_result = randomForestModel.fit(x_SMOGN, y_SMOGN)
+grid_result = randomForestModel.fit(x_train, y_train)
 print("oob_score :", grid_result.oob_score_)
 print("feature importances :", grid_result.feature_importances_)
 fit_time = time.time() - t0

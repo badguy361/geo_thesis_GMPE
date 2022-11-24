@@ -36,7 +36,7 @@ def two_scorer():
                        greater_is_better=True)  # change for false if using MSE
 
 
-TSMIP_smogn_df = pd.read_csv("../../../TSMIP_SMOGN.csv")
+TSMIP_smogn_df = pd.read_csv("../../../TSMIP_SMOGN_sta.csv")
 TSMIP_df = pd.read_csv("../../../TSMIP_FF_copy.csv")
 
 TSMIP_smogn_df['lnVs30'] = np.log(TSMIP_smogn_df['Vs30'])
@@ -71,10 +71,10 @@ TSMIP_df['lnPGA(gal)'] = np.log(TSMIP_df['PGA'] * 980)
 # 對資料標準化
 # df['PGA'] = (df['PGA'] - df['PGA'].mean()) / df['PGA'].std()
 
-x_SMOGN = TSMIP_smogn_df.loc[:, ['lnVs30', 'MW', 'lnRrup', 'fault.type']]
+x_SMOGN = TSMIP_smogn_df.loc[:, ['lnVs30', 'MW', 'lnRrup', 'fault.type','STA_Lon_X','STA_Lat_Y']]
 y_SMOGN = TSMIP_smogn_df['lnPGA(gal)']
 
-x = TSMIP_df.loc[:, ['lnVs30', 'MW', 'lnRrup', 'fault.type']]
+x = TSMIP_df.loc[:, ['lnVs30', 'MW', 'lnRrup', 'fault.type','STA_Lon_X','STA_Lat_Y']]
 y = TSMIP_df['lnPGA(gal)']
 
 x_train, x_test, y_train, y_test = train_test_split(x.values,
@@ -88,7 +88,7 @@ XGBModel = XGBRegressor(
     max_depth=10,
     n_jobs=-1)
 t0 = time.time()
-grid_result = XGBModel.fit(x_train, y_train)
+grid_result = XGBModel.fit(x_SMOGN, y_SMOGN)
 print("feature importances :", grid_result.feature_importances_)
 fit_time = time.time() - t0
 randomForest_predict = XGBModel.predict(x_test)

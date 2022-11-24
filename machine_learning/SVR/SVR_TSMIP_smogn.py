@@ -18,7 +18,7 @@ from sklearn.metrics import r2_score, mean_squared_error, make_scorer
 #     data = TSMIP_df,
 #     y = "PGA"
 # )
-# TSMIP_smogn.to_csv("../../../TSMIP_smogn.csv",index=False)
+# TSMIP_smogn.to_csv("../../../TSMIP_smogn_sta.csv",index=False)
 def MSE(y_true, y_pred):
     mse = mean_squared_error(y_true, y_pred)
     print('MSE: %2.3f' % mse)

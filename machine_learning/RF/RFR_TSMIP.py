@@ -35,7 +35,7 @@ def two_scorer():
                        greater_is_better=True)  # change for false if using MSE
 
 
-TSMIP_smogn_df = pd.read_csv("../../../TSMIP_SMOGN.csv")
+TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_sta.csv")
 TSMIP_df = pd.read_csv("../../../TSMIP_FF_copy.csv")
 
 TSMIP_smogn_df['lnVs30'] = np.log(TSMIP_smogn_df['Vs30'])
@@ -89,7 +89,7 @@ randomForestModel = RandomForestRegressor(n_estimators=100,
                                         #   verbose=True,
                                           n_jobs=-1)
 t0 = time.time()
-grid_result = randomForestModel.fit(x_train, y_train)
+grid_result = randomForestModel.fit(x_SMOGN, y_SMOGN)
 print("oob_score :", grid_result.oob_score_)
 print("feature importances :", grid_result.feature_importances_)
 fit_time = time.time() - t0

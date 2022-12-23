@@ -38,54 +38,6 @@ def two_scorer():
 TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_sta.csv")
 TSMIP_df = pd.read_csv("../../../TSMIP_FF_copy.csv")
 
-class dataprocess:
-    def __init__(self,model_name):
-        self.model_name = model_name
-    
-    def preprocess(self,data):
-        assert str(type(data)) == "<class 'pandas.core.frame.DataFrame'>" , "please input DataFrame"
-        print(data['Vs30'])
-        data['lnVs30'] = np.log(data['Vs30'])
-        data['lnRrup'] = np.log(data['Rrup'])
-        data['log10Vs30'] = np.log10(data['Vs30'])
-        data['log10Rrup'] = np.log10(data['Rrup'])
-        data['fault.type'] = data['fault.type'].str.replace(
-            "RO", "1")
-        data['fault.type'] = data['fault.type'].str.replace(
-            "RV", "1")
-        data['fault.type'] = data['fault.type'].str.replace(
-            "NM", "2")
-        data['fault.type'] = data['fault.type'].str.replace(
-            "NO", "2")
-        data['fault.type'] = data['fault.type'].str.replace(
-            "SS", "3")
-        data['fault.type'] = pd.to_numeric(data['fault.type'])
-        data['lnPGA(gal)'] = np.log(data['PGA'] * 980)
-        after_process_data = data
-        return after_process_data
-    
-    def split_dataset(self,after_process_data,target,split,*args):
-        assert str(type(after_process_data)) == "<class 'pandas.core.frame.DataFrame'>" , "please input DataFrame"
-        assert target in list(after_process_data.columns) , "target is not in the DataFrame columns"
-        # assert args in list(after_process_data.columns) , "the parameter is not in the DataFrame columns"
-        if split == True:
-            x = after_process_data.loc[:, [x for x in args]]
-            y = after_process_data[target]
-            x_train, x_test, y_train, y_test = train_test_split(x.values,
-                                                                y.values,
-                                                                random_state=50,
-                                                                train_size=0.8,
-                                                                shuffle=True)
-            print("--------split_your_data----------")
-            return [x_train, x_test, y_train, y_test]
-        else:
-            x = after_process_data.loc[:, [x for x in args]]
-            y = after_process_data[target]
-            print("--------not split_your_data----------")
-            return [x,y]
-
-model = dataprocess("RF")
-a = model.split_dataset(TSMIP_smogn_df,'lnPGA(gal)',True,'lnVs30', 'MW', 'lnRrup', 'fault.type','STA_Lon_X','STA_Lat_Y')
 
 TSMIP_smogn_df['lnVs30'] = np.log(TSMIP_smogn_df['Vs30'])
 TSMIP_smogn_df['lnRrup'] = np.log(TSMIP_smogn_df['Rrup'])

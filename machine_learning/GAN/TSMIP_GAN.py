@@ -36,8 +36,13 @@ TSMIP_smogn_df['fault.type'] = TSMIP_smogn_df['fault.type'].str.replace(
     "SS", "3")
 TSMIP_smogn_df['fault.type'] = pd.to_numeric(TSMIP_smogn_df['fault.type'])
 TSMIP_smogn_df['lnPGA(gal)'] = np.log(TSMIP_smogn_df['PGA'] * 980)
-TSMIP_smogn_df = TSMIP_smogn_df.to_numpy()
-plt.scatter(TSMIP_smogn_df[:,3],TSMIP_smogn_df[:,-1])
+
+TSMIP_smogn_df_fin = pd.DataFrame()
+TSMIP_smogn_df_fin['lnRrup'] = TSMIP_smogn_df['lnRrup']
+TSMIP_smogn_df_fin["lnPGA(gal)"] = TSMIP_smogn_df['lnPGA(gal)']
+
+TSMIP_smogn_df_fin = TSMIP_smogn_df_fin.to_numpy()
+plt.scatter(TSMIP_smogn_df_fin[:,0],TSMIP_smogn_df_fin[:,-1])
 
 circle_data = get_circle_dataset()
 plt.scatter(circle_data[:,0],circle_data[:,1])
@@ -72,11 +77,11 @@ G = nn.Sequential(
 from torch.utils.data import DataLoader,TensorDataset
 
 batch_size = 500
-num_epochs = 10
+num_epochs = 500
 
-real_data = torch.FloatTensor(circle_data)
+real_data = torch.FloatTensor(TSMIP_smogn_df_fin)
 data_set = TensorDataset(real_data)
-data_loader = DataLoader(dataset=data_set, batch_size=batch_size, shuffle=True)
+data_loader = DataLoader(dataset=data_set, batch_size=batch_size, drop_last=True,shuffle=True)
 loss_func = nn.MSELoss()
 d_optimizer = torch.optim.Adam(D.parameters(),0.0002)
 g_optimizer = torch.optim.Adam(G.parameters(),0.0002)
@@ -128,32 +133,32 @@ for epoch in range(num_epochs):
     
     if (epoch+1)%10==0:
         # 从生成器采样生成一些假数据点
-        z = torch.randn(1000, latent_size)
+        z = torch.randn(30277, latent_size)
         with torch.no_grad():
             fake_data = G(z)
         fake_x,fake_y = fake_data[:,0].numpy(),fake_data[:,1].numpy()
         real_x,real_y = real_data[:,0].numpy(),real_data[:,1].numpy()
 
-        step = 0.02
-        x = np.arange(-2,2,step)
-        y = np.arange(-2,2,step)
+        # step = 0.02
+        # x = np.arange(-2,2,step)
+        # y = np.arange(-2,2,step)
 
-        #将原始数据变成网格数据形式
-        X,Y = np.meshgrid(x,y)
-        n,m = X.shape
-        #写入函数，z是大写
-        inputs = torch.stack([torch.FloatTensor(X),torch.FloatTensor(Y)])
-        inputs = inputs.permute(1,2,0)
-        inputs = inputs.reshape(-1,2)
-        with torch.no_grad():
-            Z = D(inputs)
-        Z = Z.numpy().reshape(n,m)
+        # #将原始数据变成网格数据形式
+        # X,Y = np.meshgrid(x,y)
+        # n,m = X.shape
+        # #写入函数，z是大写
+        # inputs = torch.stack([torch.FloatTensor(X),torch.FloatTensor(Y)])
+        # inputs = inputs.permute(1,2,0)
+        # inputs = inputs.reshape(-1,2)
+        # with torch.no_grad():
+        #     Z = D(inputs)
+        # Z = Z.numpy().reshape(n,m)
         
-        plt.figure(figsize=(7,6))
-        plt.title('Discriminator probablity')
-        cset = plt.contourf(X,Y,Z,100)
-        plt.colorbar(cset)
-        plt.show()
+        # plt.figure(figsize=(7,6))
+        # plt.title('Discriminator probablity')
+        # cset = plt.contourf(X,Y,Z,100)
+        # plt.colorbar(cset)
+        # plt.show()
         
         plt.figure(figsize=(6,6))
 

@@ -3,7 +3,7 @@ import sys
 # parent directory
 sys.path.append("..")
 
-from design_pattern.design_pattern import dataprocess
+from design_pattern.process_train import dataprocess
 import pandas as pd
 
 TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_sta.csv")

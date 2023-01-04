@@ -13,57 +13,62 @@ from sklearn.metrics import r2_score, mean_squared_error, make_scorer
 from sklearn.tree import plot_tree
 from dtreeviz.trees import dtreeviz
 
+
 class dataprocess:
-    def preprocess(self,data):
-        assert str(type(data)) == "<class 'pandas.core.frame.DataFrame'>" , "please input DataFrame"
+
+    def preprocess(self, data):
+        assert str(
+            type(data)
+        ) == "<class 'pandas.core.frame.DataFrame'>", "please input DataFrame"
         data['lnVs30'] = np.log(data['Vs30'])
         data['lnRrup'] = np.log(data['Rrup'])
         data['log10Vs30'] = np.log10(data['Vs30'])
         data['log10Rrup'] = np.log10(data['Rrup'])
-        data['fault.type'] = data['fault.type'].str.replace(
-            "RO", "1")
-        data['fault.type'] = data['fault.type'].str.replace(
-            "RV", "1")
-        data['fault.type'] = data['fault.type'].str.replace(
-            "NM", "2")
-        data['fault.type'] = data['fault.type'].str.replace(
-            "NO", "2")
-        data['fault.type'] = data['fault.type'].str.replace(
-            "SS", "3")
+        data['fault.type'] = data['fault.type'].str.replace("RO", "1")
+        data['fault.type'] = data['fault.type'].str.replace("RV", "1")
+        data['fault.type'] = data['fault.type'].str.replace("NM", "2")
+        data['fault.type'] = data['fault.type'].str.replace("NO", "2")
+        data['fault.type'] = data['fault.type'].str.replace("SS", "3")
         data['fault.type'] = pd.to_numeric(data['fault.type'])
         data['lnPGA(gal)'] = np.log(data['PGA'] * 980)
         after_process_data = data
         return after_process_data
-    
-    def split_dataset(self,after_process_data,target,split,*args):
-        assert str(type(after_process_data)) == "<class 'pandas.core.frame.DataFrame'>" , "please input DataFrame"
-        assert target in list(after_process_data.columns) , "target is not in the DataFrame columns"
+
+    def split_dataset(self, after_process_data, target, split, *args):
+        assert str(
+            type(after_process_data)
+        ) == "<class 'pandas.core.frame.DataFrame'>", "please input DataFrame"
+        assert target in list(after_process_data.columns
+                              ), "target is not in the DataFrame columns"
         # assert args in list(after_process_data.columns) , "the parameter is not in the DataFrame columns"
         if split == True:
             x = after_process_data.loc[:, [x for x in args]]
             y = after_process_data[target]
-            x_train, x_test, y_train, y_test = train_test_split(x.values,
-                                                                y.values,
-                                                                random_state=50,
-                                                                train_size=0.8,
-                                                                shuffle=True)
+            x_train, x_test, y_train, y_test = train_test_split(
+                x.values,
+                y.values,
+                random_state=50,
+                train_size=0.8,
+                shuffle=True)
             print("--------split_your_data----------")
             return [x_train, x_test, y_train, y_test]
         else:
             x = after_process_data.loc[:, [x for x in args]]
             y = after_process_data[target]
             print("--------not split_your_data----------")
-            return [x,y]
+            return [x, y]
 
-    def training(self,model_name,x_train, x_test, y_train, y_test):
-        assert model_name in ["SVR","RF","XGB","GDBT","DNN"]
-        if model_name=="RF":
-            rfr_params = {'n_estimators': 100,
-                        'criterion': 'squared_error',
-                        'bootstrap': True,
-                        'oob_score': True,
-                        #   verbose=True,
-                        'n_jobs': -1}
+    def training(self, model_name, x_train, x_test, y_train, y_test):
+        assert model_name in ["SVR", "RF", "XGB", "GDBT", "DNN"]
+        if model_name == "RF":
+            rfr_params = {
+                'n_estimators': 100,
+                'criterion': 'squared_error',
+                'bootstrap': True,
+                'oob_score': True,
+                #   verbose=True,
+                'n_jobs': -1
+            }
             randomForestModel = RandomForestRegressor(**rfr_params)
             t0 = time.time()
             grid_result = randomForestModel.fit(x_train, y_train)
@@ -77,15 +82,21 @@ class dataprocess:
             print("test_R2_score :", score)
 
             # cross validation
-            cv_scores = cross_val_score(randomForestModel, x_train, y_train, cv=6, n_jobs=-1)
+            cv_scores = cross_val_score(randomForestModel,
+                                        x_train,
+                                        y_train,
+                                        cv=6,
+                                        n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
-        
-        elif model_name=="GDBT":
-            gbr_params = {'n_estimators': 1000,
-                        'max_depth': 3,
-                        'min_samples_split': 5,
-                        'learning_rate': 0.5,
-                        'loss': 'squared_error'}
+
+        elif model_name == "GDBT":
+            gbr_params = {
+                'n_estimators': 1000,
+                'max_depth': 3,
+                'min_samples_split': 5,
+                'learning_rate': 0.5,
+                'loss': 'squared_error'
+            }
             GradientBoostingModel = GradientBoostingRegressor(**gbr_params)
             t0 = time.time()
             grid_result = GradientBoostingModel.fit(x_train, y_train)
@@ -98,16 +109,23 @@ class dataprocess:
             print("test_R2_score :", score)
 
             # cross validation
-            cv_scores = cross_val_score(GradientBoostingModel, x_train, y_train, cv=6, n_jobs=-1)
+            cv_scores = cross_val_score(GradientBoostingModel,
+                                        x_train,
+                                        y_train,
+                                        cv=6,
+                                        n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
 
-        return score,feature_importances,fit_time,final_predict
-    
+        return score, feature_importances, fit_time, final_predict
 
-if __name__=='__main__':
-    TSMIP_smogn_df = pd.read_csv("../../TSMIP_smogn_sta.csv")
-    TSMIP_df = pd.read_csv("../../TSMIP_FF_copy.csv")
+
+if __name__ == '__main__':
+    TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_sta.csv")
+    TSMIP_df = pd.read_csv("../../../TSMIP_FF_copy.csv")
     model = dataprocess()
     after_process_data = model.preprocess(TSMIP_smogn_df)
-    result_list = model.split_dataset(TSMIP_smogn_df,'lnPGA(gal)',True,'lnVs30', 'MW', 'lnRrup', 'fault.type','STA_Lon_X','STA_Lat_Y')
-    score,feature_importances,fit_time,final_predict = model.training("GDBT",result_list[0],result_list[1],result_list[2],result_list[3])
+    result_list = model.split_dataset(TSMIP_smogn_df, 'lnPGA(gal)', True,
+                                      'lnVs30', 'MW', 'lnRrup', 'fault.type',
+                                      'STA_Lon_X', 'STA_Lat_Y')
+    score, feature_importances, fit_time, final_predict = model.training(
+        "GDBT", result_list[0], result_list[1], result_list[2], result_list[3])

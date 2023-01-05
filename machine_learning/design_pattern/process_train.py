@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import AdaBoostRegressor
 from sklearn.svm import SVR
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_val_score
@@ -59,7 +60,7 @@ class dataprocess:
             return [x, y]
 
     def training(self, model_name, x_train, x_test, y_train, y_test):
-        assert model_name in ["SVR", "RF", "XGB", "GDBT", "DNN"]
+        assert model_name in ["SVR", "RF", "XGB", "GDBT", "DNN", "Ada"]
         if model_name == "RF":
             rfr_params = {
                 'n_estimators': 100,
@@ -110,6 +111,31 @@ class dataprocess:
 
             # cross validation
             cv_scores = cross_val_score(GradientBoostingModel,
+                                        x_train,
+                                        y_train,
+                                        cv=6,
+                                        n_jobs=-1)
+            print("cross_val R2 score:", cv_scores)
+        
+        elif model_name == "Ada":
+            gbr_params = {
+                'n_estimators': 1000,
+                'learning_rate': 0.005,
+                'loss': 'exponential'
+            }
+            AdaBoostModel = AdaBoostRegressor(**gbr_params)
+            t0 = time.time()
+            grid_result = AdaBoostModel.fit(x_train, y_train)
+            feature_importances = grid_result.feature_importances_
+            print("feature importances :", grid_result.feature_importances_)
+            fit_time = time.time() - t0
+            final_predict = AdaBoostModel.predict(x_test)
+            # 評估，打分數
+            score = AdaBoostModel.score(x_test, y_test)
+            print("test_R2_score :", score)
+
+            # cross validation
+            cv_scores = cross_val_score(AdaBoostModel,
                                         x_train,
                                         y_train,
                                         cv=6,

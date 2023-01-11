@@ -2,6 +2,10 @@ import pandas as pd
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+# append the path of the
+# parent directory
+sys.path.append("..")
 from design_pattern.process_train import dataprocess
 
 class plot_fig:
@@ -24,7 +28,7 @@ class plot_fig:
                     label='Data')  #數據點
         plt.scatter(x_test[:,0], predict_value,marker='o',facecolors='none',edgecolors='r', \
             label=f'{self.abbreviation_name} (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
-        plt.xlabel('Vs30')
+        plt.xlabel('Vs30(m/s)')
         plt.ylabel(f'{self.model_name} Predict')
         plt.title(f'{self.model_name}')
         plt.legend()
@@ -58,7 +62,7 @@ class plot_fig:
                     label='Data')  #數據點
         plt.scatter(x_test[:,2], predict_value,marker='o',facecolors='none',edgecolors='r', \
             label=f'{self.abbreviation_name} (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
-        plt.xlabel('lnRrup')
+        plt.xlabel('ln(Rrup)(km)')
         plt.ylabel(f'{self.model_name} Predict')
         plt.title(f'{self.model_name}')
         plt.legend()
@@ -268,8 +272,8 @@ class plot_fig:
         x_line = [-5, 10]
         y_line = [-5, 10]
         plt.plot(x_line, y_line, color='blue')
-        plt.xlabel('Measured PGA')
-        plt.ylabel('Predict PGA')
+        plt.xlabel('Measured ln(PGA)(cm/s^2)')
+        plt.ylabel('Predict ln(PGA)(cm/s^2)')
         plt.ylim(-5, 10)
         plt.xlim(-5, 10)
         plt.title(f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predict Distribution')
@@ -277,6 +281,22 @@ class plot_fig:
         plt.legend()
         plt.savefig(f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Measured Predict Comparison.png', dpi=300)
         plt.show()
+
+    def distance_scaling(self, distance, predict_value, score):
+
+    ###################### PGA隨距離的衰減 #####################
+
+        plt.grid(linestyle=':')
+        plt.scatter(distance, predict_value,marker='o',facecolors='none',edgecolors='r', \
+            label='Data') #迴歸線.
+        plt.xlabel('Distance(km)')
+        plt.ylabel('Predict ln(PGA)(cm/s^2)')
+        plt.title(f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predict Distribution')
+        plt.text(0, 2, f"R2 score = {round(score,2)}")
+        plt.legend()
+        plt.savefig(f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Distance Scaling.png', dpi=300)
+        plt.show()
+
 
 if __name__ == '__main__':
     TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_sta.csv")
@@ -290,6 +310,8 @@ if __name__ == '__main__':
         "XGB", result_list[0], result_list[1], result_list[2], result_list[3])
 
     plot_something = plot_fig("XGBooster","XGB","TSMIP")
-    plot_something.train_test_distribution(result_list[1], result_list[3], final_predict, fit_time, score)
-    plot_something.residual(result_list[1], result_list[3], final_predict, score)
-    plot_something.measured_predict(result_list[3], final_predict, score)
+    # plot_something.train_test_distribution(result_list[1], result_list[3], final_predict, fit_time, score)
+    # plot_something.residual(result_list[1], result_list[3], final_predict, score)
+    # plot_something.measured_predict(result_list[3], final_predict, score)
+    c = result_list[1].transpose(1,0)
+    plot_something.distance_scaling(c[2], final_predict, score)

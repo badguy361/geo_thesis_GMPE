@@ -2,7 +2,7 @@ import pandas as pd
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from process_train import dataprocess
+from design_pattern.process_train import dataprocess
 
 class plot_fig:
     def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP):
@@ -287,9 +287,9 @@ if __name__ == '__main__':
                                       'lnVs30', 'MW', 'lnRrup', 'fault.type',
                                       'STA_Lon_X', 'STA_Lat_Y')
     score, feature_importances, fit_time, final_predict = model.training(
-        "GDBT", result_list[0], result_list[1], result_list[2], result_list[3])
+        "XGB", result_list[0], result_list[1], result_list[2], result_list[3])
 
-    plot_something = plot_fig("Gradient Boosting","GDBT","TSMIP")
+    plot_something = plot_fig("XGBooster","XGB","TSMIP")
     plot_something.train_test_distribution(result_list[1], result_list[3], final_predict, fit_time, score)
     plot_something.residual(result_list[1], result_list[3], final_predict, score)
     plot_something.measured_predict(result_list[3], final_predict, score)

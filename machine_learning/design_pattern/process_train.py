@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import AdaBoostRegressor
+from xgboost import XGBRegressor
 from sklearn.svm import SVR
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_val_score
@@ -41,7 +42,6 @@ class dataprocess:
         ) == "<class 'pandas.core.frame.DataFrame'>", "please input DataFrame"
         assert target in list(after_process_data.columns
                               ), "target is not in the DataFrame columns"
-        # assert args in list(after_process_data.columns) , "the parameter is not in the DataFrame columns"
         if split == True:
             x = after_process_data.loc[:, [x for x in args]]
             y = after_process_data[target]
@@ -60,7 +60,9 @@ class dataprocess:
             return [x, y]
 
     def training(self, model_name, x_train, x_test, y_train, y_test):
-        assert model_name in ["SVR", "RF", "XGB", "GDBT", "DNN", "Ada"]
+        assert model_name in [
+            "SVR", "RF", "XGB", "GBDT", "DNN", "Ada"
+        ], "please choose one method in [SVR, RF, XGB, GBDT, DNN, Ada] or add the new method by yourself"
         if model_name == "RF":
             rfr_params = {
                 'n_estimators': 100,
@@ -90,7 +92,7 @@ class dataprocess:
                                         n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
 
-        elif model_name == "GDBT":
+        elif model_name == "GBDT":
             gbr_params = {
                 'n_estimators': 1000,
                 'max_depth': 3,
@@ -116,14 +118,14 @@ class dataprocess:
                                         cv=6,
                                         n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
-        
+
         elif model_name == "Ada":
-            gbr_params = {
+            Ada_params = {
                 'n_estimators': 1000,
                 'learning_rate': 0.005,
                 'loss': 'exponential'
             }
-            AdaBoostModel = AdaBoostRegressor(**gbr_params)
+            AdaBoostModel = AdaBoostRegressor(**Ada_params)
             t0 = time.time()
             grid_result = AdaBoostModel.fit(x_train, y_train)
             feature_importances = grid_result.feature_importances_
@@ -141,6 +143,34 @@ class dataprocess:
                                         cv=6,
                                         n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
+        
+        elif model_name == "XGB":
+            XGB_params = {
+                'n_estimators': 3000,
+                'max_depth': 20,
+                'n_jobs':-1
+            }
+            XGBModel = XGBRegressor(**XGB_params)
+            t0 = time.time()
+            grid_result = XGBModel.fit(x_train, y_train)
+            feature_importances = grid_result.feature_importances_
+            print("feature importances :", grid_result.feature_importances_)
+            fit_time = time.time() - t0
+            final_predict = XGBModel.predict(x_test)
+            # 評估，打分數
+            score = XGBModel.score(x_test, y_test)
+            print("test_R2_score :", score)
+
+            # cross validation
+            cv_scores = cross_val_score(XGBModel,
+                                        x_train,
+                                        y_train,
+                                        cv=6,
+                                        n_jobs=-1)
+            print("cross_val R2 score:", cv_scores)
+
+        else:
+            pass
 
         return score, feature_importances, fit_time, final_predict
 
@@ -149,9 +179,9 @@ if __name__ == '__main__':
     TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_sta.csv")
     TSMIP_df = pd.read_csv("../../../TSMIP_FF_copy.csv")
     model = dataprocess()
-    after_process_data = model.preprocess(TSMIP_smogn_df)
-    result_list = model.split_dataset(TSMIP_smogn_df, 'lnPGA(gal)', True,
+    after_process_data = model.preprocess(TSMIP_df)
+    result_list = model.split_dataset(TSMIP_df, 'lnPGA(gal)', True,
                                       'lnVs30', 'MW', 'lnRrup', 'fault.type',
                                       'STA_Lon_X', 'STA_Lat_Y')
     score, feature_importances, fit_time, final_predict = model.training(
-        "GDBT", result_list[0], result_list[1], result_list[2], result_list[3])
+        "GBDT", result_list[0], result_list[1], result_list[2], result_list[3])

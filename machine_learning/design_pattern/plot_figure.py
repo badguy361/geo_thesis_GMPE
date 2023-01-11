@@ -8,17 +8,20 @@ import sys
 sys.path.append("..")
 from design_pattern.process_train import dataprocess
 
+
 class plot_fig:
+
     def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP):
         self.model_name = model_name
         self.abbreviation_name = abbreviation_name
         self.SMOGN_TSMIP = SMOGN_TSMIP
 
-    def train_test_distribution(self, x_test, y_test, predict_value, fit_time, score):
+    def train_test_distribution(self, x_test, y_test, predict_value, fit_time,
+                                score):
 
-    ######################### trainsubset & testsubset distribution #########################
+        ######################### trainsubset & testsubset distribution #########################
 
-    # 畫 Vs30 and randomForest_predict 關係圖
+        # 畫 Vs30 and randomForest_predict 關係圖
         plt.grid(linestyle=':')
         plt.scatter(x_test[:, 0],
                     y_test,
@@ -32,10 +35,12 @@ class plot_fig:
         plt.ylabel(f'{self.model_name} Predict')
         plt.title(f'{self.model_name}')
         plt.legend()
-        plt.savefig(f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict.png', dpi=300)
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict.png',
+            dpi=300)
         plt.show()
 
-    # 畫 Mw and randomForest_predict 關係圖
+        # 畫 Mw and randomForest_predict 關係圖
         plt.grid(linestyle=':')
         plt.scatter(x_test[:, 1],
                     y_test,
@@ -49,10 +54,12 @@ class plot_fig:
         plt.ylabel(f'{self.model_name} Predict')
         plt.title(f'{self.model_name}')
         plt.legend()
-        plt.savefig(f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict.png', dpi=300)
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict.png',
+            dpi=300)
         plt.show()
 
-    # 畫 Rrup and randomForest_predict 關係圖
+        # 畫 Rrup and randomForest_predict 關係圖
         plt.grid(linestyle=':')
         plt.scatter(x_test[:, 2],
                     y_test,
@@ -66,14 +73,16 @@ class plot_fig:
         plt.ylabel(f'{self.model_name} Predict')
         plt.title(f'{self.model_name}')
         plt.legend()
-        plt.savefig(f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.model_name} Predict.png', dpi=300)
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.model_name} Predict.png',
+            dpi=300)
         plt.show()
 
     def residual(self, x_test, y_test, predict_value, score):
-        
-    ######################### residual #########################
 
-    # 1. 計算Vs30_residual
+        ######################### residual #########################
+
+        # 1. 計算Vs30_residual
         residual = predict_value - y_test
         residual_121 = []
         residual_199 = []
@@ -111,23 +120,27 @@ class plot_fig:
                     facecolors='none',
                     edgecolors='r')  #迴歸線
         plt.scatter([121, 199, 398, 794, 1000], [
-            residual_121_mean, residual_199_mean, residual_398_mean, residual_794_mean,
-            residual_1000_mean
+            residual_121_mean, residual_199_mean, residual_398_mean,
+            residual_794_mean, residual_1000_mean
         ],
                     marker='o',
                     facecolors='none',
                     edgecolors='b')
         plt.plot([121, 121], [
-            residual_121_mean + residual_121_std, residual_121_mean - residual_121_std
+            residual_121_mean + residual_121_std,
+            residual_121_mean - residual_121_std
         ], 'b')
         plt.plot([199, 199], [
-            residual_199_mean + residual_199_std, residual_199_mean - residual_199_std
+            residual_199_mean + residual_199_std,
+            residual_199_mean - residual_199_std
         ], 'b')
         plt.plot([398, 398], [
-            residual_398_mean + residual_398_std, residual_398_mean - residual_398_std
+            residual_398_mean + residual_398_std,
+            residual_398_mean - residual_398_std
         ], 'b')
         plt.plot([794, 794], [
-            residual_794_mean + residual_794_std, residual_794_mean - residual_794_std
+            residual_794_mean + residual_794_std,
+            residual_794_mean - residual_794_std
         ], 'b')
         plt.plot([1000, 1000], [
             residual_1000_mean + residual_1000_std,
@@ -138,11 +151,15 @@ class plot_fig:
         plt.ylim(-3, 3)
         plt.xlabel('Vs30(m/s)')
         plt.ylabel('Residual lnPGA(cm/s^2)')
-        plt.title(f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predict Residual R2 score: %.3f' % (score))
-        plt.savefig(f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.png', dpi=300)
+        plt.title(
+            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predict Residual R2 score: %.3f'
+            % (score))
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.png',
+            dpi=300)
         plt.show()
 
-    # 2. 計算Mw_residual
+        # 2. 計算Mw_residual
         residual = predict_value - y_test
         residual_3_5 = []
         residual_4_5 = []
@@ -176,32 +193,41 @@ class plot_fig:
                     facecolors='none',
                     edgecolors='r')  #迴歸線
         plt.scatter([3.5, 4.5, 5.5, 6.5], [
-            residual_3_5_mean, residual_4_5_mean, residual_5_5_mean, residual_6_5_mean
+            residual_3_5_mean, residual_4_5_mean, residual_5_5_mean,
+            residual_6_5_mean
         ],
                     marker='o',
                     facecolors='none',
                     edgecolors='b')
         plt.plot([3.5, 3.5], [
-            residual_3_5_mean + residual_3_5_std, residual_3_5_mean - residual_3_5_std
+            residual_3_5_mean + residual_3_5_std,
+            residual_3_5_mean - residual_3_5_std
         ], 'b')
         plt.plot([4.5, 4.5], [
-            residual_4_5_mean + residual_4_5_std, residual_4_5_mean - residual_4_5_std
+            residual_4_5_mean + residual_4_5_std,
+            residual_4_5_mean - residual_4_5_std
         ], 'b')
         plt.plot([5.5, 5.5], [
-            residual_5_5_mean + residual_5_5_std, residual_5_5_mean - residual_5_5_std
+            residual_5_5_mean + residual_5_5_std,
+            residual_5_5_mean - residual_5_5_std
         ], 'b')
         plt.plot([6.5, 6.5], [
-            residual_6_5_mean + residual_6_5_std, residual_6_5_mean - residual_6_5_std
+            residual_6_5_mean + residual_6_5_std,
+            residual_6_5_mean - residual_6_5_std
         ], 'b')
         plt.xlim(3, 8)
         plt.ylim(-3, 3)
         plt.xlabel('Mw')
         plt.ylabel('Residual lnPGA(cm/s^2)')
-        plt.title(f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predict Residual R2 score: %.3f' % (score))
-        plt.savefig(f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.png', dpi=300)
+        plt.title(
+            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predict Residual R2 score: %.3f'
+            % (score))
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.png',
+            dpi=300)
         plt.show()
 
-    # 3. 計算Rrup_residual
+        # 3. 計算Rrup_residual
         residual = predict_value - y_test
         residual_10 = []
         residual_31 = []
@@ -233,38 +259,45 @@ class plot_fig:
                     marker='o',
                     facecolors='none',
                     edgecolors='r')  #迴歸線
-        plt.scatter(
-            [10, 31, 100, 316],
-            [residual_10_mean, residual_31_mean, residual_100_mean, residual_316_mean],
-            marker='o',
-            facecolors='none',
-            edgecolors='b')
-        plt.plot(
-            [10, 10],
-            [residual_10_mean + residual_10_std, residual_10_mean - residual_10_std],
-            'b')
-        plt.plot(
-            [31, 31],
-            [residual_31_mean + residual_31_std, residual_31_mean - residual_31_std],
-            'b')
+        plt.scatter([10, 31, 100, 316], [
+            residual_10_mean, residual_31_mean, residual_100_mean,
+            residual_316_mean
+        ],
+                    marker='o',
+                    facecolors='none',
+                    edgecolors='b')
+        plt.plot([10, 10], [
+            residual_10_mean + residual_10_std,
+            residual_10_mean - residual_10_std
+        ], 'b')
+        plt.plot([31, 31], [
+            residual_31_mean + residual_31_std,
+            residual_31_mean - residual_31_std
+        ], 'b')
         plt.plot([100, 100], [
-            residual_100_mean + residual_100_std, residual_100_mean - residual_100_std
+            residual_100_mean + residual_100_std,
+            residual_100_mean - residual_100_std
         ], 'b')
         plt.plot([316, 316], [
-            residual_316_mean + residual_316_std, residual_316_mean - residual_316_std
+            residual_316_mean + residual_316_std,
+            residual_316_mean - residual_316_std
         ], 'b')
         plt.xscale("log")
         plt.xlim(5 * 1e0, 1e3)
         plt.ylim(-3, 3)
         plt.xlabel('Rrup(km)')
         plt.ylabel('Residual lnPGA(cm/s^2)')
-        plt.title(f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predict Residual R2 score: %.3f' % (score))
-        plt.savefig(f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.png', dpi=300)
+        plt.title(
+            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predict Residual R2 score: %.3f'
+            % (score))
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.png',
+            dpi=300)
         plt.show()
 
     def measured_predict(self, y_test, predict_value, score):
 
-    ###################### 預測PGA和實際PGA #####################
+        ###################### 預測PGA和實際PGA #####################
 
         plt.grid(linestyle=':')
         plt.scatter(y_test, predict_value,marker='o',facecolors='none',edgecolors='r', \
@@ -276,25 +309,32 @@ class plot_fig:
         plt.ylabel('Predict ln(PGA)(cm/s^2)')
         plt.ylim(-5, 10)
         plt.xlim(-5, 10)
-        plt.title(f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predict Distribution')
+        plt.title(
+            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predict Distribution'
+        )
         plt.text(6, -2, f"R2 score = {round(score,2)}")
         plt.legend()
-        plt.savefig(f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Measured Predict Comparison.png', dpi=300)
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Measured Predict Comparison.png',
+            dpi=300)
         plt.show()
 
     def distance_scaling(self, distance, predict_value, score):
 
-    ###################### PGA隨距離的衰減 #####################
-
+        ###################### PGA隨距離的衰減 #####################
         plt.grid(linestyle=':')
-        plt.scatter(distance, predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label='Data') #迴歸線.
-        plt.xlabel('Distance(km)')
+        plt.plot(distance, predict_value, linestyle="--", label="Prediction")
+        # plt.scatter(distance, predict_value,marker='o',facecolors='none',edgecolors='r', \
+        #     label='Prediction') #迴歸線.
+        plt.xlabel('ln(Distance)(km)')
         plt.ylabel('Predict ln(PGA)(cm/s^2)')
-        plt.title(f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predict Distribution')
+        plt.title(
+            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Distance Scaling')
         plt.text(0, 2, f"R2 score = {round(score,2)}")
         plt.legend()
-        plt.savefig(f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Distance Scaling.png', dpi=300)
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Distance Scaling.png',
+            dpi=300)
         plt.show()
 
 
@@ -309,9 +349,15 @@ if __name__ == '__main__':
     score, feature_importances, fit_time, final_predict = model.training(
         "XGB", result_list[0], result_list[1], result_list[2], result_list[3])
 
-    plot_something = plot_fig("XGBooster","XGB","TSMIP")
+    plot_something = plot_fig("XGBooster", "XGB", "TSMIP")
     # plot_something.train_test_distribution(result_list[1], result_list[3], final_predict, fit_time, score)
     # plot_something.residual(result_list[1], result_list[3], final_predict, score)
     # plot_something.measured_predict(result_list[3], final_predict, score)
-    c = result_list[1].transpose(1,0)
-    plot_something.distance_scaling(c[2], final_predict, score)
+    # 線性的distance_scaling
+    c = result_list[1].transpose(1, 0)
+    concat_data = np.concatenate((np.array([c[2]]), np.array([final_predict])),
+                                 axis=0).transpose(1, 0)
+    concat_data_df = pd.DataFrame(concat_data, columns=['dist', 'predict'])
+    concat_data_df = concat_data_df.sort_values(by=['dist'])
+    concat_data = np.array(concat_data_df).transpose(1, 0)
+    plot_something.distance_scaling(concat_data[0], concat_data[1], score)

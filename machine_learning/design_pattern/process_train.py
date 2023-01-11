@@ -148,6 +148,7 @@ class dataprocess:
             XGB_params = {
                 'n_estimators': 3000,
                 'max_depth': 20,
+                'learning_rate': 0.5,
                 'n_jobs':-1
             }
             XGBModel = XGBRegressor(**XGB_params)

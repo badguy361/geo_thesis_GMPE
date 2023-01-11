@@ -19,7 +19,7 @@ result_ori = model.split_dataset(TSMIP_df, 'lnPGA(gal)', True, 'lnVs30',
                                   'MW', 'lnRrup', 'fault.type', 'STA_Lon_X',
                                   'STA_Lat_Y')
 score, feature_importances, fit_time, final_predict = model.training(
-    "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[1], result_ori[3])
+    "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
 
 plot_something = plot_fig("XGBooster","XGB","SMOGN")
 plot_something.train_test_distribution(result_ori[1], result_ori[3], final_predict, fit_time, score)

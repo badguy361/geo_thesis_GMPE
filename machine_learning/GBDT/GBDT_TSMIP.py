@@ -19,9 +19,11 @@ result_ori = model.split_dataset(TSMIP_df, 'lnPGA(gal)', True, 'lnVs30',
                                   'MW', 'lnRrup', 'fault.type', 'STA_Lon_X',
                                   'STA_Lat_Y')
 score, feature_importances, fit_time, final_predict = model.training(
-    "GBDT", result_ori[0], result_ori[1], result_ori[2], result_ori[3])
+    "GBDT", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
 
 plot_something = plot_fig("Gradient Boosting Regression","GBDT","SMOGN")
 plot_something.train_test_distribution(result_ori[1], result_ori[3], final_predict, fit_time, score)
 plot_something.residual(result_ori[1], result_ori[3], final_predict, score)
 plot_something.measured_predict(result_ori[3], final_predict, score)
+c = result_ori[1].transpose(1, 0)
+plot_something.distance_scaling(c[2], final_predict, score)

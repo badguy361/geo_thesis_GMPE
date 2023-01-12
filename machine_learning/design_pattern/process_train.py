@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import AdaBoostRegressor
+from sklearn.model_selection import KFold
 from xgboost import XGBRegressor
 from sklearn.svm import SVR
 from sklearn.model_selection import GridSearchCV
@@ -57,7 +58,7 @@ class dataprocess:
             x = after_process_data.loc[:, [x for x in args]]
             y = after_process_data[target]
             print("--------not split_your_data----------")
-            return [x, y]
+            return [x.values, y.values]
 
     def training(self, model_name, x_train, x_test, y_train, y_test):
         assert model_name in [
@@ -146,9 +147,8 @@ class dataprocess:
         
         elif model_name == "XGB":
             XGB_params = {
-                'n_estimators': 3000,
-                'max_depth': 20,
-                'learning_rate': 0.5,
+                'n_estimators': 1000,
+                'max_depth': 10,
                 'n_jobs':-1
             }
             XGBModel = XGBRegressor(**XGB_params)

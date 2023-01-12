@@ -97,7 +97,7 @@ score = XGBModel.score(x_test, y_test)
 print("test_R2_score :", score)
 
 # # Cross_validation計算成績
-scores = cross_val_score(XGBModel, x_train, y_train, cv=6, n_jobs=-1)
+scores = cross_val_score(XGBModel, x_SMOGN, y_SMOGN, cv=6, n_jobs=-1)
 print("cross_val R2 score:", scores)
 ###################### visual tree #########################
 

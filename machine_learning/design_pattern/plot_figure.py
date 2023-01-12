@@ -28,11 +28,11 @@ class plot_fig:
                     marker='o',
                     facecolors='none',
                     edgecolors='b',
-                    label='Data')  #數據點
+                    label='original value')  #數據點
         plt.scatter(x_test[:,0], predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label=f'{self.abbreviation_name} (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+            label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
         plt.xlabel('Vs30(m/s)')
-        plt.ylabel(f'{self.model_name} Predict')
+        plt.ylabel(f'Predicted ln(PGA)(cm/s^2)')
         plt.title(f'{self.model_name}')
         plt.legend()
         plt.savefig(
@@ -47,11 +47,11 @@ class plot_fig:
                     marker='o',
                     facecolors='none',
                     edgecolors='b',
-                    label='Data')  #數據點
+                    label='original value')  #數據點
         plt.scatter(x_test[:,1], predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label=f'{self.abbreviation_name} (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+            label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
         plt.xlabel('Mw')
-        plt.ylabel(f'{self.model_name} Predict')
+        plt.ylabel(f'Predicted ln(PGA)(cm/s^2)')
         plt.title(f'{self.model_name}')
         plt.legend()
         plt.savefig(
@@ -66,15 +66,15 @@ class plot_fig:
                     marker='o',
                     facecolors='none',
                     edgecolors='b',
-                    label='Data')  #數據點
+                    label='original value')  #數據點
         plt.scatter(x_test[:,2], predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label=f'{self.abbreviation_name} (fit: %.3fs, accuracy: %.3f)' % (fit_time, score)) #迴歸線
+            label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
         plt.xlabel('ln(Rrup)(km)')
-        plt.ylabel(f'{self.model_name} Predict')
+        plt.ylabel(f'Predicted ln(PGA)(cm/s^2)')
         plt.title(f'{self.model_name}')
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.model_name} Predict.png',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict.png',
             dpi=300)
         plt.show()
 
@@ -150,9 +150,9 @@ class plot_fig:
         plt.xlim(1e2, 2 * 1e3)
         plt.ylim(-3, 3)
         plt.xlabel('Vs30(m/s)')
-        plt.ylabel('Residual lnPGA(cm/s^2)')
+        plt.ylabel('Residual ln(PGA)(cm/s^2)')
         plt.title(
-            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predict Residual R2 score: %.3f'
+            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
             % (score))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.png',
@@ -218,9 +218,9 @@ class plot_fig:
         plt.xlim(3, 8)
         plt.ylim(-3, 3)
         plt.xlabel('Mw')
-        plt.ylabel('Residual lnPGA(cm/s^2)')
+        plt.ylabel('Residual ln(PGA)(cm/s^2)')
         plt.title(
-            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predict Residual R2 score: %.3f'
+            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
             % (score))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.png',
@@ -286,9 +286,9 @@ class plot_fig:
         plt.xlim(5 * 1e0, 1e3)
         plt.ylim(-3, 3)
         plt.xlabel('Rrup(km)')
-        plt.ylabel('Residual lnPGA(cm/s^2)')
+        plt.ylabel('Residual ln(PGA)(cm/s^2)')
         plt.title(
-            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predict Residual R2 score: %.3f'
+            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
             % (score))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.png',
@@ -307,12 +307,12 @@ class plot_fig:
         plt.plot(x_line, y_line, color='blue')
         plt.xlabel('Measured ln(PGA)(cm/s^2)')
         plt.ylabel('Predict ln(PGA)(cm/s^2)')
-        plt.ylim(-5, 10)
-        plt.xlim(-5, 10)
+        plt.ylim(-2, 8)
+        plt.xlim(-2, 8)
         plt.title(
-            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predict Distribution'
+            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predicted Distribution'
         )
-        plt.text(6, -2, f"R2 score = {round(score,2)}")
+        plt.text(5, 0, f"R2 score = {round(score,2)}")
         plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Measured Predict Comparison.png',
@@ -322,15 +322,16 @@ class plot_fig:
     def distance_scaling(self, distance, predict_value, score):
 
         ###################### PGA隨距離的衰減 #####################
+        
         plt.grid(linestyle=':')
-        plt.plot(distance, predict_value, linestyle="--", label="Prediction")
-        # plt.scatter(distance, predict_value,marker='o',facecolors='none',edgecolors='r', \
-        #     label='Prediction') #迴歸線.
+        # plt.plot(distance, predict_value, linestyle="--", label="Prediction")
+        plt.scatter(distance, predict_value,marker='o',facecolors='none',edgecolors='r', \
+            label='Prediction Result') #迴歸線.
         plt.xlabel('ln(Distance)(km)')
-        plt.ylabel('Predict ln(PGA)(cm/s^2)')
+        plt.ylabel('Predicted ln(PGA)(cm/s^2)')
         plt.title(
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Distance Scaling')
-        plt.text(0, 2, f"R2 score = {round(score,2)}")
+        plt.text(-1, 2, f"R2 score = {round(score,2)}")
         plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Distance Scaling.png',
@@ -350,14 +351,17 @@ if __name__ == '__main__':
         "XGB", result_list[0], result_list[1], result_list[2], result_list[3])
 
     plot_something = plot_fig("XGBooster", "XGB", "TSMIP")
-    # plot_something.train_test_distribution(result_list[1], result_list[3], final_predict, fit_time, score)
-    # plot_something.residual(result_list[1], result_list[3], final_predict, score)
-    # plot_something.measured_predict(result_list[3], final_predict, score)
-    # 線性的distance_scaling
+    plot_something.train_test_distribution(result_list[1], result_list[3], final_predict, fit_time, score)
+    plot_something.residual(result_list[1], result_list[3], final_predict, score)
+    plot_something.measured_predict(result_list[3], final_predict, score)
     c = result_list[1].transpose(1, 0)
-    concat_data = np.concatenate((np.array([c[2]]), np.array([final_predict])),
-                                 axis=0).transpose(1, 0)
-    concat_data_df = pd.DataFrame(concat_data, columns=['dist', 'predict'])
-    concat_data_df = concat_data_df.sort_values(by=['dist'])
-    concat_data = np.array(concat_data_df).transpose(1, 0)
-    plot_something.distance_scaling(concat_data[0], concat_data[1], score)
+    plot_something.distance_scaling(c[2], final_predict, score)
+
+    # 線性的distance_scaling
+    # c = result_list[1].transpose(1, 0)
+    # concat_data = np.concatenate((np.array([c[2]]), np.array([final_predict])),
+    #                              axis=0).transpose(1, 0)
+    # concat_data_df = pd.DataFrame(concat_data, columns=['dist', 'predict'])
+    # concat_data_df = concat_data_df.sort_values(by=['dist'])
+    # concat_data = np.array(concat_data_df).transpose(1, 0)
+    # plot_something.distance_scaling(concat_data[0], concat_data[1], score)

@@ -25,4 +25,5 @@ plot_something = plot_fig("XGBooster","XGB","SMOGN")
 plot_something.train_test_distribution(result_ori[1], result_ori[3], final_predict, fit_time, score)
 plot_something.residual(result_ori[1], result_ori[3], final_predict, score)
 plot_something.measured_predict(result_ori[3], final_predict, score)
-
+c = result_ori[1].transpose(1, 0)
+plot_something.distance_scaling(c[2], final_predict, score)

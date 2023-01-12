@@ -326,7 +326,7 @@ class plot_fig:
         plt.grid(linestyle=':')
         # plt.plot(distance, predict_value, linestyle="--", label="Prediction")
         plt.scatter(distance, predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label='Prediction Result') #迴歸線.
+            label='Predicted Result') #迴歸線.
         plt.xlabel('ln(Distance)(km)')
         plt.ylabel('Predicted ln(PGA)(cm/s^2)')
         plt.title(

@@ -170,6 +170,30 @@ class dataprocess:
                                         n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
 
+        elif model_name == "SVR":
+            feature_importances = 0
+            SVR_params = {
+                'C': 1.99, 
+                'kernel': 'rbf',
+                'epsilon':0.001
+            }
+            SVRModel = SVR(**SVR_params)
+            t0 = time.time()
+            grid_result = SVRModel.fit(x_train, y_train)
+            fit_time = time.time() - t0
+            final_predict = SVRModel.predict(x_test)
+            # 評估，打分數
+            score = SVRModel.score(x_test, y_test)
+            print("test_R2_score :", score)
+
+            # cross validation
+            cv_scores = cross_val_score(SVRModel,
+                                        x_train,
+                                        y_train,
+                                        cv=6,
+                                        n_jobs=-1)
+            print("cross_val R2 score:", cv_scores)
+
         else:
             pass
 

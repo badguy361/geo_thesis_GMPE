@@ -33,7 +33,8 @@ class dataprocess:
         data['fault.type'] = data['fault.type'].str.replace("NO", "2")
         data['fault.type'] = data['fault.type'].str.replace("SS", "3")
         data['fault.type'] = pd.to_numeric(data['fault.type'])
-        data['lnPGA(gal)'] = np.log(data['PGA'] * 980)
+        # data['lnPGA(gal)'] = np.log(data['PGA'] * 980)
+        data['lnPGV(gal)'] = np.log(data['PGV'] * 980)
         after_process_data = data
         return after_process_data
 
@@ -201,11 +202,11 @@ class dataprocess:
 
 
 if __name__ == '__main__':
-    TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_sta.csv")
-    TSMIP_df = pd.read_csv("../../../TSMIP_FF_copy.csv")
+    TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_PGV.csv")
+    TSMIP_df = pd.read_csv("../../../TSMIP_FF_PGV.csv")
     model = dataprocess()
     after_process_data = model.preprocess(TSMIP_df)
-    result_list = model.split_dataset(TSMIP_df, 'lnPGA(gal)', True,
+    result_list = model.split_dataset(TSMIP_df, 'lnPGV(gal)', True,
                                       'lnVs30', 'MW', 'lnRrup', 'fault.type',
                                       'STA_Lon_X', 'STA_Lat_Y')
     score, feature_importances, fit_time, final_predict = model.training(

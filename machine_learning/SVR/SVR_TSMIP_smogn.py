@@ -13,12 +13,14 @@ from sklearn.metrics import r2_score, mean_squared_error, make_scorer
 # TSMIP_df = pd.read_csv("../../../TSMIP_FF_copy.csv")
 
 
-## conduct smogn ##這步大概要兩個小時
+# ## conduct smogn ##這步大概要兩個小時
+# target = "PGV"
 # TSMIP_smogn = smogn.smoter(
 #     data = TSMIP_df,
-#     y = "PGA"
+#     y = target
 # )
-# TSMIP_smogn.to_csv("../../../TSMIP_smogn_sta.csv",index=False)
+# TSMIP_smogn.to_csv(f"../../../TSMIP_smogn_{target}.csv",index=False)
+
 def MSE(y_true, y_pred):
     mse = mean_squared_error(y_true, y_pred)
     print('MSE: %2.3f' % mse)

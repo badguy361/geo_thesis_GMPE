@@ -319,19 +319,70 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def distance_scaling(self, distance, predict_value, score):
+    def distance_scaling(self, original_data_feature,
+                         originaldata_predicted_result, score):
 
         ###################### PGA隨距離的衰減 #####################
-        
+        concate_predicted = np.concatenate(
+            (original_data_feature[0], originaldata_predicted_result[:, None]),
+            axis=1)  # 預測後PGA & 原本資料特徵檔合併
+        predicted_df = pd.DataFrame(concate_predicted,
+                                    columns=[
+                                        'lnVs30', 'MW', 'lnRrup', 'fault.type',
+                                        'STA_Lon_X', 'STA_Lat_Y',
+                                        'predicted_lnPGA(gal)'
+                                    ]) # ndarray 轉 dataframe，方便後續處理
+        predicted_df = predicted_df.sort_values(by=['lnRrup'])
+
         plt.grid(linestyle=':')
-        # plt.plot(distance, predict_value, linestyle="--", label="Prediction")
-        plt.scatter(distance, predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label='Predicted Result') #迴歸線.
-        plt.xlabel('ln(Distance)(km)')
-        plt.ylabel('Predicted ln(PGA)(cm/s^2)')
+        plt.plot(
+            predicted_df['lnRrup'][predicted_df['MW'] >= 4.0][predicted_df['MW'] < 5.0]
+            [predicted_df['fault.type'] == 1][np.exp(predicted_df['lnVs30']) > 480][
+                np.exp(predicted_df['lnVs30']) < 760],
+            predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 4.0]
+            [predicted_df['MW'] < 5.0][predicted_df['fault.type'] == 1][np.exp(
+                predicted_df['lnVs30']) > 480][np.exp(predicted_df['lnVs30']) < 760],
+            linewidth='0.8',
+            label="Mw4.5"
+        )
+        plt.plot(
+            predicted_df['lnRrup'][predicted_df['MW'] >= 5.0][predicted_df['MW'] < 6.0]
+            [predicted_df['fault.type'] == 1][np.exp(predicted_df['lnVs30']) > 480][
+                np.exp(predicted_df['lnVs30']) < 760],
+            predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 5.0]
+            [predicted_df['MW'] < 6.0][predicted_df['fault.type'] == 1][np.exp(
+                predicted_df['lnVs30']) > 480][np.exp(predicted_df['lnVs30']) < 760],
+            linewidth='0.8',
+            label="Mw5.5"
+        )
+        plt.plot(
+            predicted_df['lnRrup'][predicted_df['MW'] >= 6.0][predicted_df['MW'] < 7.0]
+            [predicted_df['fault.type'] == 1][np.exp(predicted_df['lnVs30']) > 480][
+                np.exp(predicted_df['lnVs30']) < 760],
+            predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 6.0]
+            [predicted_df['MW'] < 7.0][predicted_df['fault.type'] == 1][np.exp(
+                predicted_df['lnVs30']) > 480][np.exp(predicted_df['lnVs30']) < 760],
+            linewidth='0.8',
+            label="Mw6.5"
+        )
+        plt.plot(
+            predicted_df['lnRrup'][predicted_df['MW'] >= 7.0][predicted_df['MW'] < 8.0]
+            [predicted_df['fault.type'] == 1][np.exp(predicted_df['lnVs30']) > 480][
+                np.exp(predicted_df['lnVs30']) < 760],
+            predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 7.0]
+            [predicted_df['MW'] < 8.0][predicted_df['fault.type'] == 1][np.exp(
+                predicted_df['lnVs30']) > 480][np.exp(predicted_df['lnVs30']) < 760],
+            linewidth='0.8',
+            label="Mw7.5"
+        )
+        plt.xlabel('ln(Rrup)(km)')
+        plt.ylabel(f'Predicted ln(PGA)(cm/s^2)')
         plt.title(
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Distance Scaling')
-        plt.text(-1, 2, f"R2 score = {round(score,2)}")
+        plt.text(0.8, 3, f"R2 score = {round(score,2)}")
+        plt.text(0.8, 2, f"Reverse")
+        plt.text(0.8, 1, f"480<Vs30<760")
+        plt.xlim(0, 6)
         plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Distance Scaling.png',
@@ -351,8 +402,10 @@ if __name__ == '__main__':
         "XGB", result_list[0], result_list[1], result_list[2], result_list[3])
 
     plot_something = plot_fig("XGBooster", "XGB", "TSMIP")
-    plot_something.train_test_distribution(result_list[1], result_list[3], final_predict, fit_time, score)
-    plot_something.residual(result_list[1], result_list[3], final_predict, score)
+    plot_something.train_test_distribution(result_list[1], result_list[3],
+                                           final_predict, fit_time, score)
+    plot_something.residual(result_list[1], result_list[3], final_predict,
+                            score)
     plot_something.measured_predict(result_list[3], final_predict, score)
     c = result_list[1].transpose(1, 0)
     plot_something.distance_scaling(c[2], final_predict, score)

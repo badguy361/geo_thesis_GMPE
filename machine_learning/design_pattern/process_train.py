@@ -33,8 +33,8 @@ class dataprocess:
         data['fault.type'] = data['fault.type'].str.replace("NO", "2")
         data['fault.type'] = data['fault.type'].str.replace("SS", "3")
         data['fault.type'] = pd.to_numeric(data['fault.type'])
-        # data['lnPGA(gal)'] = np.log(data['PGA'] * 980)
-        data['lnPGV(gal)'] = np.log(data['PGV'] * 980)
+        data['lnPGA(gal)'] = np.log(data['PGA'] * 980)
+        # data['lnPGV(gal)'] = np.log(data['PGV'] * 980)
         after_process_data = data
         return after_process_data
 
@@ -94,6 +94,8 @@ class dataprocess:
                                         n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
 
+            model = randomForestModel
+
         elif model_name == "GBDT":
             gbr_params = {
                 'n_estimators': 1000,
@@ -121,6 +123,8 @@ class dataprocess:
                                         n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
 
+            model = GradientBoostingModel
+
         elif model_name == "Ada":
             Ada_params = {
                 'n_estimators': 1000,
@@ -145,7 +149,9 @@ class dataprocess:
                                         cv=6,
                                         n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
-        
+
+            model = AdaBoostModel
+
         elif model_name == "XGB":
             XGB_params = {
                 'n_estimators': 1000,
@@ -171,6 +177,8 @@ class dataprocess:
                                         n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
 
+            model = XGBModel
+
         elif model_name == "SVR":
             feature_importances = 0
             SVR_params = {
@@ -195,12 +203,17 @@ class dataprocess:
                                         n_jobs=-1)
             print("cross_val R2 score:", cv_scores)
 
+            model = SVRModel
+
         else:
             pass
 
-        return score, feature_importances, fit_time, final_predict
+        return score, feature_importances, fit_time, final_predict, model
 
-
+    def predicted_original(self, model, ori_dataset):
+        predicted_result = model.predict(ori_dataset[0])
+        return predicted_result
+    
 if __name__ == '__main__':
     TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_PGV.csv")
     TSMIP_df = pd.read_csv("../../../TSMIP_FF_PGV.csv")

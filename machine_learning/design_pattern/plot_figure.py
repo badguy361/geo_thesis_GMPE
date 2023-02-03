@@ -11,10 +11,11 @@ from design_pattern.process_train import dataprocess
 
 class plot_fig:
 
-    def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP):
+    def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP, target):
         self.model_name = model_name
         self.abbreviation_name = abbreviation_name
         self.SMOGN_TSMIP = SMOGN_TSMIP
+        self.target = target
 
     def train_test_distribution(self, x_test, y_test, predict_value, fit_time,
                                 score):
@@ -32,7 +33,7 @@ class plot_fig:
         plt.scatter(x_test[:,0], predict_value,marker='o',facecolors='none',edgecolors='r', \
             label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
         plt.xlabel('Vs30(m/s)')
-        plt.ylabel(f'Predicted ln(PGA)(cm/s^2)')
+        plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(f'{self.model_name}')
         plt.legend()
         plt.savefig(
@@ -51,7 +52,7 @@ class plot_fig:
         plt.scatter(x_test[:,1], predict_value,marker='o',facecolors='none',edgecolors='r', \
             label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
         plt.xlabel('Mw')
-        plt.ylabel(f'Predicted ln(PGA)(cm/s^2)')
+        plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(f'{self.model_name}')
         plt.legend()
         plt.savefig(
@@ -70,7 +71,7 @@ class plot_fig:
         plt.scatter(x_test[:,2], predict_value,marker='o',facecolors='none',edgecolors='r', \
             label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
         plt.xlabel('ln(Rrup)(km)')
-        plt.ylabel(f'Predicted ln(PGA)(cm/s^2)')
+        plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(f'{self.model_name}')
         plt.legend()
         plt.savefig(
@@ -150,7 +151,7 @@ class plot_fig:
         plt.xlim(1e2, 2 * 1e3)
         plt.ylim(-3, 3)
         plt.xlabel('Vs30(m/s)')
-        plt.ylabel('Residual ln(PGA)(cm/s^2)')
+        plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.title(
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
             % (score))
@@ -218,7 +219,7 @@ class plot_fig:
         plt.xlim(3, 8)
         plt.ylim(-3, 3)
         plt.xlabel('Mw')
-        plt.ylabel('Residual ln(PGA)(cm/s^2)')
+        plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.title(
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
             % (score))
@@ -286,7 +287,7 @@ class plot_fig:
         plt.xlim(5 * 1e0, 1e3)
         plt.ylim(-3, 3)
         plt.xlabel('Rrup(km)')
-        plt.ylabel('Residual ln(PGA)(cm/s^2)')
+        plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.title(
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
             % (score))
@@ -305,8 +306,8 @@ class plot_fig:
         x_line = [-5, 10]
         y_line = [-5, 10]
         plt.plot(x_line, y_line, color='blue')
-        plt.xlabel('Measured ln(PGA)(cm/s^2)')
-        plt.ylabel('Predict ln(PGA)(cm/s^2)')
+        plt.xlabel(f'Measured ln({self.target})(cm/s^2)')
+        plt.ylabel(f'Predict ln({self.target})(cm/s^2)')
         plt.ylim(-2, 8)
         plt.xlim(-2, 8)
         plt.title(
@@ -320,7 +321,8 @@ class plot_fig:
         plt.show()
 
     def distance_scaling(self, original_data_feature,
-                         originaldata_predicted_result, score):
+                         originaldata_predicted_result, minVs30, maxVs30,
+                         minMw, maxMw ,faulttype, score):
 
         ###################### PGA隨距離的衰減 #####################
         concate_predicted = np.concatenate(
@@ -330,62 +332,94 @@ class plot_fig:
                                     columns=[
                                         'lnVs30', 'MW', 'lnRrup', 'fault.type',
                                         'STA_Lon_X', 'STA_Lat_Y',
-                                        'predicted_lnPGA(gal)'
-                                    ]) # ndarray 轉 dataframe，方便後續處理
+                                        f'predicted_ln{self.target}(gal)'
+                                    ])  # ndarray 轉 dataframe，方便後續處理
         predicted_df = predicted_df.sort_values(by=['lnRrup'])
 
         plt.grid(linestyle=':')
         plt.plot(
-            predicted_df['lnRrup'][predicted_df['MW'] >= 4.0][predicted_df['MW'] < 5.0]
-            [predicted_df['fault.type'] == 1][np.exp(predicted_df['lnVs30']) > 480][
-                np.exp(predicted_df['lnVs30']) < 760],
-            predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 4.0]
-            [predicted_df['MW'] < 5.0][predicted_df['fault.type'] == 1][np.exp(
-                predicted_df['lnVs30']) > 480][np.exp(predicted_df['lnVs30']) < 760],
+            predicted_df['lnRrup'][predicted_df['MW'] >= minMw][
+                predicted_df['MW'] < maxMw][predicted_df['fault.type'] == faulttype][
+                    np.exp(predicted_df['lnVs30']) > minVs30][
+                        np.exp(predicted_df['lnVs30']) < maxVs30],
+            predicted_df[f'predicted_ln{self.target}(gal)'][predicted_df['MW'] >= minMw][
+                predicted_df['MW'] < maxMw][predicted_df['fault.type'] == faulttype][
+                    np.exp(predicted_df['lnVs30']) > minVs30][
+                        np.exp(predicted_df['lnVs30']) < maxVs30],
             linewidth='0.8',
-            label="Mw4.5"
-        )
-        plt.plot(
-            predicted_df['lnRrup'][predicted_df['MW'] >= 5.0][predicted_df['MW'] < 6.0]
-            [predicted_df['fault.type'] == 1][np.exp(predicted_df['lnVs30']) > 480][
-                np.exp(predicted_df['lnVs30']) < 760],
-            predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 5.0]
-            [predicted_df['MW'] < 6.0][predicted_df['fault.type'] == 1][np.exp(
-                predicted_df['lnVs30']) > 480][np.exp(predicted_df['lnVs30']) < 760],
-            linewidth='0.8',
-            label="Mw5.5"
-        )
-        plt.plot(
-            predicted_df['lnRrup'][predicted_df['MW'] >= 6.0][predicted_df['MW'] < 7.0]
-            [predicted_df['fault.type'] == 1][np.exp(predicted_df['lnVs30']) > 480][
-                np.exp(predicted_df['lnVs30']) < 760],
-            predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 6.0]
-            [predicted_df['MW'] < 7.0][predicted_df['fault.type'] == 1][np.exp(
-                predicted_df['lnVs30']) > 480][np.exp(predicted_df['lnVs30']) < 760],
-            linewidth='0.8',
-            label="Mw6.5"
-        )
-        plt.plot(
-            predicted_df['lnRrup'][predicted_df['MW'] >= 7.0][predicted_df['MW'] < 8.0]
-            [predicted_df['fault.type'] == 1][np.exp(predicted_df['lnVs30']) > 480][
-                np.exp(predicted_df['lnVs30']) < 760],
-            predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 7.0]
-            [predicted_df['MW'] < 8.0][predicted_df['fault.type'] == 1][np.exp(
-                predicted_df['lnVs30']) > 480][np.exp(predicted_df['lnVs30']) < 760],
-            linewidth='0.8',
-            label="Mw7.5"
-        )
+            label=f"Mw{round((maxMw + minMw)/2,1)}")
+        
+        # ./
+
+        # plot total line
+
+        # /.
+
+        # plt.plot(
+        #     predicted_df['lnRrup'][predicted_df['MW'] >= 5.0][
+        #         predicted_df['MW'] < 6.0][predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #     predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 5.0][
+        #         predicted_df['MW'] < 6.0][predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #     linewidth='0.8',
+        #     label="Mw5.5")
+        # plt.plot(
+        #     predicted_df['lnRrup'][predicted_df['MW'] >= 6.0][
+        #         predicted_df['MW'] < 7.0][predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #     predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 6.0][
+        #         predicted_df['MW'] < 7.0][predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #     linewidth='0.8',
+        #     label="Mw6.5")
+        # plt.plot(
+        #     predicted_df['lnRrup'][predicted_df['MW'] >= 7.0][
+        #         predicted_df['MW'] < 8.0][predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #     predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 7.0][
+        #         predicted_df['MW'] < 8.0][predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #     linewidth='0.8',
+        #     label="Mw7.5")
         plt.xlabel('ln(Rrup)(km)')
-        plt.ylabel(f'Predicted ln(PGA)(cm/s^2)')
+        plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(
-            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Distance Scaling')
-        plt.text(0.8, 3, f"R2 score = {round(score,2)}")
-        plt.text(0.8, 2, f"Reverse")
-        plt.text(0.8, 1, f"480<Vs30<760")
-        plt.xlim(0, 6)
+            f'{self.abbreviation_name} Distance Scaling')
+        
+        if self.target == "PGA":
+            plt.text(0.5, 3, f"R2 score = {round(score,2)}")
+            if faulttype == 1:
+                plt.text(0.5, 2, f"Reverse")
+            elif faulttype == 2:
+                plt.text(0.5, 2, f"Normal")
+            elif faulttype == 3:
+                plt.text(0.5, 2, f"Strike Slip")
+            plt.text(0.5, 1, f"{minVs30}<Vs30<{maxVs30}")
+        elif self.target == "PGV":
+            plt.text(1, 6.5, f"R2 score = {round(score,2)}")
+            if faulttype == 1:
+                plt.text(1, 5.5, f"Reverse")
+            elif faulttype == 2:
+                plt.text(1, 5.5, f"Normal")
+            elif faulttype == 3:
+                plt.text(1, 5.5, f"Strike Slip")
+            plt.text(1, 4.5, f"{minVs30}<Vs30<{maxVs30}")
+
+        if self.target == "PGA":
+            plt.xlim(0, 6)
+            plt.ylim(0.4, 7)
+        elif self.target == "PGV":
+            plt.xlim(0.5, 6)
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Distance Scaling.png',
+            f'../{self.abbreviation_name}/{f"{self.target} Mw{round((maxMw + minMw)/2,1)} faulttype={faulttype} {minVs30}_Vs30_{maxVs30}"} Distance Scaling.jpg',
             dpi=300)
         plt.show()
 

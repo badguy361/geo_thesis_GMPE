@@ -19,7 +19,7 @@ from dtreeviz.trees import dtreeviz
 
 class dataprocess:
 
-    def preprocess(self, data):
+    def preprocess(self, data, target):
         assert str(
             type(data)
         ) == "<class 'pandas.core.frame.DataFrame'>", "please input DataFrame"
@@ -33,8 +33,7 @@ class dataprocess:
         data['fault.type'] = data['fault.type'].str.replace("NO", "2")
         data['fault.type'] = data['fault.type'].str.replace("SS", "3")
         data['fault.type'] = pd.to_numeric(data['fault.type'])
-        data['lnPGA(gal)'] = np.log(data['PGA'] * 980)
-        # data['lnPGV(gal)'] = np.log(data['PGV'] * 980)
+        data[f'ln{target}(gal)'] = np.log(data[f'{target}'] * 980)
         after_process_data = data
         return after_process_data
 

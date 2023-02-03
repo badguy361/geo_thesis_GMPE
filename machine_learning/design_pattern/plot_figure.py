@@ -354,13 +354,24 @@ class plot_fig:
         # plot total line
 
         # /.
-
+        # plt.grid(linestyle=':')
+        # plt.plot(
+        #     predicted_df['lnRrup'][predicted_df['MW'] >= 4.0][
+        #         predicted_df['MW'] < 5.0][predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #     predicted_df[f'predicted_ln{self.target}(gal)'][predicted_df['MW'] >=4.0][
+        #         predicted_df['MW'] < 5.0][predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #     linewidth='0.8',
+        #     label="Mw4.5")
         # plt.plot(
         #     predicted_df['lnRrup'][predicted_df['MW'] >= 5.0][
         #         predicted_df['MW'] < 6.0][predicted_df['fault.type'] == faulttype][
         #             np.exp(predicted_df['lnVs30']) > minVs30][
         #                 np.exp(predicted_df['lnVs30']) < maxVs30],
-        #     predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 5.0][
+        #     predicted_df[f'predicted_ln{self.target}(gal)'][predicted_df['MW'] >= 5.0][
         #         predicted_df['MW'] < 6.0][predicted_df['fault.type'] == faulttype][
         #             np.exp(predicted_df['lnVs30']) > minVs30][
         #                 np.exp(predicted_df['lnVs30']) < maxVs30],
@@ -371,7 +382,7 @@ class plot_fig:
         #         predicted_df['MW'] < 7.0][predicted_df['fault.type'] == faulttype][
         #             np.exp(predicted_df['lnVs30']) > minVs30][
         #                 np.exp(predicted_df['lnVs30']) < maxVs30],
-        #     predicted_df['predicted_lnPGA(gal)'][predicted_df['MW'] >= 6.0][
+        #     predicted_df[f'predicted_ln{self.target}(gal)'][predicted_df['MW'] >= 6.0][
         #         predicted_df['MW'] < 7.0][predicted_df['fault.type'] == faulttype][
         #             np.exp(predicted_df['lnVs30']) > minVs30][
         #                 np.exp(predicted_df['lnVs30']) < maxVs30],
@@ -388,6 +399,7 @@ class plot_fig:
         #                 np.exp(predicted_df['lnVs30']) < maxVs30],
         #     linewidth='0.8',
         #     label="Mw7.5")
+
         plt.xlabel('ln(Rrup)(km)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(

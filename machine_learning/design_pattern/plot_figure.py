@@ -327,7 +327,7 @@ class plot_fig:
 
     def distance_scaling(self, original_data_feature,
                          originaldata_predicted_result, minVs30, maxVs30,
-                         minMw, maxMw, faulttype, score):
+                         minMw, maxMw, faulttype, score, poly=None):
 
         # ./
         # PGA隨距離的衰減
@@ -342,6 +342,10 @@ class plot_fig:
                                         'STA_Lon_X', 'STA_Lat_Y',
                                         f'predicted_ln{self.target}(gal)'
                                     ])  # ndarray 轉 dataframe，方便後續處理
+
+        # ./
+        # Poly回歸線
+        # /.
         plt.scatter(predicted_df['lnRrup'][predicted_df['MW'] >= minMw][
             predicted_df['MW'] < maxMw][
                 predicted_df['fault.type'] == faulttype][
@@ -353,39 +357,33 @@ class plot_fig:
                             np.exp(predicted_df['lnVs30']) > minVs30][
                                 np.exp(predicted_df['lnVs30']) < maxVs30],
                     label=f"Mw{round((maxMw + minMw)/2,1)}")
-        x_train, x_test, y_train, y_test = train_test_split(
-            predicted_df['lnRrup'][predicted_df['MW'] >= minMw][
-                predicted_df['MW'] < maxMw][
-                    predicted_df['fault.type'] == faulttype][
-                        np.exp(predicted_df['lnVs30']) > minVs30][
-                            np.exp(predicted_df['lnVs30']) < maxVs30].values,
-            predicted_df[f'predicted_ln{self.target}(gal)'][
-                predicted_df['MW'] >= minMw][predicted_df['MW'] < maxMw][
-                    predicted_df['fault.type'] == faulttype][
-                        np.exp(predicted_df['lnVs30']) > minVs30][
-                            np.exp(predicted_df['lnVs30']) < maxVs30].values,
-            random_state=2)
         # fit by polynomial
-        poly = PolynomialFeatures(degree=2, include_bias=True)
-        x_train_fittrans = poly.fit_transform(x_train.reshape(1, -1))
-        lr = LinearRegression()
-        lr.fit(x_train_fittrans, y_train.reshape(1, -1))
-
-        x_train_trans = poly.transform(x_train.reshape(1, -1))
-        y_pred = lr.predict(x_train_trans)
+        mymodel = np.poly1d(
+            np.polyfit(
+                predicted_df['lnRrup'][predicted_df['MW'] >= minMw]
+                [predicted_df['MW'] < maxMw][
+                    predicted_df['fault.type'] == faulttype][
+                        np.exp(predicted_df['lnVs30']) > minVs30][
+                            np.exp(predicted_df['lnVs30']) < maxVs30].values,
+                predicted_df[f'predicted_ln{self.target}(gal)'][
+                    predicted_df['MW'] >= minMw][predicted_df['MW'] < maxMw]
+                [predicted_df['fault.type'] == faulttype][
+                    np.exp(predicted_df['lnVs30']) > minVs30][
+                        np.exp(predicted_df['lnVs30']) < maxVs30].values, poly))
+        myline = np.linspace(1.5, 5, 50)
         plt.grid(linestyle=':')
-        plt.plot(x_train_trans,
-                 y_pred,
+        plt.plot(myline,
+                 mymodel(myline),
                  linewidth='0.8',
                  color='r',
-                 label=f"Mw{round((maxMw + minMw)/2,1)}")
+                 label=f"polynomial line degree{poly}")
 
         # ./
         # 取平均法
         # /.
 
-        # predicted_df['average_lnRrup'] = ""
-        # predicted_df[f'average_predicted_ln{self.target}(gal)'] = ""
+        # predicted_df['average_lnRrup'] = 0
+        # predicted_df[f'average_predicted_ln{self.target}(gal)'] = 0
 
         # plt.scatter(predicted_df['lnRrup'][predicted_df['MW'] >= minMw][
         #     predicted_df['MW'] < maxMw][
@@ -523,7 +521,7 @@ class plot_fig:
         #     f'../{self.abbreviation_name}/{f"{self.target} Mw{round((maxMw + minMw)/2,1)} faulttype={faulttype} {minVs30}_Vs30_{maxVs30}"} Distance Scaling.jpg',
         #     dpi=300)
         plt.savefig(
-            f'../{self.abbreviation_name}/{f"{self.target} Mw{round((maxMw + minMw)/2,1)} faulttype={faulttype} {minVs30}_Vs30_{maxVs30}"} Distance Scaling Continue line.jpg',
+            f'../{self.abbreviation_name}/{f"{self.target} Mw{round((maxMw + minMw)/2,1)} faulttype={faulttype} {minVs30}_Vs30_{maxVs30}"} Distance Scaling Continue line degree{poly}.jpg',
             dpi=300)
         plt.show()
 

@@ -3,9 +3,11 @@ import numpy as np
 # append the path of the
 # parent directory
 sys.path.append("..")
-
+from sklearn.model_selection import train_test_split
 from design_pattern.process_train import dataprocess
 from design_pattern.plot_figure import plot_fig
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -19,12 +21,12 @@ after_process_ori_data = model.preprocess(TSMIP_df, target)
 result_SMOGN = model.split_dataset(TSMIP_smogn_df, f'ln{target}(gal)', True,
                                    'lnVs30', 'MW', 'lnRrup', 'fault.type',
                                    'STA_Lon_X', 'STA_Lat_Y')
-result_ori = model.split_dataset(TSMIP_df, f'ln{target}(gal)', True, 'lnVs30', 'MW',
-                                 'lnRrup', 'fault.type', 'STA_Lon_X',
+result_ori = model.split_dataset(TSMIP_df, f'ln{target}(gal)', True, 'lnVs30',
+                                 'MW', 'lnRrup', 'fault.type', 'STA_Lon_X',
                                  'STA_Lat_Y')
-original_data = model.split_dataset(TSMIP_df, f'ln{target}(gal)', False, 'lnVs30',
-                                    'MW', 'lnRrup', 'fault.type', 'STA_Lon_X',
-                                    'STA_Lat_Y')
+original_data = model.split_dataset(TSMIP_df, f'ln{target}(gal)', False,
+                                    'lnVs30', 'MW', 'lnRrup', 'fault.type',
+                                    'STA_Lon_X', 'STA_Lat_Y')
 # result_ori[0](訓練資料)之shape : (29896,6) 為 29896筆 records 加上以下6個columns ['lnVs30','MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y']
 score, feature_importances, fit_time, final_predict, ML_model = model.training(
     "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
@@ -32,7 +34,7 @@ score, feature_importances, fit_time, final_predict, ML_model = model.training(
 originaldata_predicted_result = model.predicted_original(
     ML_model, original_data)
 
-plot_something = plot_fig("XGBooster", "XGB", "SMOGN",target)
+plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.train_test_distribution(result_ori[1], result_ori[3], final_predict, fit_time, score)
 # plot_something.residual(result_ori[1], result_ori[3], final_predict, score)
 # plot_something.measured_predict(result_ori[3], final_predict, score)
@@ -43,15 +45,4 @@ maxMw = 5.0
 faulttype = 1
 plot_something.distance_scaling(original_data, originaldata_predicted_result,
                                 minVs30, maxVs30, minMw, maxMw, faulttype,
-                                score)
-
-
-#applying polynomial regression degree 2
-poly = PolynomialFeatures(degree=2, include_bias=True)
-x_train_trans = poly.fit_transform(x_train)
-x_test_trans = poly.transform(x_test)
-#include bias parameter
-lr = LinearRegression()
-lr.fit(x_train_trans, y_train)
-y_pred = lr.predict(x_test_trans)
-print(r2_score(y_test, y_pred))
+                                score,5)

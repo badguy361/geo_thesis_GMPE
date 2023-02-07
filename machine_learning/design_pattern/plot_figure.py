@@ -370,7 +370,7 @@ class plot_fig:
                 [predicted_df['fault.type'] == faulttype][
                     np.exp(predicted_df['lnVs30']) > minVs30][
                         np.exp(predicted_df['lnVs30']) < maxVs30].values, poly))
-        myline = np.linspace(1.5, 5, 50)
+        myline = np.linspace(1, 6, 50)
         plt.grid(linestyle=':')
         plt.plot(myline,
                  mymodel(myline),

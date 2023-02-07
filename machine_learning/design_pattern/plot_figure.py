@@ -2,6 +2,9 @@ import pandas as pd
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 import sys
 # append the path of the
 # parent directory
@@ -298,7 +301,9 @@ class plot_fig:
 
     def measured_predict(self, y_test, predict_value, score):
 
-        ###################### 預測PGA和實際PGA #####################
+        #./
+        # 預測PGA和實際PGA
+        # /.
 
         plt.grid(linestyle=':')
         plt.scatter(y_test, predict_value,marker='o',facecolors='none',edgecolors='r', \
@@ -322,9 +327,12 @@ class plot_fig:
 
     def distance_scaling(self, original_data_feature,
                          originaldata_predicted_result, minVs30, maxVs30,
-                         minMw, maxMw ,faulttype, score):
+                         minMw, maxMw, faulttype, score):
 
-        ###################### PGA隨距離的衰減 #####################
+        # ./
+        # PGA隨距離的衰減
+        # /.
+
         concate_predicted = np.concatenate(
             (original_data_feature[0], originaldata_predicted_result[:, None]),
             axis=1)  # 預測後PGA & 原本資料特徵檔合併
@@ -334,26 +342,108 @@ class plot_fig:
                                         'STA_Lon_X', 'STA_Lat_Y',
                                         f'predicted_ln{self.target}(gal)'
                                     ])  # ndarray 轉 dataframe，方便後續處理
-        predicted_df = predicted_df.sort_values(by=['lnRrup'])
-
-        plt.grid(linestyle=':')
-        plt.plot(
+        plt.scatter(predicted_df['lnRrup'][predicted_df['MW'] >= minMw][
+            predicted_df['MW'] < maxMw][
+                predicted_df['fault.type'] == faulttype][
+                    np.exp(predicted_df['lnVs30']) > minVs30][
+                        np.exp(predicted_df['lnVs30']) < maxVs30],
+                    predicted_df[f'predicted_ln{self.target}(gal)']
+                    [predicted_df['MW'] >= minMw][predicted_df['MW'] < maxMw][
+                        predicted_df['fault.type'] == faulttype][
+                            np.exp(predicted_df['lnVs30']) > minVs30][
+                                np.exp(predicted_df['lnVs30']) < maxVs30],
+                    label=f"Mw{round((maxMw + minMw)/2,1)}")
+        x_train, x_test, y_train, y_test = train_test_split(
             predicted_df['lnRrup'][predicted_df['MW'] >= minMw][
-                predicted_df['MW'] < maxMw][predicted_df['fault.type'] == faulttype][
-                    np.exp(predicted_df['lnVs30']) > minVs30][
-                        np.exp(predicted_df['lnVs30']) < maxVs30],
-            predicted_df[f'predicted_ln{self.target}(gal)'][predicted_df['MW'] >= minMw][
-                predicted_df['MW'] < maxMw][predicted_df['fault.type'] == faulttype][
-                    np.exp(predicted_df['lnVs30']) > minVs30][
-                        np.exp(predicted_df['lnVs30']) < maxVs30],
-            linewidth='0.8',
-            label=f"Mw{round((maxMw + minMw)/2,1)}")
-        
+                predicted_df['MW'] < maxMw][
+                    predicted_df['fault.type'] == faulttype][
+                        np.exp(predicted_df['lnVs30']) > minVs30][
+                            np.exp(predicted_df['lnVs30']) < maxVs30].values,
+            predicted_df[f'predicted_ln{self.target}(gal)'][
+                predicted_df['MW'] >= minMw][predicted_df['MW'] < maxMw][
+                    predicted_df['fault.type'] == faulttype][
+                        np.exp(predicted_df['lnVs30']) > minVs30][
+                            np.exp(predicted_df['lnVs30']) < maxVs30].values,
+            random_state=2)
+        # fit by polynomial
+        poly = PolynomialFeatures(degree=2, include_bias=True)
+        x_train_fittrans = poly.fit_transform(x_train.reshape(1, -1))
+        lr = LinearRegression()
+        lr.fit(x_train_fittrans, y_train.reshape(1, -1))
+
+        x_train_trans = poly.transform(x_train.reshape(1, -1))
+        y_pred = lr.predict(x_train_trans)
+        plt.grid(linestyle=':')
+        plt.plot(x_train_trans,
+                 y_pred,
+                 linewidth='0.8',
+                 color='r',
+                 label=f"Mw{round((maxMw + minMw)/2,1)}")
+
         # ./
-
-        # plot total line
-
+        # 取平均法
         # /.
+
+        # predicted_df['average_lnRrup'] = ""
+        # predicted_df[f'average_predicted_ln{self.target}(gal)'] = ""
+
+        # plt.scatter(predicted_df['lnRrup'][predicted_df['MW'] >= minMw][
+        #     predicted_df['MW'] < maxMw][
+        #         predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #             predicted_df[f'predicted_ln{self.target}(gal)']
+        #             [predicted_df['MW'] >= minMw][predicted_df['MW'] < maxMw][
+        #                 predicted_df['fault.type'] == faulttype][
+        #                     np.exp(predicted_df['lnVs30']) > minVs30][
+        #                         np.exp(predicted_df['lnVs30']) < maxVs30],
+        #             label=f"Mw{round((maxMw + minMw)/2,1)}")
+
+        # # 計算平均
+        # predicted_df = predicted_df.sort_values(by=['lnRrup'])
+        # for i in range(0, len(predicted_df['lnRrup']) - 1):
+        #     predicted_df['average_lnRrup'][i] = (predicted_df['lnRrup'][i] +
+        #                               predicted_df['lnRrup'][i + 1]) / 2
+        #     predicted_df[f'average_predicted_ln{self.target}(gal)'][i] = (
+        #         predicted_df[f'predicted_ln{self.target}(gal)'][i] +
+        #         predicted_df[f'predicted_ln{self.target}(gal)'][i + 1]) / 2
+        # predicted_df = predicted_df.sort_values(by=['average_lnRrup'])
+
+        # plt.grid(linestyle=':')
+        # plt.plot(predicted_df['average_lnRrup'][predicted_df['MW'] >= minMw][
+        #     predicted_df['MW'] < maxMw][
+        #         predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #          predicted_df[f'average_predicted_ln{self.target}(gal)'][
+        #              predicted_df['MW'] >= minMw][predicted_df['MW'] < maxMw][
+        #                  predicted_df['fault.type'] == faulttype][
+        #                      np.exp(predicted_df['lnVs30']) > minVs30][
+        #                          np.exp(predicted_df['lnVs30']) < maxVs30],
+        #          linewidth='0.8',
+        #          color='r',
+        #          label=f"Mw{round((maxMw + minMw)/2,1)}")
+
+        # ./
+        # plot line
+        # /.
+
+        # plt.plot(
+        #     predicted_df['lnRrup'][predicted_df['MW'] >= minMw][
+        #         predicted_df['MW'] < maxMw][predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #     predicted_df[f'predicted_ln{self.target}(gal)'][predicted_df['MW'] >= minMw][
+        #         predicted_df['MW'] < maxMw][predicted_df['fault.type'] == faulttype][
+        #             np.exp(predicted_df['lnVs30']) > minVs30][
+        #                 np.exp(predicted_df['lnVs30']) < maxVs30],
+        #     linewidth='0.8',
+        #     label=f"Mw{round((maxMw + minMw)/2,1)}")
+
+        # ./
+        # plot total line
+        # /.
+
         # plt.grid(linestyle=':')
         # plt.plot(
         #     predicted_df['lnRrup'][predicted_df['MW'] >= 4.0][
@@ -402,9 +492,8 @@ class plot_fig:
 
         plt.xlabel('ln(Rrup)(km)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
-        plt.title(
-            f'{self.abbreviation_name} Distance Scaling')
-        
+        plt.title(f'{self.abbreviation_name} Distance Scaling')
+
         if self.target == "PGA":
             plt.text(0.5, 3, f"R2 score = {round(score,2)}")
             if faulttype == 1:
@@ -430,8 +519,11 @@ class plot_fig:
         elif self.target == "PGV":
             plt.xlim(0.5, 6)
         plt.legend()
+        # plt.savefig(
+        #     f'../{self.abbreviation_name}/{f"{self.target} Mw{round((maxMw + minMw)/2,1)} faulttype={faulttype} {minVs30}_Vs30_{maxVs30}"} Distance Scaling.jpg',
+        #     dpi=300)
         plt.savefig(
-            f'../{self.abbreviation_name}/{f"{self.target} Mw{round((maxMw + minMw)/2,1)} faulttype={faulttype} {minVs30}_Vs30_{maxVs30}"} Distance Scaling.jpg',
+            f'../{self.abbreviation_name}/{f"{self.target} Mw{round((maxMw + minMw)/2,1)} faulttype={faulttype} {minVs30}_Vs30_{maxVs30}"} Distance Scaling Continue line.jpg',
             dpi=300)
         plt.show()
 

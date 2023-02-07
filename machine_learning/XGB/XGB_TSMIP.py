@@ -38,9 +38,20 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN",target)
 # plot_something.measured_predict(result_ori[3], final_predict, score)
 minVs30 = 480
 maxVs30 = 760
-minMw = 7.0
-maxMw = 8.0
+minMw = 4.0
+maxMw = 5.0
 faulttype = 1
 plot_something.distance_scaling(original_data, originaldata_predicted_result,
                                 minVs30, maxVs30, minMw, maxMw, faulttype,
                                 score)
+
+
+#applying polynomial regression degree 2
+poly = PolynomialFeatures(degree=2, include_bias=True)
+x_train_trans = poly.fit_transform(x_train)
+x_test_trans = poly.transform(x_test)
+#include bias parameter
+lr = LinearRegression()
+lr.fit(x_train_trans, y_train)
+y_pred = lr.predict(x_test_trans)
+print(r2_score(y_test, y_pred))

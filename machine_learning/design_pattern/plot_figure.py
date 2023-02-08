@@ -40,7 +40,7 @@ class plot_fig:
         plt.title(f'{self.model_name}')
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict.png',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict.jpg',
             dpi=300)
         plt.show()
 
@@ -59,7 +59,7 @@ class plot_fig:
         plt.title(f'{self.model_name}')
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict.png',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict.jpg',
             dpi=300)
         plt.show()
 
@@ -78,7 +78,7 @@ class plot_fig:
         plt.title(f'{self.model_name}')
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict.png',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict.jpg',
             dpi=300)
         plt.show()
 
@@ -159,7 +159,7 @@ class plot_fig:
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
             % (score))
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.png',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.jpg',
             dpi=300)
         plt.show()
 
@@ -227,7 +227,7 @@ class plot_fig:
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
             % (score))
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.png',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.jpg',
             dpi=300)
         plt.show()
 
@@ -295,7 +295,76 @@ class plot_fig:
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
             % (score))
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.png',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.jpg',
+            dpi=300)
+        plt.show()
+
+        # 計算總殘差分布
+        total_num_residual = [0] * 41
+        total_num_residual[10] = np.count_nonzero((residual >= -2)
+                                                  & (residual < -1.8))
+        total_num_residual[11] = np.count_nonzero((residual >= -1.8)
+                                                  & (residual < -1.6))
+        total_num_residual[12] = np.count_nonzero((residual >= -1.6)
+                                                  & (residual < -1.4))
+        total_num_residual[13] = np.count_nonzero((residual >= -1.4)
+                                                  & (residual < -1.2))
+        total_num_residual[14] = np.count_nonzero((residual >= -1.2)
+                                                  & (residual < -1.0))
+        total_num_residual[15] = np.count_nonzero((residual >= -1.0)
+                                                  & (residual < -0.8))
+        total_num_residual[16] = np.count_nonzero((residual >= -0.8)
+                                                  & (residual < -0.6))
+        total_num_residual[17] = np.count_nonzero((residual >= -0.6)
+                                                  & (residual < -0.4))
+        total_num_residual[18] = np.count_nonzero((residual >= -0.4)
+                                                  & (residual < -0.2))
+        total_num_residual[19] = np.count_nonzero((residual >= -0.2)
+                                                  & (residual < 0.0))
+        total_num_residual[20] = np.count_nonzero((residual >= 0.0)
+                                                  & (residual < 0.2))
+        total_num_residual[21] = np.count_nonzero((residual >= 0.2)
+                                                  & (residual < 0.4))
+        total_num_residual[22] = np.count_nonzero((residual >= 0.4)
+                                                  & (residual < 0.6))
+        total_num_residual[23] = np.count_nonzero((residual >= 0.6)
+                                                  & (residual < 0.8))
+        total_num_residual[24] = np.count_nonzero((residual >= 0.8)
+                                                  & (residual < 1.0))
+        total_num_residual[25] = np.count_nonzero((residual >= 1.0)
+                                                  & (residual < 1.2))
+        total_num_residual[26] = np.count_nonzero((residual >= 1.2)
+                                                  & (residual < 1.4))
+        total_num_residual[27] = np.count_nonzero((residual >= 1.4)
+                                                  & (residual < 1.6))
+        total_num_residual[28] = np.count_nonzero((residual >= 1.6)
+                                                  & (residual < 1.8))
+        total_num_residual[29] = np.count_nonzero((residual >= 1.8)
+                                                  & (residual < 2.0))
+        total_num_residual[30] = np.count_nonzero((residual >= 2.0)
+                                                  & (residual < 2.2))
+
+        x_bar = np.linspace(-4, 4, 41)
+        plt.bar(x_bar, total_num_residual, edgecolor='white', width=0.2)
+
+        mu, sigma = -0.03, 0.38  # mean and standard deviation 可以改，如果分布有變的話
+        plt.text(2, 2000, f'mean = {mu}')
+        plt.text(2, 1700, f'sd = {sigma}')
+        x_nor = np.linspace(-4, 4, 100)
+        plt.plot(
+            x_nor,
+            (1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(-(x_nor - mu)**2 /
+                                                       (2 * sigma**2)) * 2500),
+            linewidth=1,
+            color='r')
+        plt.grid(linestyle=':', color='darkgrey')
+        plt.xlabel('Total-Residual')
+        plt.ylabel('Numbers')
+        plt.title(
+            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Total-Residual Distribution'
+        )
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Total-Residual Distribution.jpg',
             dpi=300)
         plt.show()
 
@@ -321,13 +390,20 @@ class plot_fig:
         plt.text(5, 0, f"R2 score = {round(score,2)}")
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Measured Predict Comparison.png',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Measured Predict Comparison.jpg',
             dpi=300)
         plt.show()
 
-    def distance_scaling(self, original_data_feature,
-                         originaldata_predicted_result, minVs30, maxVs30,
-                         minMw, maxMw, faulttype, score, poly=None):
+    def distance_scaling(self,
+                         original_data_feature,
+                         originaldata_predicted_result,
+                         minVs30,
+                         maxVs30,
+                         minMw,
+                         maxMw,
+                         faulttype,
+                         score,
+                         poly=None):
 
         # ./
         # PGA隨距離的衰減
@@ -366,10 +442,10 @@ class plot_fig:
                         np.exp(predicted_df['lnVs30']) > minVs30][
                             np.exp(predicted_df['lnVs30']) < maxVs30].values,
                 predicted_df[f'predicted_ln{self.target}(gal)'][
-                    predicted_df['MW'] >= minMw][predicted_df['MW'] < maxMw]
-                [predicted_df['fault.type'] == faulttype][
-                    np.exp(predicted_df['lnVs30']) > minVs30][
-                        np.exp(predicted_df['lnVs30']) < maxVs30].values, poly))
+                    predicted_df['MW'] >= minMw][predicted_df['MW'] < maxMw][
+                        predicted_df['fault.type'] == faulttype]
+                [np.exp(predicted_df['lnVs30']) > minVs30][
+                    np.exp(predicted_df['lnVs30']) < maxVs30].values, poly))
         myline = np.linspace(1, 6, 50)
         plt.grid(linestyle=':')
         plt.plot(myline,
@@ -524,6 +600,9 @@ class plot_fig:
             f'../{self.abbreviation_name}/{f"{self.target} Mw{round((maxMw + minMw)/2,1)} faulttype={faulttype} {minVs30}_Vs30_{maxVs30}"} Distance Scaling Continue line degree{poly}.jpg',
             dpi=300)
         plt.show()
+
+    def inter_intra_event(self):
+        print("hi")
 
 
 if __name__ == '__main__':

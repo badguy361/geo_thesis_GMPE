@@ -34,15 +34,19 @@ score, feature_importances, fit_time, final_predict, ML_model = model.training(
 originaldata_predicted_result = model.predicted_original(
     ML_model, original_data)
 
+residual = final_predict - result_ori[3]
+
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-# plot_something.train_test_distribution(result_ori[1], result_ori[3], final_predict, fit_time, score)
-# plot_something.residual(result_ori[1], result_ori[3], final_predict, score)
+plot_something.train_test_distribution(result_ori[1], result_ori[3],
+                                       final_predict, fit_time, score)
+plot_something.residual(result_ori[1], result_ori[3], final_predict, score)
 # plot_something.measured_predict(result_ori[3], final_predict, score)
-minVs30 = 480
-maxVs30 = 760
-minMw = 4.0
-maxMw = 5.0
-faulttype = 1
-plot_something.distance_scaling(original_data, originaldata_predicted_result,
-                                minVs30, maxVs30, minMw, maxMw, faulttype,
-                                score,5)
+# minVs30 = 480
+# maxVs30 = 760
+# minMw = 4.0
+# maxMw = 5.0
+# faulttype = 1
+# plot_something.distance_scaling(original_data, originaldata_predicted_result,
+#                                 minVs30, maxVs30, minMw, maxMw, faulttype,
+#                                 score,5)
+

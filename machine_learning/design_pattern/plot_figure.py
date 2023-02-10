@@ -20,10 +20,16 @@ class plot_fig:
         self.SMOGN_TSMIP = SMOGN_TSMIP
         self.target = target
 
-    def train_test_distribution(self, x_test, y_test, predict_value, fit_time,
+    def predicted_distribution(self, x_test, y_test, predict_value, fit_time,
                                 score):
 
-        ######################### trainsubset & testsubset distribution #########################
+        #######################################
+        #######################################
+        #######################################
+        ###### train & test distribution ######
+        #######################################
+        #######################################
+        #######################################
 
         # 畫 Vs30 and randomForest_predict 關係圖
         plt.grid(linestyle=':')
@@ -37,7 +43,7 @@ class plot_fig:
             label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
         plt.xlabel('Vs30(m/s)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
-        plt.title(f'{self.model_name}')
+        plt.title(f'{self.model_name} Predicted Distribution')
         plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict.jpg',
@@ -56,7 +62,7 @@ class plot_fig:
             label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
         plt.xlabel('Mw')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
-        plt.title(f'{self.model_name}')
+        plt.title(f'{self.model_name} Predicted Distribution')
         plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict.jpg',
@@ -75,26 +81,28 @@ class plot_fig:
             label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
         plt.xlabel('ln(Rrup)(km)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
-        plt.title(f'{self.model_name}')
+        plt.title(f'{self.model_name} Predicted Distribution')
         plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict.jpg',
             dpi=300)
         plt.show()
 
-    def residual(self, x_test, y_test, predict_value, score):
+    def residual(self, x_total, y_total, predict_value, ori_full_data, score):
 
-        ######################### residual #########################
+        ##########################
+        ##### Total Residual #####
+        ##########################
 
-        # 1. 計算Vs30_residual
-        residual = predict_value - y_test
+        # 1. Vs30 Total Residual
+        residual = predict_value - y_total
         residual_121 = []
         residual_199 = []
         residual_398 = []
         residual_794 = []
         residual_1000 = []
 
-        for index, i in enumerate(np.exp(x_test[:, 0])):
+        for index, i in enumerate(np.exp(x_total[:, 0])):
             if i >= 121 and i < 199:
                 residual_121.append(residual[index])
             elif i >= 199 and i < 398:
@@ -118,7 +126,7 @@ class plot_fig:
         residual_794_std = np.std(residual_794)
         residual_1000_std = np.std(residual_1000)
         plt.grid(linestyle=':', color='darkgrey')
-        plt.scatter(np.exp(x_test[:, 0]),
+        plt.scatter(np.exp(x_total[:, 0]),
                     residual,
                     marker='o',
                     facecolors='none',
@@ -156,21 +164,21 @@ class plot_fig:
         plt.xlabel('Vs30(m/s)')
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.title(
-            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
-            % (score))
+            f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
+            (score))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.jpg',
             dpi=300)
         plt.show()
 
-        # 2. 計算Mw_residual
-        residual = predict_value - y_test
+        # 2. Mw Toral Residual
+        residual = predict_value - y_total
         residual_3_5 = []
         residual_4_5 = []
         residual_5_5 = []
         residual_6_5 = []
 
-        for index, i in enumerate(x_test[:, 1]):
+        for index, i in enumerate(x_total[:, 1]):
             if i >= 3.5 and i < 4.5:
                 residual_3_5.append(residual[index])
             elif i >= 4.5 and i < 5.5:
@@ -191,7 +199,7 @@ class plot_fig:
         residual_6_5_std = np.std(residual_6_5)
 
         plt.grid(linestyle=':', color='darkgrey')
-        plt.scatter(x_test[:, 1],
+        plt.scatter(x_total[:, 1],
                     residual,
                     marker='o',
                     facecolors='none',
@@ -224,21 +232,21 @@ class plot_fig:
         plt.xlabel('Mw')
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.title(
-            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
-            % (score))
+            f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
+            (score))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.jpg',
             dpi=300)
         plt.show()
 
-        # 3. 計算Rrup_residual
-        residual = predict_value - y_test
+        # 3. Rrup Total Residual
+        residual = predict_value - y_total
         residual_10 = []
         residual_31 = []
         residual_100 = []
         residual_316 = []
 
-        for index, i in enumerate(np.exp(x_test[:, 2])):
+        for index, i in enumerate(np.exp(x_total[:, 2])):
             if i >= 10 and i < 31:
                 residual_10.append(residual[index])
             elif i >= 31 and i < 100:
@@ -258,7 +266,7 @@ class plot_fig:
         residual_100_std = np.std(residual_100)
         residual_316_std = np.std(residual_316)
         plt.grid(linestyle=':', color='darkgrey')
-        plt.scatter(np.exp(x_test[:, 2]),
+        plt.scatter(np.exp(x_total[:, 2]),
                     residual,
                     marker='o',
                     facecolors='none',
@@ -292,14 +300,14 @@ class plot_fig:
         plt.xlabel('Rrup(km)')
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.title(
-            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Predicted Residual R2 score: %.3f'
-            % (score))
+            f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
+            (score))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.jpg',
             dpi=300)
         plt.show()
 
-        # 計算總殘差分布
+        # 4. Total Residual Number Distribution
         total_num_residual = [0] * 41
         total_num_residual[10] = np.count_nonzero((residual >= -2)
                                                   & (residual < -1.8))
@@ -347,24 +355,139 @@ class plot_fig:
         x_bar = np.linspace(-4, 4, 41)
         plt.bar(x_bar, total_num_residual, edgecolor='white', width=0.2)
 
-        mu, sigma = -0.03, 0.38  # mean and standard deviation 可以改，如果分布有變的話
-        plt.text(2, 2000, f'mean = {mu}')
-        plt.text(2, 1700, f'sd = {sigma}')
+        mu = np.mean(residual)  # mean and standard deviation 可以改，如果分布有變的話
+        sigma = np.std(residual)
+        plt.text(2, 2700, f'mean = {round(mu,2)}')
+        plt.text(2, 1700, f'sd = {round(sigma,2)}')
         x_nor = np.linspace(-4, 4, 100)
-        plt.plot(
-            x_nor,
-            (1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(-(x_nor - mu)**2 /
-                                                       (2 * sigma**2)) * 2500),
-            linewidth=1,
-            color='r')
+        plt.plot(x_nor, (1 / (sigma * np.sqrt(2 * np.pi)) *
+                         np.exp(-(x_nor - mu)**2 / (2 * sigma**2)) * 11000),
+                 linewidth=1,
+                 color='r')
         plt.grid(linestyle=':', color='darkgrey')
         plt.xlabel('Total-Residual')
         plt.ylabel('Numbers')
-        plt.title(
-            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Total-Residual Distribution'
-        )
+        plt.title(f'{self.abbreviation_name} Total-Residual Distribution')
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Total-Residual Distribution.jpg',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Total-Residual Distribution.jpg',
+            dpi=300)
+        plt.show()
+
+        #######################################
+        #######################################
+        #######################################
+        ##### inter intra event residual  #####
+        #######################################
+        #######################################
+        #######################################
+
+        # 計算inter-event by mean value(共273顆地震)
+        originaldata_predicted_result_df = pd.DataFrame(predict_value,
+                                                        columns=['predicted'])
+        total_data_df = pd.concat(
+            [ori_full_data, originaldata_predicted_result_df], axis=1)
+        # 這裡看是否需要變log10
+        # total_data_df["residual"] = np.abs((np.exp(total_data_df["predicted"]) - np.exp(total_data_df["lnPGA(gal)"]))/980)
+        total_data_df["residual"] = total_data_df["predicted"] - total_data_df[
+            "lnPGA(gal)"]
+        
+        # build new dataframe to collect inter-event value
+        summeries = {'residual': 'mean', 'MW': 'max'}
+        inter_event = total_data_df.groupby(
+            by="EQ_ID").agg(summeries).reset_index()
+        inter_event = inter_event.rename(columns={
+            'residual': 'inter_event_residual',
+            'MW': 'Mw'
+        })
+
+        # Mw inter-event
+        Mw_yticks = [-1.5, -1.0, -0.5, 0, 0.5, 1.0, 1.5]
+        plt.grid(linestyle=':', color='darkgrey')
+        plt.scatter(inter_event['Mw'],
+                    inter_event['inter_event_residual'],
+                    marker='o',
+                    s=8,
+                    facecolors='None',
+                    edgecolors='black')
+        plt.plot([3, 8], [
+            inter_event['inter_event_residual'].mean(),
+            inter_event['inter_event_residual'].mean()
+        ],
+                 'b--',
+                 linewidth=0.5)
+        plt.xlim(3, 8)
+        plt.ylim(-1.6, 1.6)
+        plt.yticks(Mw_yticks)
+        plt.xlabel('Mw')
+        plt.ylabel(f'Inter-event Residual ln({self.target})(cm/s^2)')
+        inter_mean = round(inter_event['inter_event_residual'].mean(), 2)
+        plt.title(
+            f'{self.abbreviation_name} Inter-event Residual Mean:{inter_mean}')
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Inter-event Residual.jpg',
+            dpi=300)
+        plt.show()
+
+        # 計算intra-event by total residual - inter-event residual
+        # merge inter-event dataframe to original dataframe
+        total_data_df = pd.merge(total_data_df,
+                                 inter_event,
+                                 how='left',
+                                 on=['EQ_ID'])
+        total_data_df['intra_event_residual'] = total_data_df[
+            'residual'] - total_data_df['inter_event_residual']
+
+        # Rrup intra-event
+        Rrup_xticks = [0, 50, 100, 150, 200, 250, 300, 400, 500]
+        plt.grid(linestyle=':', color='darkgrey')
+        plt.scatter(total_data_df['Rrup'],
+                    total_data_df['intra_event_residual'],
+                    marker='o',
+                    s=8,
+                    facecolors='None',
+                    edgecolors='black')
+        plt.plot([-50, 600], [
+            total_data_df['intra_event_residual'].mean(),
+            total_data_df['intra_event_residual'].mean()
+        ],
+                 'b--',
+                 linewidth=0.5)
+        plt.xlim(-50, 600)
+        plt.xticks(Rrup_xticks)
+        plt.xlabel('Rrup(km)')
+        plt.ylabel(f'Intra-event Residual ln({self.target})(cm/s^2)')
+        intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
+        plt.title(
+            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean}')
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Intra-event Residual.jpg',
+            dpi=300)
+        plt.show()
+
+        # Vs30 intra-event
+        Vs30_xticks = [200, 400, 600, 800, 1000, 1200, 1400]
+        plt.grid(linestyle=':', color='darkgrey')
+        plt.scatter(total_data_df['Vs30'],
+                    total_data_df['intra_event_residual'],
+                    marker='o',
+                    s=8,
+                    facecolors='None',
+                    edgecolors='black')  #迴歸線
+        plt.plot([0, 1400], [
+            total_data_df['intra_event_residual'].mean(),
+            total_data_df['intra_event_residual'].mean()
+        ],
+                 'b--',
+                 linewidth=0.5)
+        plt.xlim(0, 1400)
+        plt.xticks(Vs30_xticks)
+        plt.xlabel('Vs30(m/s)')
+        plt.ylabel(f'Intra-event Residual ln({self.target})(cm/s^2)')
+        intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
+        plt.title(
+            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean}')
+        plt.savefig(
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Intra-event Residual.jpg',
             dpi=300)
         plt.show()
 
@@ -390,7 +513,7 @@ class plot_fig:
         plt.text(5, 0, f"R2 score = {round(score,2)}")
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Measured Predict Comparison.jpg',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Measured Predicted Comparison.jpg',
             dpi=300)
         plt.show()
 

@@ -359,11 +359,6 @@ class plot_fig:
         sigma = np.std(residual)
         plt.text(2, 2700, f'mean = {round(mu,2)}')
         plt.text(2, 1700, f'sd = {round(sigma,2)}')
-        x_nor = np.linspace(-4, 4, 100)
-        plt.plot(x_nor, (1 / (sigma * np.sqrt(2 * np.pi)) *
-                         np.exp(-(x_nor - mu)**2 / (2 * sigma**2)) * 11000),
-                 linewidth=1,
-                 color='r')
         plt.grid(linestyle=':', color='darkgrey')
         plt.xlabel('Total-Residual')
         plt.ylabel('Numbers')

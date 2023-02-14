@@ -15,9 +15,12 @@ target = "PGA"
 
 TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_smogn_{target}.csv")
 TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_{target}.csv")
+DSCon = pd.read_csv(f"../../../Distance Scaling Condition.csv")
 model = dataprocess()
 after_process_SMOGN_data = model.preprocess(TSMIP_smogn_df, target)
 after_process_ori_data = model.preprocess(TSMIP_df, target)
+after_process_DSCon = model.preprocess(DSCon, target)
+
 result_SMOGN = model.split_dataset(after_process_SMOGN_data,
                                    f'ln{target}(gal)', True, 'lnVs30', 'MW',
                                    'lnRrup', 'fault.type', 'STA_Lon_X',
@@ -28,12 +31,29 @@ result_ori = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
 original_data = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
                                     False, 'lnVs30', 'MW', 'lnRrup',
                                     'fault.type', 'STA_Lon_X', 'STA_Lat_Y')
+DSCon_data = model.split_dataset(after_process_DSCon, f'ln{target}(gal)',
+                                    False, 'lnVs30', 'MW', 'lnRrup',
+                                    'fault.type', 'STA_Lon_X', 'STA_Lat_Y')
+
 # result_ori[0](訓練資料)之shape : (29896,6) 為 29896筆 records 加上以下6個columns ['lnVs30','MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y']
 score, feature_importances, fit_time, final_predict, ML_model = model.training(
     "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
 
 originaldata_predicted_result = model.predicted_original(
     ML_model, original_data)
+
+Result = []
+for i in np.linspace(0,5.5,30):
+    DSCon_data[0][0][2] = round(i,2)
+    Result.append(ML_model.predict(DSCon_data[0]))
+
+myline = np.linspace(0, 5.5, 30)
+plt.grid(linestyle=':')
+plt.plot(myline,
+        Result,
+        linewidth='0.8',
+        color='r')
+plt.show()
 
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.predicted_distribution(result_ori[1], result_ori[3],

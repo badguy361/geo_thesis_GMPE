@@ -512,16 +512,24 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def distance_scaling(self,
-                         original_data_feature,
-                         originaldata_predicted_result,
-                         minVs30,
-                         maxVs30,
-                         minMw,
-                         maxMw,
+    def distance_scaling(self, # change Mw Vs30 etc. condition by csv file
+                         ML_model,
+                         DSCon_data,
+                         Vs30,
+                         Mw,
                          faulttype,
-                         score,
-                         poly=None):
+                         score):
+        Result = []
+        for i in np.linspace(1.5, 5.5, 30):
+            DSCon_data[0][0][2] = round(i,2) # change distance value
+            Result.append(ML_model.predict(DSCon_data[0]))
+        myline = np.linspace(1.5, 5.5, 30)
+        plt.grid(linestyle=':')
+        plt.plot(myline,
+                Result,
+                linewidth='0.8',
+                color='r',
+                label=f'Vs30={Vs30}')
 
         plt.xlabel('ln(Rrup)(km)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
@@ -535,7 +543,7 @@ class plot_fig:
                 plt.text(0.5, 2, f"Normal")
             elif faulttype == 3:
                 plt.text(0.5, 2, f"Strike Slip")
-            plt.text(0.5, 1, f"{minVs30}<Vs30<{maxVs30}")
+            plt.text(0.5, 1, f"Mw = {Mw}")
         elif self.target == "PGV":
             plt.text(1, 6.5, f"R2 score = {round(score,2)}")
             if faulttype == 1:
@@ -544,24 +552,20 @@ class plot_fig:
                 plt.text(1, 5.5, f"Normal")
             elif faulttype == 3:
                 plt.text(1, 5.5, f"Strike Slip")
-            plt.text(1, 4.5, f"{minVs30}<Vs30<{maxVs30}")
+            plt.text(1, 4.5, f"{Mw}")
 
         if self.target == "PGA":
             plt.xlim(0, 6)
             plt.ylim(0.4, 7)
         elif self.target == "PGV":
             plt.xlim(0.5, 6)
+
         plt.legend()
-        # plt.savefig(
-        #     f'../{self.abbreviation_name}/{f"{self.target} Mw{round((maxMw + minMw)/2,1)} faulttype={faulttype} {minVs30}_Vs30_{maxVs30}"} Distance Scaling.jpg',
-        #     dpi=300)
         plt.savefig(
-            f'../{self.abbreviation_name}/{f"{self.target} Mw{round((maxMw + minMw)/2,1)} faulttype={faulttype} {minVs30}_Vs30_{maxVs30}"} Distance Scaling Continue line degree{poly}.jpg',
+            f'../{self.abbreviation_name}/{f"{self.target} Mw={Mw} faulttype={faulttype} Vs30={Vs30}"} Distance Scaling.jpg',
             dpi=300)
         plt.show()
 
-    def inter_intra_event(self):
-        print("hi")
 
 
 if __name__ == '__main__':

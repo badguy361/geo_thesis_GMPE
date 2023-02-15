@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import math
 # append the path of the
 # parent directory
 sys.path.append("..")
@@ -8,6 +9,9 @@ from design_pattern.process_train import dataprocess
 from design_pattern.plot_figure import plot_fig
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
+from matplotlib import cm
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+import matplotlib.colors
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -55,3 +59,43 @@ Vs30 = DSCon['Vs30'][0]
 faulttype = DSCon['fault.type'][0]
 plot_something.distance_scaling(ML_model, DSCon_data, Vs30, Mw, faulttype,
                                 score)
+
+net = 50
+x = np.linspace(-2, 8, net)
+y = np.linspace(-2, 8, net)
+
+xx, yy = np.meshgrid(x, y)
+zz = np.array([0] * net * net).reshape(net, net)
+color_column = []
+
+i = 0
+while i < len(original_data[1]):
+    x_net = (round(original_data[1][i], 2) + 2) / (10 / net)
+    y_net = (round(originaldata_predicted_result[i], 2) + 2) / (10 / net)
+    # print(math.floor(x_net),math.floor(y_net))
+    print(i)
+    zz[math.floor(x_net), math.floor(y_net)] += 1
+    i += 1
+
+j = 0 
+while j < len(original_data[1]):
+    x_net = (round(original_data[1][j], 2) + 2) / (10 / net)
+    y_net = (round(originaldata_predicted_result[j], 2) + 2) / (10 / net)
+    color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+    j += 1
+
+colorlist = [
+    "DodgerBlue", "yellow", "orange", "red"
+]
+newcmp = LinearSegmentedColormap.from_list('testCmap', colors=colorlist, N=256)
+x_line = [-2, 8]
+y_line = [-2, 8]
+plt.plot(x_line, y_line, color='b')
+plt.grid(linestyle=':')
+plt.scatter(
+    original_data[1],
+    originaldata_predicted_result,
+    c=color_column,
+    cmap=newcmp
+)
+plt.show()

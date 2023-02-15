@@ -84,18 +84,21 @@ while j < len(original_data[1]):
     color_column.append(zz[math.floor(x_net), math.floor(y_net)])
     j += 1
 
+normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
 colorlist = [
-    "DodgerBlue", "yellow", "orange", "red"
+    "deepskyblue", "aquamarine","yellow", "orange", "red"
 ]
 newcmp = LinearSegmentedColormap.from_list('testCmap', colors=colorlist, N=256)
 x_line = [-2, 8]
 y_line = [-2, 8]
-plt.plot(x_line, y_line, color='b')
+plt.plot(x_line, y_line, 'r--', alpha = 0.5)
 plt.grid(linestyle=':')
 plt.scatter(
     original_data[1],
     originaldata_predicted_result,
     c=color_column,
-    cmap=newcmp
+    cmap=newcmp,
+    norm=normalize
 )
+plt.colorbar()
 plt.show()

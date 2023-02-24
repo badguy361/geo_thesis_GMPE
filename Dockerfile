@@ -1,5 +1,5 @@
 FROM python:3.8.16-buster
-WORKDIR /app
+WORKDIR /TSMIP
 COPY . .
 
 RUN pip3 install -r requirements.txt

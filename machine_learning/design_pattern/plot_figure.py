@@ -1,7 +1,10 @@
 import pandas as pd
 import time
+import math
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+import matplotlib.colors
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
@@ -21,7 +24,7 @@ class plot_fig:
         self.target = target
 
     def predicted_distribution(self, x_test, y_test, predict_value, fit_time,
-                                score):
+                               score):
 
         #######################################
         #######################################
@@ -88,7 +91,9 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def residual(self, x_total, y_total, predict_value, ori_full_data, score):
+    def residual(self, x_total: "ori_feature", y_total: "ori_ans",
+                 predict_value: "ori_predicted",
+                 ori_full_data: "ori_notsplit_data", score):
 
         ##########################
         ##### Total Residual #####
@@ -385,7 +390,7 @@ class plot_fig:
         # total_data_df["residual"] = np.abs((np.exp(total_data_df["predicted"]) - np.exp(total_data_df["lnPGA(gal)"]))/980)
         total_data_df["residual"] = total_data_df["predicted"] - total_data_df[
             "lnPGA(gal)"]
-        
+
         # build new dataframe to collect inter-event value
         summeries = {'residual': 'mean', 'MW': 'max'}
         inter_event = total_data_df.groupby(
@@ -486,18 +491,46 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def measured_predict(self, y_test, predict_value, score):
+    def measured_predict(self, y_test:"ori_ans", predict_value:"ori_predicted", score):
 
         #./
         # 預測PGA和實際PGA
         # /.
+        net = 50
+        x = np.linspace(-2, 8, net)
+        y = np.linspace(-2, 8, net)
+        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        color_column = []
+
+        i = 0
+        while i < len(y_test): # 計算每個網格中總點數
+            x_net = (round(y_test[i], 2) + 2) / (10 / net)
+            # +2:因為網格從-2開始打 10:頭減尾8-(-2) 10/net:網格間格距離 x_net:x方向第幾個網格
+            y_net = (round(predict_value[i], 2) + 2) / (10 / net)
+            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            i += 1
+
+        j = 0
+        while j < len(y_test): # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+            x_net = (round(y_test[j], 2) + 2) / (10 / net)
+            y_net = (round(predict_value[j], 2) + 2) / (10 / net)
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)]) 
+            # color_column:依照資料落在哪個網格給定該資料顏色值
+            j += 1
+            
+        normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
+        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
+        newcmp = LinearSegmentedColormap.from_list('testCmap', colors=colorlist, N=256)
 
         plt.grid(linestyle=':')
-        plt.scatter(y_test, predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label='Data') #迴歸線.
-        x_line = [-5, 10]
-        y_line = [-5, 10]
-        plt.plot(x_line, y_line, color='blue')
+        plt.scatter(y_test,
+            predict_value,
+            c=color_column,
+            cmap=newcmp,
+            norm=normalize)
+        x_line = [-2, 8]
+        y_line = [-2, 8]
+        plt.plot(x_line, y_line, 'r--', alpha=0.5)
         plt.xlabel(f'Measured ln({self.target})(cm/s^2)')
         plt.ylabel(f'Predict ln({self.target})(cm/s^2)')
         plt.ylim(-2, 8)
@@ -506,30 +539,31 @@ class plot_fig:
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predicted Distribution'
         )
         plt.text(5, 0, f"R2 score = {round(score,2)}")
-        plt.legend()
+        plt.colorbar()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Measured Predicted Comparison.jpg',
             dpi=300)
         plt.show()
 
-    def distance_scaling(self, # change Mw Vs30 etc. condition by csv file
-                         ML_model,
-                         DSCon_data,
-                         Vs30,
-                         Mw,
-                         faulttype,
-                         score):
+    def distance_scaling(
+            self,  # change Mw Vs30 etc. condition by csv file
+            ML_model,
+            DSCon_data,
+            Vs30,
+            Mw,
+            faulttype,
+            score):
         Result = []
         for i in np.linspace(1.5, 5.5, 30):
-            DSCon_data[0][0][2] = round(i,2) # change distance value
+            DSCon_data[0][0][2] = round(i, 2)  # change distance value
             Result.append(ML_model.predict(DSCon_data[0]))
         myline = np.linspace(1.5, 5.5, 30)
         plt.grid(linestyle=':')
         plt.plot(myline,
-                Result,
-                linewidth='0.8',
-                color='r',
-                label=f'Vs30={Vs30}')
+                 Result,
+                 linewidth='0.8',
+                 color='r',
+                 label=f'Vs30={Vs30}')
 
         plt.xlabel('ln(Rrup)(km)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
@@ -565,7 +599,6 @@ class plot_fig:
             f'../{self.abbreviation_name}/{f"{self.target} Mw={Mw} faulttype={faulttype} Vs30={Vs30}"} Distance Scaling.jpg',
             dpi=300)
         plt.show()
-
 
 
 if __name__ == '__main__':

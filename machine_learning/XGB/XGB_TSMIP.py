@@ -52,53 +52,10 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.residual(original_data[0], original_data[1],
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score)
-# plot_something.measured_predict(original_data[1], originaldata_predicted_result, score)
+plot_something.measured_predict(original_data[1], originaldata_predicted_result, score)
 
 Mw = DSCon['MW'][0]
 Vs30 = DSCon['Vs30'][0]
 faulttype = DSCon['fault.type'][0]
 plot_something.distance_scaling(ML_model, DSCon_data, Vs30, Mw, faulttype,
                                 score)
-
-net = 50
-x = np.linspace(-2, 8, net)
-y = np.linspace(-2, 8, net)
-
-xx, yy = np.meshgrid(x, y)
-zz = np.array([0] * net * net).reshape(net, net)
-color_column = []
-
-i = 0
-while i < len(original_data[1]):
-    x_net = (round(original_data[1][i], 2) + 2) / (10 / net)
-    y_net = (round(originaldata_predicted_result[i], 2) + 2) / (10 / net)
-    # print(math.floor(x_net),math.floor(y_net))
-    print(i)
-    zz[math.floor(x_net), math.floor(y_net)] += 1
-    i += 1
-
-j = 0 
-while j < len(original_data[1]):
-    x_net = (round(original_data[1][j], 2) + 2) / (10 / net)
-    y_net = (round(originaldata_predicted_result[j], 2) + 2) / (10 / net)
-    color_column.append(zz[math.floor(x_net), math.floor(y_net)])
-    j += 1
-
-normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
-colorlist = [
-    "deepskyblue", "aquamarine","yellow", "orange", "red"
-]
-newcmp = LinearSegmentedColormap.from_list('testCmap', colors=colorlist, N=256)
-x_line = [-2, 8]
-y_line = [-2, 8]
-plt.plot(x_line, y_line, 'r--', alpha = 0.5)
-plt.grid(linestyle=':')
-plt.scatter(
-    original_data[1],
-    originaldata_predicted_result,
-    c=color_column,
-    cmap=newcmp,
-    norm=normalize
-)
-plt.colorbar()
-plt.show()

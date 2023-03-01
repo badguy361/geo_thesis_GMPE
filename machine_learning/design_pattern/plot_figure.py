@@ -130,39 +130,84 @@ class plot_fig:
         residual_398_std = np.std(residual_398)
         residual_794_std = np.std(residual_794)
         residual_1000_std = np.std(residual_1000)
+
+        net = 50
+        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        color_column = []
+
+        i = 0
+        while i < len(residual):  # 計算每個網格中總點數
+            x_net = (round(np.exp(x_total[:, 0])[i], 2) - 1e2) / (
+                (2 * 1e3 - 1e2) / net)
+            y_net = (round(residual[i], 2) - (-3)) / ((3 - (-3)) / net)
+            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            i += 1
+
+        j = 0
+        while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+            x_net = (round(np.exp(x_total[:, 0])[j], 2) - 1e2) / (
+                (2 * 1e3 - 1e2) / net)
+            y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            # color_column:依照資料落在哪個網格給定該資料顏色值
+            j += 1
+
+        normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
+        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
+        newcmp = LinearSegmentedColormap.from_list('testCmap',
+                                                   colors=colorlist,
+                                                   N=256)
+
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(np.exp(x_total[:, 0]),
                     residual,
-                    marker='o',
-                    facecolors='none',
-                    edgecolors='r')  #迴歸線
+                    c=color_column,
+                    cmap=newcmp,
+                    norm=normalize)
+        plt.colorbar()
         plt.scatter([121, 199, 398, 794, 1000], [
             residual_121_mean, residual_199_mean, residual_398_mean,
             residual_794_mean, residual_1000_mean
         ],
                     marker='o',
-                    facecolors='none',
-                    edgecolors='b')
+                    color='black')
         plt.plot([121, 121], [
             residual_121_mean + residual_121_std,
             residual_121_mean - residual_121_std
-        ], 'b')
+        ], 'black')
         plt.plot([199, 199], [
             residual_199_mean + residual_199_std,
             residual_199_mean - residual_199_std
-        ], 'b')
+        ], 'black')
         plt.plot([398, 398], [
             residual_398_mean + residual_398_std,
             residual_398_mean - residual_398_std
-        ], 'b')
+        ], 'black')
         plt.plot([794, 794], [
             residual_794_mean + residual_794_std,
             residual_794_mean - residual_794_std
-        ], 'b')
+        ], 'black')
         plt.plot([1000, 1000], [
             residual_1000_mean + residual_1000_std,
             residual_1000_mean - residual_1000_std
-        ], 'b')
+        ], 'black')
+
+        plt.plot([121, 199, 398, 794, 1000], [
+            residual_121_mean, residual_199_mean, residual_398_mean,
+            residual_794_mean, residual_1000_mean
+        ], 'k--')
+        plt.plot([121, 199, 398, 794, 1000], [
+            residual_121_mean + residual_121_std, residual_199_mean +
+            residual_199_std, residual_398_mean + residual_398_std,
+            residual_794_mean + residual_794_std,
+            residual_1000_mean + residual_1000_std
+        ], 'k--')
+        plt.plot([121, 199, 398, 794, 1000], [
+            residual_121_mean - residual_121_std, residual_199_mean -
+            residual_199_std, residual_398_mean - residual_398_std,
+            residual_794_mean - residual_794_std,
+            residual_1000_mean - residual_1000_std
+        ], 'k--')
         plt.xscale("log")
         plt.xlim(1e2, 2 * 1e3)
         plt.ylim(-3, 3)
@@ -203,35 +248,75 @@ class plot_fig:
         residual_5_5_std = np.std(residual_5_5)
         residual_6_5_std = np.std(residual_6_5)
 
+        net = 50
+        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        color_column = []
+
+        i = 0
+        while i < len(residual):  # 計算每個網格中總點數
+            x_net = (round(x_total[:, 1][i], 2) - 3) / ((8 - 3) / net)
+            y_net = (round(residual[i], 2) - (-3)) / ((3 - (-3)) / net)
+            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            i += 1
+
+        j = 0
+        while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+            x_net = (round(x_total[:, 1][j], 2) - 3) / ((8 - 3) / net)
+            y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            # color_column:依照資料落在哪個網格給定該資料顏色值
+            j += 1
+
+        normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
+        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
+        newcmp = LinearSegmentedColormap.from_list('testCmap',
+                                                   colors=colorlist,
+                                                   N=256)
+
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(x_total[:, 1],
                     residual,
-                    marker='o',
-                    facecolors='none',
-                    edgecolors='r')  #迴歸線
+                    c=color_column,
+                    cmap=newcmp,
+                    norm=normalize)
+        plt.colorbar()
         plt.scatter([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean, residual_4_5_mean, residual_5_5_mean,
             residual_6_5_mean
         ],
                     marker='o',
-                    facecolors='none',
-                    edgecolors='b')
+                    color='black')
         plt.plot([3.5, 3.5], [
             residual_3_5_mean + residual_3_5_std,
             residual_3_5_mean - residual_3_5_std
-        ], 'b')
+        ], 'black')
         plt.plot([4.5, 4.5], [
             residual_4_5_mean + residual_4_5_std,
             residual_4_5_mean - residual_4_5_std
-        ], 'b')
+        ], 'black')
         plt.plot([5.5, 5.5], [
             residual_5_5_mean + residual_5_5_std,
             residual_5_5_mean - residual_5_5_std
-        ], 'b')
+        ], 'black')
         plt.plot([6.5, 6.5], [
             residual_6_5_mean + residual_6_5_std,
             residual_6_5_mean - residual_6_5_std
-        ], 'b')
+        ], 'black')
+
+        plt.plot([3.5, 4.5, 5.5, 6.5], [
+            residual_3_5_mean, residual_4_5_mean, residual_5_5_mean,
+            residual_6_5_mean
+        ], 'k--')
+        plt.plot([3.5, 4.5, 5.5, 6.5], [
+            residual_3_5_mean + residual_3_5_std, residual_4_5_mean +
+            residual_4_5_std, residual_5_5_mean + residual_5_5_std,
+            residual_6_5_mean + residual_6_5_std
+        ], 'k--')
+        plt.plot([3.5, 4.5, 5.5, 6.5], [
+            residual_3_5_mean - residual_3_5_std, residual_4_5_mean -
+            residual_4_5_std, residual_5_5_mean - residual_5_5_std,
+            residual_6_5_mean - residual_6_5_std
+        ], 'k--')
         plt.xlim(3, 8)
         plt.ylim(-3, 3)
         plt.xlabel('Mw')
@@ -270,35 +355,78 @@ class plot_fig:
         residual_31_std = np.std(residual_31)
         residual_100_std = np.std(residual_100)
         residual_316_std = np.std(residual_316)
+
+        net = 50
+        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        color_column = []
+
+        i = 0
+        while i < len(residual):  # 計算每個網格中總點數
+            x_net = (round(np.exp(x_total[:, 2])[i], 2) - 5 * 1e0) / (
+                (1e3 - 5 * 1e0) / net)
+            y_net = (round(residual[i], 2) - (-3)) / ((3 - (-3)) / net)
+            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            i += 1
+
+        j = 0
+        while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+            x_net = (round(np.exp(x_total[:, 2])[j], 2) - 5 * 1e0) / (
+                (1e3 - 5 * 1e0) / net)
+            y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            # color_column:依照資料落在哪個網格給定該資料顏色值
+            j += 1
+
+        normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
+        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
+        newcmp = LinearSegmentedColormap.from_list('testCmap',
+                                                   colors=colorlist,
+                                                   N=256)
+        
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(np.exp(x_total[:, 2]),
                     residual,
-                    marker='o',
-                    facecolors='none',
-                    edgecolors='r')  #迴歸線
+                    c=color_column,
+                    cmap=newcmp,
+                    norm=normalize)
+        plt.colorbar()
         plt.scatter([10, 31, 100, 316], [
             residual_10_mean, residual_31_mean, residual_100_mean,
             residual_316_mean
         ],
                     marker='o',
-                    facecolors='none',
-                    edgecolors='b')
+                    color='black')
         plt.plot([10, 10], [
             residual_10_mean + residual_10_std,
             residual_10_mean - residual_10_std
-        ], 'b')
+        ], 'black')
         plt.plot([31, 31], [
             residual_31_mean + residual_31_std,
             residual_31_mean - residual_31_std
-        ], 'b')
+        ], 'black')
         plt.plot([100, 100], [
             residual_100_mean + residual_100_std,
             residual_100_mean - residual_100_std
-        ], 'b')
+        ], 'black')
         plt.plot([316, 316], [
             residual_316_mean + residual_316_std,
             residual_316_mean - residual_316_std
-        ], 'b')
+        ], 'black')
+
+        plt.plot([10, 31, 100, 316], [
+            residual_10_mean, residual_31_mean, residual_100_mean,
+            residual_316_mean
+        ], 'k--')
+        plt.plot([10, 31, 100, 316], [
+            residual_10_mean + residual_10_std, residual_31_mean +
+            residual_31_std, residual_100_mean + residual_100_std,
+            residual_316_mean + residual_316_std
+        ], 'k--')
+        plt.plot([10, 31, 100, 316], [
+            residual_10_mean - residual_10_std, residual_31_mean -
+            residual_31_std, residual_100_mean - residual_100_std,
+            residual_316_mean - residual_316_std
+        ], 'k--')
         plt.xscale("log")
         plt.xlim(5 * 1e0, 1e3)
         plt.ylim(-3, 3)
@@ -491,19 +619,18 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def measured_predict(self, y_test:"ori_ans", predict_value:"ori_predicted", score):
+    def measured_predict(self, y_test: "ori_ans",
+                         predict_value: "ori_predicted", score):
 
         #./
         # 預測PGA和實際PGA
         # /.
         net = 50
-        x = np.linspace(-2, 8, net)
-        y = np.linspace(-2, 8, net)
         zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
         color_column = []
 
         i = 0
-        while i < len(y_test): # 計算每個網格中總點數
+        while i < len(y_test):  # 計算每個網格中總點數
             x_net = (round(y_test[i], 2) + 2) / (10 / net)
             # +2:因為網格從-2開始打 10:頭減尾8-(-2) 10/net:網格間格距離 x_net:x方向第幾個網格
             y_net = (round(predict_value[i], 2) + 2) / (10 / net)
@@ -511,23 +638,25 @@ class plot_fig:
             i += 1
 
         j = 0
-        while j < len(y_test): # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+        while j < len(y_test):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
             x_net = (round(y_test[j], 2) + 2) / (10 / net)
             y_net = (round(predict_value[j], 2) + 2) / (10 / net)
-            color_column.append(zz[math.floor(x_net), math.floor(y_net)]) 
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
             # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
-            
+
         normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
-        newcmp = LinearSegmentedColormap.from_list('testCmap', colors=colorlist, N=256)
+        newcmp = LinearSegmentedColormap.from_list('testCmap',
+                                                   colors=colorlist,
+                                                   N=256)
 
         plt.grid(linestyle=':')
         plt.scatter(y_test,
-            predict_value,
-            c=color_column,
-            cmap=newcmp,
-            norm=normalize)
+                    predict_value,
+                    c=color_column,
+                    cmap=newcmp,
+                    norm=normalize)
         x_line = [-2, 8]
         y_line = [-2, 8]
         plt.plot(x_line, y_line, 'r--', alpha=0.5)

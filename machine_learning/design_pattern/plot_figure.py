@@ -152,7 +152,6 @@ class plot_fig:
             # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
 
-        normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
         newcmp = LinearSegmentedColormap.from_list('testCmap',
                                                    colors=colorlist,
@@ -162,19 +161,19 @@ class plot_fig:
         plt.scatter(np.exp(x_total[:, 0]),
                     residual,
                     c=color_column,
-                    cmap=newcmp,
-                    norm=normalize)
-        plt.colorbar()
+                    cmap=newcmp)
+        plt.colorbar(extend='both', label='number value')
         plt.scatter([121, 199, 398, 794, 1000], [
             residual_121_mean, residual_199_mean, residual_398_mean,
             residual_794_mean, residual_1000_mean
         ],
                     marker='o',
-                    color='black')
+                    color='black',
+                    label='mean value')
         plt.plot([121, 121], [
             residual_121_mean + residual_121_std,
             residual_121_mean - residual_121_std
-        ], 'black')
+        ], 'black', label='1 std.')
         plt.plot([199, 199], [
             residual_199_mean + residual_199_std,
             residual_199_mean - residual_199_std
@@ -212,6 +211,7 @@ class plot_fig:
         plt.xlim(1e2, 2 * 1e3)
         plt.ylim(-3, 3)
         plt.xlabel('Vs30(m/s)')
+        plt.legend()
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
@@ -267,7 +267,6 @@ class plot_fig:
             # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
 
-        normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
         newcmp = LinearSegmentedColormap.from_list('testCmap',
                                                    colors=colorlist,
@@ -277,19 +276,19 @@ class plot_fig:
         plt.scatter(x_total[:, 1],
                     residual,
                     c=color_column,
-                    cmap=newcmp,
-                    norm=normalize)
-        plt.colorbar()
+                    cmap=newcmp)
+        plt.colorbar(extend='both', label='number value')
         plt.scatter([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean, residual_4_5_mean, residual_5_5_mean,
             residual_6_5_mean
         ],
                     marker='o',
-                    color='black')
+                    color='black',
+                    label='mean value')
         plt.plot([3.5, 3.5], [
             residual_3_5_mean + residual_3_5_std,
             residual_3_5_mean - residual_3_5_std
-        ], 'black')
+        ], 'black', label='1 std.')
         plt.plot([4.5, 4.5], [
             residual_4_5_mean + residual_4_5_std,
             residual_4_5_mean - residual_4_5_std
@@ -321,6 +320,7 @@ class plot_fig:
         plt.ylim(-3, 3)
         plt.xlabel('Mw')
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
+        plt.legend()
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
             (score))
@@ -377,7 +377,6 @@ class plot_fig:
             # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
 
-        normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
         newcmp = LinearSegmentedColormap.from_list('testCmap',
                                                    colors=colorlist,
@@ -387,19 +386,19 @@ class plot_fig:
         plt.scatter(np.exp(x_total[:, 2]),
                     residual,
                     c=color_column,
-                    cmap=newcmp,
-                    norm=normalize)
-        plt.colorbar()
+                    cmap=newcmp)
+        plt.colorbar(extend='both', label='number value')
         plt.scatter([10, 31, 100, 316], [
             residual_10_mean, residual_31_mean, residual_100_mean,
             residual_316_mean
         ],
                     marker='o',
-                    color='black')
+                    color='black',
+                    label='mean value')
         plt.plot([10, 10], [
             residual_10_mean + residual_10_std,
             residual_10_mean - residual_10_std
-        ], 'black')
+        ], 'black', label='1 std.')
         plt.plot([31, 31], [
             residual_31_mean + residual_31_std,
             residual_31_mean - residual_31_std
@@ -432,6 +431,7 @@ class plot_fig:
         plt.ylim(-3, 3)
         plt.xlabel('Rrup(km)')
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
+        plt.legend()
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
             (score))
@@ -567,21 +567,51 @@ class plot_fig:
 
         # Rrup intra-event
         Rrup_xticks = [0, 50, 100, 150, 200, 250, 300, 400, 500]
+        net = 50
+        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        color_column = []
+
+        i = 0
+        while i < len(residual):  # 計算每個網格中總點數
+            x_net = (round(total_data_df['Rrup'][i], 2) - (-50)) / (
+                (600 - (-50)) / net)
+            y_net = (round(total_data_df['intra_event_residual'][i], 2) - (-2.5)) / ((2.5 - (-2.5)) / net)
+            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            i += 1
+
+        j = 0
+        while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+            x_net = (round(total_data_df['Rrup'][j], 2) - (-50)) / (
+                (600 - (-50)) / net)
+            y_net = (round(total_data_df['intra_event_residual'][j], 2) - (-2.5)) / ((2.5 - (-2.5)) / net)
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            # color_column:依照資料落在哪個網格給定該資料顏色值
+            j += 1
+
+        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
+        newcmp = LinearSegmentedColormap.from_list('testCmap',
+                                                   colors=colorlist,
+                                                   N=256)
+        
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(total_data_df['Rrup'],
                     total_data_df['intra_event_residual'],
                     marker='o',
                     s=8,
-                    facecolors='None',
-                    edgecolors='black')
+                    c=color_column,
+                    cmap=newcmp)
+        plt.colorbar(extend='both', label='number value')
         plt.plot([-50, 600], [
             total_data_df['intra_event_residual'].mean(),
             total_data_df['intra_event_residual'].mean()
         ],
                  'b--',
+                 label = "mean value",
                  linewidth=0.5)
         plt.xlim(-50, 600)
+        plt.ylim(-2.5, 2.5)
         plt.xticks(Rrup_xticks)
+        plt.legend()
         plt.xlabel('Rrup(km)')
         plt.ylabel(f'Intra-event Residual ln({self.target})(cm/s^2)')
         intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
@@ -594,21 +624,51 @@ class plot_fig:
 
         # Vs30 intra-event
         Vs30_xticks = [200, 400, 600, 800, 1000, 1200, 1400]
+        net = 50
+        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        color_column = []
+
+        i = 0
+        while i < len(residual):  # 計算每個網格中總點數
+            x_net = (round(total_data_df['Rrup'][i], 2) - 0) / (
+                (1400 - 0) / net)
+            y_net = (round(total_data_df['intra_event_residual'][i], 2) - (-2.5)) / ((2.5 - (-2.5)) / net)
+            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            i += 1
+
+        j = 0
+        while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+            x_net = (round(total_data_df['Rrup'][j], 2) - 0) / (
+                (1400 - 0) / net)
+            y_net = (round(total_data_df['intra_event_residual'][j], 2) - (-2.5)) / ((2.5 - (-2.5)) / net)
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            # color_column:依照資料落在哪個網格給定該資料顏色值
+            j += 1
+
+        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
+        newcmp = LinearSegmentedColormap.from_list('testCmap',
+                                                   colors=colorlist,
+                                                   N=256)
+        
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(total_data_df['Vs30'],
                     total_data_df['intra_event_residual'],
                     marker='o',
                     s=8,
-                    facecolors='None',
-                    edgecolors='black')  #迴歸線
+                    c=color_column,
+                    cmap=newcmp)
+        plt.colorbar(extend='both', label='number value')
         plt.plot([0, 1400], [
             total_data_df['intra_event_residual'].mean(),
             total_data_df['intra_event_residual'].mean()
         ],
                  'b--',
+                 label = "mean value",
                  linewidth=0.5)
         plt.xlim(0, 1400)
+        plt.ylim(-2.5, 2.5)
         plt.xticks(Vs30_xticks)
+        plt.legend()
         plt.xlabel('Vs30(m/s)')
         plt.ylabel(f'Intra-event Residual ln({self.target})(cm/s^2)')
         intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
@@ -645,7 +705,6 @@ class plot_fig:
             # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
 
-        normalize = matplotlib.colors.Normalize(vmin=0, vmax=2000)
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
         newcmp = LinearSegmentedColormap.from_list('testCmap',
                                                    colors=colorlist,
@@ -655,8 +714,7 @@ class plot_fig:
         plt.scatter(y_test,
                     predict_value,
                     c=color_column,
-                    cmap=newcmp,
-                    norm=normalize)
+                    cmap=newcmp)
         x_line = [-2, 8]
         y_line = [-2, 8]
         plt.plot(x_line, y_line, 'r--', alpha=0.5)
@@ -668,7 +726,7 @@ class plot_fig:
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predicted Distribution'
         )
         plt.text(5, 0, f"R2 score = {round(score,2)}")
-        plt.colorbar()
+        plt.colorbar(extend='both', label='number value')
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Measured Predicted Comparison.jpg',
             dpi=300)

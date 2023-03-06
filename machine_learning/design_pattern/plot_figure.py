@@ -734,6 +734,7 @@ class plot_fig:
 
     def distance_scaling(
             self,  # change Mw Vs30 etc. condition by csv file
+            index,
             ML_model,
             DSCon_data,
             Vs30,
@@ -742,15 +743,16 @@ class plot_fig:
             score):
         Result = []
         for i in np.linspace(1.5, 5.5, 30):
-            DSCon_data[0][0][2] = round(i, 2)  # change distance value
-            Result.append(ML_model.predict(DSCon_data[0]))
+            DSCon_data[0][index][2] = round(i, 2)  # change distance value
+            Result.append(ML_model.predict([DSCon_data[0][index]]))
         myline = np.linspace(1.5, 5.5, 30)
+        fig = plt.figure()
         plt.grid(linestyle=':')
         plt.plot(myline,
                  Result,
                  linewidth='0.8',
                  color='r',
-                 label=f'Vs30={Vs30}')
+                 label=f'Vs30={Vs30}m/s')
 
         plt.xlabel('ln(Rrup)(km)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
@@ -783,7 +785,7 @@ class plot_fig:
 
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{f"{self.target} Mw={Mw} faulttype={faulttype} Vs30={Vs30}"} Distance Scaling.jpg',
+            f'../{self.abbreviation_name}/Distance Scaling/{f"{self.target} Mw={Mw} faulttype={faulttype} Vs30={Vs30}"} Distance Scaling.jpg',
             dpi=300)
         plt.show()
 

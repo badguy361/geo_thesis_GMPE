@@ -4,16 +4,11 @@ import math
 # append the path of the
 # parent directory
 sys.path.append("..")
-from sklearn.model_selection import train_test_split
 from design_pattern.process_train import dataprocess
 from design_pattern.plot_figure import plot_fig
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
-from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-import matplotlib.colors
 import pandas as pd
 import matplotlib.pyplot as plt
+import shap
 
 target = "PGA"
 
@@ -49,13 +44,20 @@ originaldata_predicted_result = model.predicted_original(
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.predicted_distribution(result_ori[1], result_ori[3],
 #                                        final_predict, fit_time, score)
-plot_something.residual(original_data[0], original_data[1],
-                        originaldata_predicted_result, after_process_ori_data,
-                        score)
+# plot_something.residual(original_data[0], original_data[1],
+#                         originaldata_predicted_result, after_process_ori_data,
+#                         score)
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score)
+# for i in range(len(DSCon['MW'])):
+#     Mw = DSCon['MW'][i]
+#     Vs30 = DSCon['Vs30'][i]
+#     faulttype = DSCon['fault.type'][i]
+#     plot_something.distance_scaling(i, ML_model, DSCon_data, Vs30, Mw, faulttype,
+#                                     score)
 
-# Mw = DSCon['MW'][0]
-# Vs30 = DSCon['Vs30'][0]
-# faulttype = DSCon['fault.type'][0]
-# plot_something.distance_scaling(ML_model, DSCon_data, Vs30, Mw, faulttype,
-#                                 score)
+df = pd.DataFrame(
+    result_ori[1],
+    columns=['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y'])
+explainer = shap.Explainer(ML_model)
+shap_values = explainer(df)
+shap.summary_plot(shap_values, df)

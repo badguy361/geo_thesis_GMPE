@@ -61,3 +61,23 @@ df = pd.DataFrame(
 explainer = shap.Explainer(ML_model)
 shap_values = explainer(df)
 shap.summary_plot(shap_values, df)
+
+# waterfall
+shap.plots.waterfall(shap_values[0],show=False) # 單筆資料解釋:第1筆資料解釋
+plt.rcParams['figure.facecolor'] = 'white'
+plt.rcParams['axes.facecolor'] = 'white'
+plt.savefig("shap_waterfall.jpg",bbox_inches = 'tight',dpi=300)
+# force plot
+# shap.initjs()
+# shap.force_plot(explainer.expected_value, shap_values.values[0,:], df.iloc[0,:])
+
+# bar plot
+shap.plots.bar(shap_values,show=False)
+plt.rcParams['figure.facecolor'] = 'white'
+plt.rcParams['axes.facecolor'] = 'white'
+plt.savefig("shap_bar.jpg",bbox_inches = 'tight',dpi=300)
+# scatter plot
+shap.plots.scatter(shap_values[:, "MW"], color=shap_values[:,"lnRrup"],show=False)
+plt.rcParams['figure.facecolor'] = 'white'
+plt.rcParams['axes.facecolor'] = 'white'
+plt.savefig("shap_scatter.jpg",bbox_inches = 'tight',dpi=300)

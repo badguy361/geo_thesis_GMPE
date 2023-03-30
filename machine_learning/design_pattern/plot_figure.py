@@ -26,13 +26,11 @@ class plot_fig:
     def predicted_distribution(self, x_test, y_test, predict_value, fit_time,
                                score):
 
-        #######################################
-        #######################################
-        #######################################
-        ###### train & test distribution ######
-        #######################################
-        #######################################
-        #######################################
+        """ 
+        
+        train & test distribution
+        
+        """
 
         # 畫 Vs30 and randomForest_predict 關係圖
         plt.grid(linestyle=':')
@@ -95,11 +93,13 @@ class plot_fig:
                  predict_value: "ori_predicted",
                  ori_full_data: "ori_notsplit_data", score):
 
-        ##########################
-        ##### Total Residual #####
-        ##########################
+        """
+        
+        Total Residual 
+        
+        """
 
-        # 1. Vs30 Total Residual
+        # * 1. Vs30 Total Residual
         residual = predict_value - y_total
         residual_121 = []
         residual_199 = []
@@ -221,7 +221,7 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-        # 2. Mw Toral Residual
+        # * 2. Mw Toral Residual
         residual = predict_value - y_total
         residual_3_5 = []
         residual_4_5 = []
@@ -329,7 +329,7 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-        # 3. Rrup Total Residual
+        # *  3. Rrup Total Residual
         residual = predict_value - y_total
         residual_10 = []
         residual_31 = []
@@ -440,7 +440,7 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-        # 4. Total Residual Number Distribution
+        # * 4. Total Residual Number Distribution
         total_num_residual = [0] * 41
         total_num_residual[10] = np.count_nonzero((residual >= -2)
                                                   & (residual < -1.8))
@@ -501,13 +501,11 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-        #######################################
-        #######################################
-        #######################################
-        ##### inter intra event residual  #####
-        #######################################
-        #######################################
-        #######################################
+        """
+
+        inter intra event residual
+        
+        """
 
         # 計算inter-event by mean value(共273顆地震)
         originaldata_predicted_result_df = pd.DataFrame(predict_value,
@@ -528,7 +526,7 @@ class plot_fig:
             'MW': 'Mw'
         })
 
-        # Mw inter-event
+        # * Mw inter-event
         Mw_yticks = [-1.5, -1.0, -0.5, 0, 0.5, 1.0, 1.5]
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(inter_event['Mw'],
@@ -565,7 +563,7 @@ class plot_fig:
         total_data_df['intra_event_residual'] = total_data_df[
             'residual'] - total_data_df['inter_event_residual']
 
-        # Rrup intra-event
+        # * Rrup intra-event
         Rrup_xticks = [0, 50, 100, 150, 200, 250, 300, 400, 500]
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
@@ -682,9 +680,11 @@ class plot_fig:
     def measured_predict(self, y_test: "ori_ans",
                          predict_value: "ori_predicted", score):
 
-        #./
-        # 預測PGA和實際PGA
-        # /.
+        """
+        
+        預測PGA和實際PGA
+        
+        """
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
         color_column = []

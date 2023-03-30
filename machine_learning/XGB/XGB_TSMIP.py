@@ -60,24 +60,30 @@ df = pd.DataFrame(
     columns=['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y'])
 explainer = shap.Explainer(ML_model)
 shap_values = explainer(df)
-shap.summary_plot(shap_values, df)
+shap.summary_plot(shap_values, df, show=False)
+plt.savefig("summary_plot.jpg", bbox_inches='tight', dpi=300)
 
 # waterfall
-shap.plots.waterfall(shap_values[0],show=False) # 單筆資料解釋:第1筆資料解釋
+shap.plots.waterfall(shap_values[0], show=False)  # 單筆資料解釋:第1筆資料解釋
 plt.rcParams['figure.facecolor'] = 'white'
 plt.rcParams['axes.facecolor'] = 'white'
-plt.savefig("shap_waterfall.jpg",bbox_inches = 'tight',dpi=300)
+plt.savefig("shap_waterfall.jpg", bbox_inches='tight', dpi=300)
 # force plot
-# shap.initjs()
-# shap.force_plot(explainer.expected_value, shap_values.values[0,:], df.iloc[0,:])
+shap.initjs()
+shap.force_plot(explainer.expected_value, shap_values.values[0, :],
+                df.iloc[0, :], show=False,matplotlib=True)
+plt.savefig("force_plot.jpg", bbox_inches='tight', dpi=300)
 
 # bar plot
-shap.plots.bar(shap_values,show=False)
+fig = plt.figure()
+shap.plots.bar(shap_values, show=False)
 plt.rcParams['figure.facecolor'] = 'white'
 plt.rcParams['axes.facecolor'] = 'white'
-plt.savefig("shap_bar.jpg",bbox_inches = 'tight',dpi=300)
+plt.savefig("shap_bar.jpg", bbox_inches='tight', dpi=300)
 # scatter plot
-shap.plots.scatter(shap_values[:, "MW"], color=shap_values[:,"lnRrup"],show=False)
+shap.plots.scatter(shap_values[:, "MW"],
+                   color=shap_values[:, "lnRrup"],
+                   show=False)
 plt.rcParams['figure.facecolor'] = 'white'
 plt.rcParams['axes.facecolor'] = 'white'
-plt.savefig("shap_scatter.jpg",bbox_inches = 'tight',dpi=300)
+plt.savefig("shap_scatter.jpg", bbox_inches='tight', dpi=300)

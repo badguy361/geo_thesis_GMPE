@@ -19,7 +19,7 @@ from dtreeviz.trees import dtreeviz
 
 class dataprocess:
 
-    def preprocess(self, data, target):
+    def preprocess(self, data, target, eqtype):
         assert str(
             type(data)
         ) == "<class 'pandas.core.frame.DataFrame'>", "please input DataFrame"
@@ -34,7 +34,13 @@ class dataprocess:
         data['fault.type'] = data['fault.type'].str.replace("SS", "3")
         data['fault.type'] = pd.to_numeric(data['fault.type'])
         data[f'ln{target}(gal)'] = np.log(data[f'{target}'] * 980)
-        after_process_data = data
+        if eqtype:
+            after_process_data = data[
+                (data["eq.type"] != "subduction interface")
+                & (data["eq.type"] != "subduction intraslab")
+                & (data["eq.type"] != "deep crustal")]
+        else:
+            after_process_data = data
         return after_process_data
 
     def split_dataset(self, after_process_data, target, split, *args):
@@ -152,11 +158,7 @@ class dataprocess:
             model = AdaBoostModel
 
         elif model_name == "XGB":
-            XGB_params = {
-                'n_estimators': 1000,
-                'max_depth': 10,
-                'n_jobs':-1
-            }
+            XGB_params = {'n_estimators': 1000, 'max_depth': 10, 'n_jobs': -1}
             XGBModel = XGBRegressor(**XGB_params)
             t0 = time.time()
             grid_result = XGBModel.fit(x_train, y_train)
@@ -180,11 +182,7 @@ class dataprocess:
 
         elif model_name == "SVR":
             feature_importances = 0
-            SVR_params = {
-                'C': 1.99, 
-                'kernel': 'rbf',
-                'epsilon':0.001
-            }
+            SVR_params = {'C': 1.99, 'kernel': 'rbf', 'epsilon': 0.001}
             SVRModel = SVR(**SVR_params)
             t0 = time.time()
             grid_result = SVRModel.fit(x_train, y_train)
@@ -212,14 +210,15 @@ class dataprocess:
     def predicted_original(self, model, ori_dataset):
         predicted_result = model.predict(ori_dataset[0])
         return predicted_result
-    
+
+
 if __name__ == '__main__':
     TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_PGV.csv")
     TSMIP_df = pd.read_csv("../../../TSMIP_FF_PGV.csv")
     model = dataprocess()
     after_process_data = model.preprocess(TSMIP_df)
-    result_list = model.split_dataset(TSMIP_df, 'lnPGV(gal)', True,
-                                      'lnVs30', 'MW', 'lnRrup', 'fault.type',
+    result_list = model.split_dataset(TSMIP_df, 'lnPGV(gal)', True, 'lnVs30',
+                                      'MW', 'lnRrup', 'fault.type',
                                       'STA_Lon_X', 'STA_Lat_Y')
     score, feature_importances, fit_time, final_predict = model.training(
         "GBDT", result_list[0], result_list[1], result_list[2], result_list[3])

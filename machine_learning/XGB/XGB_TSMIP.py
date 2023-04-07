@@ -87,3 +87,10 @@ shap.plots.scatter(shap_values[:, "MW"],
 plt.rcParams['figure.facecolor'] = 'white'
 plt.rcParams['axes.facecolor'] = 'white'
 plt.savefig("shap_scatter.jpg", bbox_inches='tight', dpi=300)
+
+shap.plots.scatter(shap_values[:, "lnRrup"],
+                   color=shap_values[:, "MW"],
+                   show=False)
+plt.rcParams['figure.facecolor'] = 'white'
+plt.rcParams['axes.facecolor'] = 'white'
+plt.savefig("shap_scatte.jpg", bbox_inches='tight', dpi=300)

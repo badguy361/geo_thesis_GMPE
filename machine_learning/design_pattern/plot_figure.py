@@ -9,11 +9,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 import sys
+import os
+import shap
 # append the path of the
 # parent directory
 sys.path.append("..")
 from design_pattern.process_train import dataprocess
-
 
 class plot_fig:
 
@@ -788,6 +789,66 @@ class plot_fig:
             f'../{self.abbreviation_name}/Distance Scaling/{f"{self.target} Mw={Mw} faulttype={faulttype} Vs30={Vs30}"} Distance Scaling.jpg',
             dpi=300)
         plt.show()
+
+    def explainable(
+            self,
+            x_test: "ori_test_feature",
+            ML_model,
+            seed
+            ):
+        df = pd.DataFrame(
+            x_test,
+            columns=['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y'])
+        explainer = shap.Explainer(ML_model)
+        shap_values = explainer(df)
+
+        #! Global Explainable
+        # summary
+        shap.summary_plot(shap_values, df, show=False)
+        plt.savefig("summary_plot.jpg", bbox_inches='tight', dpi=300)
+        
+        # bar plot
+        fig = plt.figure()
+        shap.plots.bar(shap_values, show=False)
+        plt.rcParams['figure.facecolor'] = 'white'
+        plt.rcParams['axes.facecolor'] = 'white'
+        plt.savefig("shap_bar.jpg", bbox_inches='tight', dpi=300)
+
+        # scatter plot
+        fig = plt.figure()
+        shap.plots.scatter(shap_values[:, "MW"],
+                        color=shap_values[:, "lnRrup"],
+                        show=False)
+        plt.rcParams['figure.facecolor'] = 'white'
+        plt.rcParams['axes.facecolor'] = 'white'
+        plt.savefig("shap_scatter_MW_lnRrup.jpg", bbox_inches='tight', dpi=300)
+        
+        fig = plt.figure()
+        shap.plots.scatter(shap_values[:, "lnRrup"],
+                        color=shap_values[:, "MW"],
+                        show=False)
+        plt.rcParams['figure.facecolor'] = 'white'
+        plt.rcParams['axes.facecolor'] = 'white'
+        plt.savefig("shap_scatter_lnRrup_MW.jpg", bbox_inches='tight', dpi=300)
+
+        #! Local Explainable
+        # waterfall
+        fig = plt.figure()
+        shap.plots.waterfall(shap_values[seed], show=False)  # 單筆資料解釋:第seed筆資料解釋
+        plt.rcParams['figure.facecolor'] = 'white'
+        plt.rcParams['axes.facecolor'] = 'white'
+        plt.savefig("shap_waterfall.jpg", bbox_inches='tight', dpi=300)
+
+        # force plot
+        shap.initjs()
+        shap.force_plot(explainer.expected_value, shap_values.values[seed, :],
+                        df.iloc[seed, :], show=False,matplotlib=True)
+        plt.savefig("force_plot.jpg", bbox_inches='tight', dpi=300)
+        
+        # 強制刷新緩存
+        fig.canvas.draw()
+        
+
 
 
 if __name__ == '__main__':

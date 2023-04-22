@@ -366,15 +366,15 @@ class plot_fig:
             x_net = (round(np.exp(x_total[:, 2])[i], 2) - 5 * 1e0) / (
                 (1e3 - 5 * 1e0) / net)
             y_net = (round(residual[i], 2) - (-3)) / ((3 - (-3)) / net)
-            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            zz[math.floor(x_net), math.floor(y_net)] += 1  # 資料落在第x,y個網格就+1紀錄
             i += 1
 
         j = 0
         while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
             x_net = (round(np.exp(x_total[:, 2])[j], 2) - 5 * 1e0) / (
-                (1e3 - 5 * 1e0) / net)
+                (1e3 - 5 * 1e0) / net) 
             y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
-            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)]) #將統計好資料寫入color_column
             # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
 

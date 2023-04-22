@@ -26,7 +26,7 @@ result_SMOGN = model.split_dataset(after_process_SMOGN_data,
                                    'STA_Lat_Y')
 result_ori = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
                                  True, 'lnVs30', 'MW', 'lnRrup', 'fault.type',
-                                 'STA_Lon_X', 'STA_Lat_Y')
+                                 'STA_rank')
 original_data = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
                                     False, 'lnVs30', 'MW', 'lnRrup',
                                     'fault.type', 'STA_Lon_X', 'STA_Lat_Y')
@@ -36,10 +36,10 @@ DSCon_data = model.split_dataset(after_process_DSCon, f'ln{target}(gal)',
 
 # result_ori[0](訓練資料)之shape : (29896,6) 為 29896筆 records 加上以下6個columns ['lnVs30','MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y']
 score, feature_importances, fit_time, final_predict, ML_model = model.training(
-    "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
+    "XGB", result_ori[0], result_ori[1], result_ori[2], result_ori[3])
 
-originaldata_predicted_result = model.predicted_original(
-    ML_model, original_data)
+# originaldata_predicted_result = model.predicted_original(
+#     ML_model, original_data)
 
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.predicted_distribution(result_ori[1], result_ori[3],

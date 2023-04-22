@@ -798,7 +798,7 @@ class plot_fig:
             ):
         df = pd.DataFrame(
             x_test,
-            columns=['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y'])
+            columns=['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank'])
         explainer = shap.Explainer(ML_model)
         shap_values = explainer(df)
 

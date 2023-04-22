@@ -14,7 +14,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score, mean_squared_error, make_scorer
 from sklearn.tree import plot_tree
-from dtreeviz.trees import dtreeviz
+# from dtreeviz.trees import dtreeviz
 
 
 class dataprocess:

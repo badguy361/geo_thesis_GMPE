@@ -793,12 +793,13 @@ class plot_fig:
     def explainable(
             self,
             x_test: "ori_test_feature",
+            model_feture,
             ML_model,
             seed
             ):
         df = pd.DataFrame(
             x_test,
-            columns=['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank'])
+            columns = model_feture)
         explainer = shap.Explainer(ML_model)
         shap_values = explainer(df)
 

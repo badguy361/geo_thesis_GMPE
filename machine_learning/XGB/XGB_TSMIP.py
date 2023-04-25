@@ -20,9 +20,7 @@ after_process_SMOGN_data = model.preprocess(TSMIP_smogn_df, target, False)
 after_process_ori_data = model.preprocess(TSMIP_df, target, True)
 after_process_DSCon = model.preprocess(DSCon, target, False)
 
-model_feture = ['lnVs30', 'MW',
-                'lnRrup', 'fault.type', 'STA_Lon_X',
-                'STA_Lat_Y']
+model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
 result_SMOGN = model.split_dataset(after_process_SMOGN_data,
                                    f'ln{target}(gal)', True, *model_feture)
 result_ori = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
@@ -52,6 +50,6 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 #     faulttype = DSCon['fault.type'][i]
 #     plot_something.distance_scaling(i, ML_model, DSCon_data, Vs30, Mw, faulttype,
 #                                     score)
-seed = 555
-plot_something.explainable(result_ori[1], model_feture, ML_model, seed)
+# seed = 555
+# plot_something.explainable(result_ori[1], model_feture, ML_model, seed)
 

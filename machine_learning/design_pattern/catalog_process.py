@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 TSMIP_df = pd.read_csv(f"../../../TSMIP_FF.csv")
-point = [119.5635611,21.90093889] # 最左下角測站為基準
+point = [119.5635611,21.90093889] # 最左下角為基準
 STA_DIST = (((TSMIP_df["STA_Lat_Y"]-point[1])*110)**2 + ((TSMIP_df["STA_Lon_X"]-point[0])*101)**2)**(1/2)
 TSMIP_df["STA_DIST"] = STA_DIST
 TSMIP_df["STA_rank"] = TSMIP_df["STA_DIST"].rank(method='dense')

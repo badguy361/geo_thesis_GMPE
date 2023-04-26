@@ -10,15 +10,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import shap
 
-target = "PGA"
+target = "Sa02"
 
 TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_smogn_{target}.csv")
 TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_{target}.csv")
-DSCon = pd.read_csv(f"../../../Distance Scaling Condition.csv")
+# DSCon = pd.read_csv(f"../../../Distance Scaling Condition.csv")
 model = dataprocess()
 after_process_SMOGN_data = model.preprocess(TSMIP_smogn_df, target, False)
 after_process_ori_data = model.preprocess(TSMIP_df, target, True)
-after_process_DSCon = model.preprocess(DSCon, target, False)
+# after_process_DSCon = model.preprocess(DSCon, target, False)
 
 model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
 result_SMOGN = model.split_dataset(after_process_SMOGN_data,
@@ -27,17 +27,17 @@ result_ori = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
                                  True, *model_feture)
 original_data = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
                                     False, *model_feture)
-DSCon_data = model.split_dataset(after_process_DSCon, f'ln{target}(gal)',
-                                 False, *model_feture)
+# DSCon_data = model.split_dataset(after_process_DSCon, f'ln{target}(gal)',
+#                                  False, *model_feture)
 
-# result_ori[0](訓練資料)之shape : (29896,6) 為 29896筆 records 加上以下6個columns ['lnVs30','MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y']
+#! result_ori[0](訓練資料)之shape : (29896,5) 為 29896筆 records 加上以下5個columns ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
 score, feature_importances, fit_time, final_predict, ML_model = model.training(
-    "XGB", result_ori[0], result_ori[1], result_ori[2], result_ori[3])
+    target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
 
 # originaldata_predicted_result = model.predicted_original(
 #     ML_model, original_data)
 
-plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
+# plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.predicted_distribution(result_ori[1], result_ori[3],
 #                                        final_predict, fit_time, score)
 # plot_something.residual(original_data[0], original_data[1],

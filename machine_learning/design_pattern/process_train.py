@@ -14,6 +14,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score, mean_squared_error, make_scorer
 from sklearn.tree import plot_tree
+import pickle
 # from dtreeviz.trees import dtreeviz
 
 
@@ -66,7 +67,7 @@ class dataprocess:
             print("--------not split_your_data----------")
             return [x.values, y.values]
 
-    def training(self, model_name, x_train, x_test, y_train, y_test):
+    def training(self, target, model_name, x_train, x_test, y_train, y_test):
         assert model_name in [
             "SVR", "RF", "XGB", "GBDT", "DNN", "Ada"
         ], "please choose one method in [SVR, RF, XGB, GBDT, DNN, Ada] or add the new method by yourself"
@@ -205,6 +206,7 @@ class dataprocess:
         else:
             pass
 
+        pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
         return score, feature_importances, fit_time, final_predict, model
 
     def predicted_original(self, model, ori_dataset):

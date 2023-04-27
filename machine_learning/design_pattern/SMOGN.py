@@ -66,7 +66,7 @@ plt.suptitle('Boxplots about TSMIP-SMOGN data')
 plt.savefig('TSMIP-SMOGN boxplots.jpg',dpi=300)
 
 ## load data
-target = "Sa01"
+target = "Sa05"
 TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_pre_smogn_{target}.csv")
 
 ## conduct smogn ##這步大概要兩個小時

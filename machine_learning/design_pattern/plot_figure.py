@@ -16,6 +16,7 @@ import shap
 sys.path.append("..")
 from design_pattern.process_train import dataprocess
 
+
 class plot_fig:
 
     def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP, target):
@@ -26,7 +27,6 @@ class plot_fig:
 
     def predicted_distribution(self, x_test, y_test, predict_value, fit_time,
                                score):
-
         """ 
         
         train & test distribution
@@ -90,10 +90,9 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def residual(self, x_total: "ori_feature", y_total: "ori_ans",
+    def residual(self, x_total: "ori_feature", y_total: "ori_feature",
                  predict_value: "ori_predicted",
                  ori_full_data: "ori_notsplit_data", score):
-
         """
         
         Total Residual 
@@ -174,7 +173,9 @@ class plot_fig:
         plt.plot([121, 121], [
             residual_121_mean + residual_121_std,
             residual_121_mean - residual_121_std
-        ], 'black', label='1 std.')
+        ],
+                 'black',
+                 label='1 std.')
         plt.plot([199, 199], [
             residual_199_mean + residual_199_std,
             residual_199_mean - residual_199_std
@@ -274,10 +275,7 @@ class plot_fig:
                                                    N=256)
 
         plt.grid(linestyle=':', color='darkgrey')
-        plt.scatter(x_total[:, 1],
-                    residual,
-                    c=color_column,
-                    cmap=newcmp)
+        plt.scatter(x_total[:, 1], residual, c=color_column, cmap=newcmp)
         plt.colorbar(extend='both', label='number value')
         plt.scatter([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean, residual_4_5_mean, residual_5_5_mean,
@@ -289,7 +287,9 @@ class plot_fig:
         plt.plot([3.5, 3.5], [
             residual_3_5_mean + residual_3_5_std,
             residual_3_5_mean - residual_3_5_std
-        ], 'black', label='1 std.')
+        ],
+                 'black',
+                 label='1 std.')
         plt.plot([4.5, 4.5], [
             residual_4_5_mean + residual_4_5_std,
             residual_4_5_mean - residual_4_5_std
@@ -372,9 +372,10 @@ class plot_fig:
         j = 0
         while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
             x_net = (round(np.exp(x_total[:, 2])[j], 2) - 5 * 1e0) / (
-                (1e3 - 5 * 1e0) / net) 
+                (1e3 - 5 * 1e0) / net)
             y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
-            color_column.append(zz[math.floor(x_net), math.floor(y_net)]) #將統計好資料寫入color_column
+            color_column.append(zz[math.floor(x_net),
+                                   math.floor(y_net)])  #將統計好資料寫入color_column
             # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
 
@@ -382,7 +383,7 @@ class plot_fig:
         newcmp = LinearSegmentedColormap.from_list('testCmap',
                                                    colors=colorlist,
                                                    N=256)
-        
+
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(np.exp(x_total[:, 2]),
                     residual,
@@ -399,7 +400,9 @@ class plot_fig:
         plt.plot([10, 10], [
             residual_10_mean + residual_10_std,
             residual_10_mean - residual_10_std
-        ], 'black', label='1 std.')
+        ],
+                 'black',
+                 label='1 std.')
         plt.plot([31, 31], [
             residual_31_mean + residual_31_std,
             residual_31_mean - residual_31_std
@@ -501,7 +504,6 @@ class plot_fig:
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Total-Residual Distribution.jpg',
             dpi=300)
         plt.show()
-
         """
 
         inter intra event residual
@@ -572,17 +574,19 @@ class plot_fig:
 
         i = 0
         while i < len(residual):  # 計算每個網格中總點數
-            x_net = (round(total_data_df['Rrup'][i], 2) - (-50)) / (
-                (600 - (-50)) / net)
-            y_net = (round(total_data_df['intra_event_residual'][i], 2) - (-2.5)) / ((2.5 - (-2.5)) / net)
+            x_net = (round(total_data_df['Rrup'][i], 2) -
+                     (-50)) / ((600 - (-50)) / net)
+            y_net = (round(total_data_df['intra_event_residual'][i], 2) -
+                     (-2.5)) / ((2.5 - (-2.5)) / net)
             zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
             i += 1
 
         j = 0
         while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
-            x_net = (round(total_data_df['Rrup'][j], 2) - (-50)) / (
-                (600 - (-50)) / net)
-            y_net = (round(total_data_df['intra_event_residual'][j], 2) - (-2.5)) / ((2.5 - (-2.5)) / net)
+            x_net = (round(total_data_df['Rrup'][j], 2) -
+                     (-50)) / ((600 - (-50)) / net)
+            y_net = (round(total_data_df['intra_event_residual'][j], 2) -
+                     (-2.5)) / ((2.5 - (-2.5)) / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
             # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
@@ -591,7 +595,7 @@ class plot_fig:
         newcmp = LinearSegmentedColormap.from_list('testCmap',
                                                    colors=colorlist,
                                                    N=256)
-        
+
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(total_data_df['Rrup'],
                     total_data_df['intra_event_residual'],
@@ -605,7 +609,7 @@ class plot_fig:
             total_data_df['intra_event_residual'].mean()
         ],
                  'b--',
-                 label = "mean value",
+                 label="mean value",
                  linewidth=0.5)
         plt.xlim(-50, 600)
         plt.ylim(-2.5, 2.5)
@@ -631,7 +635,8 @@ class plot_fig:
         while i < len(residual):  # 計算每個網格中總點數
             x_net = (round(total_data_df['Rrup'][i], 2) - 0) / (
                 (1400 - 0) / net)
-            y_net = (round(total_data_df['intra_event_residual'][i], 2) - (-2.5)) / ((2.5 - (-2.5)) / net)
+            y_net = (round(total_data_df['intra_event_residual'][i], 2) -
+                     (-2.5)) / ((2.5 - (-2.5)) / net)
             zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
             i += 1
 
@@ -639,7 +644,8 @@ class plot_fig:
         while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
             x_net = (round(total_data_df['Rrup'][j], 2) - 0) / (
                 (1400 - 0) / net)
-            y_net = (round(total_data_df['intra_event_residual'][j], 2) - (-2.5)) / ((2.5 - (-2.5)) / net)
+            y_net = (round(total_data_df['intra_event_residual'][j], 2) -
+                     (-2.5)) / ((2.5 - (-2.5)) / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
             # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
@@ -648,7 +654,7 @@ class plot_fig:
         newcmp = LinearSegmentedColormap.from_list('testCmap',
                                                    colors=colorlist,
                                                    N=256)
-        
+
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(total_data_df['Vs30'],
                     total_data_df['intra_event_residual'],
@@ -662,7 +668,7 @@ class plot_fig:
             total_data_df['intra_event_residual'].mean()
         ],
                  'b--',
-                 label = "mean value",
+                 label="mean value",
                  linewidth=0.5)
         plt.xlim(0, 1400)
         plt.ylim(-2.5, 2.5)
@@ -680,7 +686,6 @@ class plot_fig:
 
     def measured_predict(self, y_test: "ori_ans",
                          predict_value: "ori_predicted", score):
-
         """
         
         預測PGA和實際PGA
@@ -712,10 +717,7 @@ class plot_fig:
                                                    N=256)
 
         plt.grid(linestyle=':')
-        plt.scatter(y_test,
-                    predict_value,
-                    c=color_column,
-                    cmap=newcmp)
+        plt.scatter(y_test, predict_value, c=color_column, cmap=newcmp)
         x_line = [-2, 8]
         y_line = [-2, 8]
         plt.plot(x_line, y_line, 'r--', alpha=0.5)
@@ -790,16 +792,9 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def explainable(
-            self,
-            x_test: "ori_test_feature",
-            model_feture,
-            ML_model,
-            seed
-            ):
-        df = pd.DataFrame(
-            x_test,
-            columns = model_feture)
+    def explainable(self, x_test: "ori_test_feature", model_feture, ML_model,
+                    seed):
+        df = pd.DataFrame(x_test, columns=model_feture)
         explainer = shap.Explainer(ML_model)
         shap_values = explainer(df)
 
@@ -807,7 +802,7 @@ class plot_fig:
         # summary
         shap.summary_plot(shap_values, df, show=False)
         plt.savefig("summary_plot.jpg", bbox_inches='tight', dpi=300)
-        
+
         # bar plot
         fig = plt.figure()
         shap.plots.bar(shap_values, show=False)
@@ -818,16 +813,16 @@ class plot_fig:
         # scatter plot
         fig = plt.figure()
         shap.plots.scatter(shap_values[:, "MW"],
-                        color=shap_values[:, "lnRrup"],
-                        show=False)
+                           color=shap_values[:, "lnRrup"],
+                           show=False)
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
         plt.savefig("shap_scatter_MW_lnRrup.jpg", bbox_inches='tight', dpi=300)
-        
+
         fig = plt.figure()
         shap.plots.scatter(shap_values[:, "lnRrup"],
-                        color=shap_values[:, "MW"],
-                        show=False)
+                           color=shap_values[:, "MW"],
+                           show=False)
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
         plt.savefig("shap_scatter_lnRrup_MW.jpg", bbox_inches='tight', dpi=300)
@@ -835,21 +830,28 @@ class plot_fig:
         #! Local Explainable
         # waterfall
         fig = plt.figure()
-        shap.plots.waterfall(shap_values[seed], show=False)  # 單筆資料解釋:第seed筆資料解釋
+        shap.plots.waterfall(shap_values[seed],
+                             show=False)  # 單筆資料解釋:第seed筆資料解釋
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
         plt.savefig("shap_waterfall.jpg", bbox_inches='tight', dpi=300)
 
         # force plot
         shap.initjs()
-        shap.force_plot(explainer.expected_value, shap_values.values[seed, :],
-                        df.iloc[seed, :], show=False,matplotlib=True)
+        shap.force_plot(explainer.expected_value,
+                        shap_values.values[seed, :],
+                        df.iloc[seed, :],
+                        show=False,
+                        matplotlib=True)
         plt.savefig("force_plot.jpg", bbox_inches='tight', dpi=300)
-        
+
         # 強制刷新緩存
         fig.canvas.draw()
-        
 
+    def respond_spetrum(self, *args: "model", x_total: "ori_feature",
+                        y_total: "ori_feature"):
+        
+        return "hi"
 
 
 if __name__ == '__main__':

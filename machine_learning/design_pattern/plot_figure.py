@@ -800,15 +800,16 @@ class plot_fig:
 
         #! Global Explainable
         # summary
+        fig = plt.figure()
         shap.summary_plot(shap_values, df, show=False)
-        plt.savefig("summary_plot.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"summary_plot_{self.target}.jpg", bbox_inches='tight', dpi=300)
 
         # bar plot
         fig = plt.figure()
         shap.plots.bar(shap_values, show=False)
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig("shap_bar.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"shap_bar_{self.target}.jpg", bbox_inches='tight', dpi=300)
 
         # scatter plot
         fig = plt.figure()
@@ -817,7 +818,7 @@ class plot_fig:
                            show=False)
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig("shap_scatter_MW_lnRrup.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"shap_scatter_MW_lnRrup_{self.target}.jpg", bbox_inches='tight', dpi=300)
 
         fig = plt.figure()
         shap.plots.scatter(shap_values[:, "lnRrup"],
@@ -825,7 +826,7 @@ class plot_fig:
                            show=False)
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig("shap_scatter_lnRrup_MW.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"shap_scatter_lnRrup_MW_{self.target}.jpg", bbox_inches='tight', dpi=300)
 
         #! Local Explainable
         # waterfall
@@ -834,7 +835,7 @@ class plot_fig:
                              show=False)  # 單筆資料解釋:第seed筆資料解釋
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig("shap_waterfall.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"shap_waterfall_{seed}_{self.target}.jpg", bbox_inches='tight', dpi=300)
 
         # force plot
         shap.initjs()
@@ -843,7 +844,7 @@ class plot_fig:
                         df.iloc[seed, :],
                         show=False,
                         matplotlib=True)
-        plt.savefig("force_plot.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"force_plot_{seed}_{self.target}.jpg", bbox_inches='tight', dpi=300)
 
         # 強制刷新緩存
         fig.canvas.draw()

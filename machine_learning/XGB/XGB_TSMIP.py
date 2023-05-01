@@ -39,6 +39,9 @@ score, feature_importances, fit_time, final_predict, ML_model = model.training(
 originaldata_predicted_result = model.predicted_original(
     ML_model, original_data)
 
+score = 0.87
+target = "PGA"
+ML_model = pickle.load(open(f"XGB_{target}.pkl", 'rb'))
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.predicted_distribution(result_ori[1], result_ori[3],
 #                                        final_predict, fit_time, score)
@@ -46,13 +49,13 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score)
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score)
-# for i in range(len(DSCon['MW'])):
-#     Mw = DSCon['MW'][i]
-#     Vs30 = DSCon['Vs30'][i]
-#     faulttype = DSCon['fault.type'][i]
-#     plot_something.distance_scaling(i, ML_model, DSCon_data, Vs30, Mw, faulttype,
-#                                     score)
-seed = 16044
+for i in range(len(DSCon['MW'])):
+    Mw = DSCon['MW'][i]
+    Vs30 = DSCon['Vs30'][i]
+    faulttype = DSCon['fault.type'][i]
+    plot_something.distance_scaling(i, ML_model, DSCon_data, Vs30, Mw, faulttype,
+                                    score)
+seed = 18989
 plot_something.explainable(original_data[0], model_feture, ML_model, seed)
 
 # 加载模型

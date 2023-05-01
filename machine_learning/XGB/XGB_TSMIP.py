@@ -36,10 +36,10 @@ score, feature_importances, fit_time, final_predict, ML_model = model.training(
     target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2],
     result_ori[3])
 
-# originaldata_predicted_result = model.predicted_original(
-#     ML_model, original_data)
+originaldata_predicted_result = model.predicted_original(
+    ML_model, original_data)
 
-# plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
+plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.predicted_distribution(result_ori[1], result_ori[3],
 #                                        final_predict, fit_time, score)
 # plot_something.residual(original_data[0], original_data[1],
@@ -52,8 +52,8 @@ score, feature_importances, fit_time, final_predict, ML_model = model.training(
 #     faulttype = DSCon['fault.type'][i]
 #     plot_something.distance_scaling(i, ML_model, DSCon_data, Vs30, Mw, faulttype,
 #                                     score)
-# seed = 555
-# plot_something.explainable(result_ori[1], model_feture, ML_model, seed)
+seed = 16044
+plot_something.explainable(original_data[0], model_feture, ML_model, seed)
 
 # 加载模型
 PGA_model = pickle.load(open("XGB_PGA.pkl", 'rb'))
@@ -83,12 +83,18 @@ Sa100_predict = np.exp(Sa100_model.predict(DSCon_data[0])) / 980
 
 fault_type = ["REV", "NM", "SS"]
 plt.grid(which="both", axis="both", linestyle="-", linewidth=0.5, alpha=0.5)
-for i in range(0, 3):
-    plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
-        Sa001_predict[i], Sa005_predict[i], Sa01_predict[i], Sa02_predict[i],
-        Sa05_predict[i], Sa10_predict[i], Sa30_predict[i], Sa40_predict[i],
-        Sa100_predict[i]
-    ],label=fault_type[i])
+plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
+    Sa001_predict[0], Sa005_predict[0], Sa01_predict[0], Sa02_predict[0],
+    Sa05_predict[0], Sa10_predict[0], Sa30_predict[0], Sa40_predict[0],
+    Sa100_predict[0]
+],label=fault_type[0])
+
+# for i in range(0, 3):
+#     plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
+#         Sa001_predict[i], Sa005_predict[i], Sa01_predict[i], Sa02_predict[i],
+#         Sa05_predict[i], Sa10_predict[i], Sa30_predict[i], Sa40_predict[i],
+#         Sa100_predict[i]
+#     ],label=fault_type[i])
 
 plt.title(
     f"M = {DSCon['MW'][0]}, Rrup = {DSCon['Rrup'][0]}km, Vs30 = {DSCon['Vs30'][0]}m/s"

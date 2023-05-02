@@ -750,7 +750,7 @@ class plot_fig:
             Result.append(ML_model.predict([DSCon_data[0][index]]))
         myline = np.linspace(1.5, 5.5, 30)
         fig = plt.figure()
-        plt.grid(linestyle=':')
+        plt.grid(which="both", axis="both", linestyle="-", linewidth=0.5, alpha=0.5)
         plt.plot(myline,
                  Result,
                  linewidth='0.8',

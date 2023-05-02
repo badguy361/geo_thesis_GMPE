@@ -112,5 +112,5 @@ plt.xticks([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
            [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
 plt.legend()
 plt.savefig(
-    f"response spectra-{DSCon['MW'][0]} {DSCon['Rrup'][0]} {DSCon['Vs30'][0]} {DSCon['fault.type'][0]}.jpg",
+    f"response spectrum-{DSCon['MW'][0]} {DSCon['Rrup'][0]} {DSCon['Vs30'][0]} {DSCon['fault.type'][0]}.jpg",
     dpi=300)

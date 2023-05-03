@@ -8,7 +8,7 @@ model = dataprocess()
 class Testprocess_train(unittest.TestCase):
     def test_preprocess(self):
         target = "PGA"
-        data = pd.read_csv("../../../TSMIP_FF_test.csv")
+        data = pd.read_csv("../../TSMIP_FF_test.csv")
         data['lnVs30'] = np.log(data['Vs30'])
         data['lnRrup'] = np.log(data['Rrup'])
         data['log10Vs30'] = np.log10(data['Vs30'])
@@ -23,7 +23,7 @@ class Testprocess_train(unittest.TestCase):
         after_process_data = data[(data["eq.type"] != "subduction interface")
                                   & (data["eq.type"] != "subduction intraslab")
                                   & (data["eq.type"] != "deep crustal")]
-        df = pd.read_csv("../../../TSMIP_FF_test.csv")
+        df = pd.read_csv("../../TSMIP_FF_test.csv")
         result = model.preprocess(df, target, True)
         assert after_process_data.equals(result)
 

@@ -775,7 +775,7 @@ class plot_fig:
                     color='grey',
                     label='data')
         plt.xlabel('Rrup(km)')
-        plt.ylabel("PSA(g)")
+        plt.ylabel(f"PSA({self.target})(g)")
         plt.ylim(10e-5, 10)
         plt.xlim(1, 300)
         plt.yscale("log")
@@ -784,7 +784,7 @@ class plot_fig:
         plt.title(f"M = {Mw}, Vs30 = {Vs30}m/s")
         plt.legend()
         plt.savefig(
-            f"distance scaling-Mw{Mw} Vs30{Vs30} fault-type{fault_type} station{station_rank}.jpg",
+            f"distance scaling-{self.target} Mw{Mw} Vs30{Vs30} fault-type{fault_type} station{station_rank}.jpg",
             dpi=300)
         plt.show()
 

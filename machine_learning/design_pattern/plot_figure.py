@@ -11,6 +11,7 @@ from sklearn.preprocessing import PolynomialFeatures
 import sys
 import os
 import shap
+import pickle
 # append the path of the
 # parent directory
 sys.path.append("..")
@@ -90,7 +91,7 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def residual(self, x_total: "ori_feature", y_total: "ori_feature",
+    def residual(self, x_total: "ori_feature", y_total: "ori_ans",
                  predict_value: "ori_predicted",
                  ori_full_data: "ori_notsplit_data", score):
         """
@@ -737,58 +738,53 @@ class plot_fig:
 
     def distance_scaling(
             self,  # change Mw Vs30 etc. condition by csv file
-            index,
-            ML_model,
-            DSCon_data,
             Vs30,
             Mw,
-            faulttype,
-            score):
+            Rrup,
+            fault_type,
+            station_rank,
+            x_total: "ori_feature",
+            y_total: "ori_ans",
+            ML_model):
+        DSCon = np.array(
+            [[np.log(Vs30), Mw,
+              np.log(Rrup), fault_type, station_rank]])
         Result = []
-        for i in np.linspace(1.5, 5.5, 30):
-            DSCon_data[0][index][2] = round(i, 2)  # change distance value
-            Result.append(ML_model.predict([DSCon_data[0][index]]))
-        myline = np.linspace(1.5, 5.5, 30)
+        for i in np.linspace(1, 200, 100):
+            DSCon[0][2] = np.log(round(i, 2))  # 給定距離預測值
+            Result.append(np.exp(ML_model.predict(DSCon)) / 980)
+        myline = np.linspace(1, 200, 100)
+        fault_type_list = ["0", "REV", "NM", "SS"]
+        x_total = np.transpose(x_total, (1, 0))  # 轉換dim
+
         fig = plt.figure()
-        plt.grid(which="both", axis="both", linestyle="-", linewidth=0.5, alpha=0.5)
+        plt.grid(which="both",
+                 axis="both",
+                 linestyle="-",
+                 linewidth=0.5,
+                 alpha=0.5)
         plt.plot(myline,
                  Result,
                  linewidth='0.8',
                  color='r',
-                 label=f'Vs30={Vs30}m/s')
-
-        plt.xlabel('ln(Rrup)(km)')
-        plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
-        plt.title(f'{self.abbreviation_name} Distance Scaling')
-
-        if self.target == "PGA":
-            plt.text(0.5, 3, f"R2 score = {round(score,2)}")
-            if faulttype == 1:
-                plt.text(0.5, 2, f"Reverse")
-            elif faulttype == 2:
-                plt.text(0.5, 2, f"Normal")
-            elif faulttype == 3:
-                plt.text(0.5, 2, f"Strike Slip")
-            plt.text(0.5, 1, f"Mw = {Mw}")
-        elif self.target == "PGV":
-            plt.text(1, 6.5, f"R2 score = {round(score,2)}")
-            if faulttype == 1:
-                plt.text(1, 5.5, f"Reverse")
-            elif faulttype == 2:
-                plt.text(1, 5.5, f"Normal")
-            elif faulttype == 3:
-                plt.text(1, 5.5, f"Strike Slip")
-            plt.text(1, 4.5, f"{Mw}")
-
-        if self.target == "PGA":
-            plt.xlim(0, 6)
-            plt.ylim(0.4, 7)
-        elif self.target == "PGV":
-            plt.xlim(0.5, 6)
-
+                 label=fault_type_list[fault_type])
+        plt.scatter(np.exp(x_total[2]),
+                    np.exp(y_total)/980,
+                    marker='o',
+                    facecolors='none', 
+                    color='grey',
+                    label='data')
+        plt.xlabel('Rrup(km)')
+        plt.ylabel("PSA(g)")
+        plt.ylim(10e-5, 10)
+        plt.xlim(1, 300)
+        plt.yscale("log")
+        plt.xscale("log")
+        plt.xticks([1, 10, 50, 100, 200, 300], [1, 10, 50, 100, 200, 300])
+        plt.title(f"M = {Mw}, Vs30 = {Vs30}m/s")
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/Distance Scaling/{f"{self.target} Mw={Mw} faulttype={faulttype} Vs30={Vs30}"} Distance Scaling.jpg',
+            f"distance scaling-Mw{Mw} Vs30{Vs30} fault-type{fault_type} station{station_rank}.jpg",
             dpi=300)
         plt.show()
 
@@ -802,14 +798,18 @@ class plot_fig:
         # summary
         fig = plt.figure()
         shap.summary_plot(shap_values, df, show=False)
-        plt.savefig(f"summary_plot_{self.target}.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"summary_plot_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
 
         # bar plot
         fig = plt.figure()
         shap.plots.bar(shap_values, show=False)
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig(f"shap_bar_{self.target}.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"shap_bar_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
 
         # scatter plot
         fig = plt.figure()
@@ -818,7 +818,9 @@ class plot_fig:
                            show=False)
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig(f"shap_scatter_MW_lnRrup_{self.target}.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"shap_scatter_MW_lnRrup_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
 
         fig = plt.figure()
         shap.plots.scatter(shap_values[:, "lnRrup"],
@@ -826,7 +828,9 @@ class plot_fig:
                            show=False)
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig(f"shap_scatter_lnRrup_MW_{self.target}.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"shap_scatter_lnRrup_MW_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
 
         #! Local Explainable
         # waterfall
@@ -835,7 +839,9 @@ class plot_fig:
                              show=False)  # 單筆資料解釋:第seed筆資料解釋
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig(f"shap_waterfall_{seed}_{self.target}.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"shap_waterfall_{seed}_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
 
         # force plot
         shap.initjs()
@@ -844,15 +850,66 @@ class plot_fig:
                         df.iloc[seed, :],
                         show=False,
                         matplotlib=True)
-        plt.savefig(f"force_plot_{seed}_{self.target}.jpg", bbox_inches='tight', dpi=300)
+        plt.savefig(f"force_plot_{seed}_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
 
         # 強制刷新緩存
         fig.canvas.draw()
 
-    def respond_spetrum(self, *args: "model", x_total: "ori_feature",
-                        y_total: "ori_feature"):
-        
-        return "hi"
+    def respond_spetrum(self, Vs30, Mw, Rrup, fault_type, station_rank,
+                        *args: "model"):
+        RSCon = np.array(
+            [[np.log(Vs30), Mw,
+              np.log(Rrup), fault_type, station_rank]])
+        PGA_model = pickle.load(open(args[0], 'rb'))
+        PGV_model = pickle.load(open(args[1], 'rb'))
+        Sa001_model = pickle.load(open(args[2], 'rb'))
+        Sa005_model = pickle.load(open(args[3], 'rb'))
+        Sa01_model = pickle.load(open(args[4], 'rb'))
+        Sa02_model = pickle.load(open(args[5], 'rb'))
+        Sa05_model = pickle.load(open(args[6], 'rb'))
+        Sa10_model = pickle.load(open(args[7], 'rb'))
+        Sa30_model = pickle.load(open(args[8], 'rb'))
+        Sa40_model = pickle.load(open(args[9], 'rb'))
+        Sa100_model = pickle.load(open(args[10], 'rb'))
+
+        PGA_predict = np.exp(PGA_model.predict(RSCon)) / 980
+        PGV_predict = np.exp(PGV_model.predict(RSCon)) / 980
+        Sa001_predict = np.exp(Sa001_model.predict(RSCon)) / 980
+        Sa005_predict = np.exp(Sa005_model.predict(RSCon)) / 980
+        Sa01_predict = np.exp(Sa01_model.predict(RSCon)) / 980
+        Sa02_predict = np.exp(Sa02_model.predict(RSCon)) / 980
+        Sa05_predict = np.exp(Sa05_model.predict(RSCon)) / 980
+        Sa10_predict = np.exp(Sa10_model.predict(RSCon)) / 980
+        Sa30_predict = np.exp(Sa30_model.predict(RSCon)) / 980
+        Sa40_predict = np.exp(Sa40_model.predict(RSCon)) / 980
+        Sa100_predict = np.exp(Sa100_model.predict(RSCon)) / 980
+        fault_type_list = ["0", "REV", "NM", "SS"]
+        plt.grid(which="both",
+                 axis="both",
+                 linestyle="-",
+                 linewidth=0.5,
+                 alpha=0.5)
+        plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
+            Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
+            Sa02_predict[0], Sa05_predict[0], Sa10_predict[0], Sa30_predict[0],
+            Sa40_predict[0], Sa100_predict[0]
+        ],
+                 label=fault_type_list[fault_type])
+        plt.title(f"M = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
+        plt.xlabel("Period(s)")
+        plt.ylabel("PSA(g)")
+        plt.ylim(10e-6, 1)
+        plt.xlim(0.01, 10.0)
+        plt.yscale("log")
+        plt.xscale("log")
+        plt.xticks([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
+                   [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
+        plt.legend()
+        plt.savefig(
+            f"response spectrum-Mw{Mw} Rrup{Rrup} Vs30{Vs30} fault-type{fault_type} station{station_rank}.jpg",
+            dpi=300)
 
 
 if __name__ == '__main__':

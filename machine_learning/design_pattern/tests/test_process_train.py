@@ -5,8 +5,8 @@ import os
 import sys
 # append the path of the
 # parent directory
-sys.path.append("..")
-from process_train import dataprocess
+sys.path.append("../..")
+from design_pattern.process_train import dataprocess
 
 model = dataprocess()
 class Testprocess_train(unittest.TestCase):

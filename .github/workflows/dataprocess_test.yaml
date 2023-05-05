@@ -16,7 +16,4 @@ jobs:
         run: docker build -t tsmip .
 
       - name: Test with Docker
-        run: |
-          docker run tsmip pytest
-          cd machine_learning/design_pattern
-          python -m unittest discover tests
+        run: docker run tsmip pytest

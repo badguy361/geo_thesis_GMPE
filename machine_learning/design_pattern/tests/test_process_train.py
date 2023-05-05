@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 import sys
-sys.path.append("/TSMIP/machine_learning/design_pattern")
+# sys.path.append("/TSMIP/machine_learning/design_pattern")
 from process_train import dataprocess
 
 model = dataprocess()

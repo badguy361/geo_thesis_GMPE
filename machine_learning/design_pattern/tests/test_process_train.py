@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
 import time
 import pickle
+from numpy.testing import assert_array_equal
 
 sys.path.append("/TSMIP/machine_learning/design_pattern")
 from process_train import dataprocess
@@ -57,10 +58,11 @@ class Testprocess_train(unittest.TestCase):
                                                             random_state=50,
                                                             train_size=0.8,
                                                             shuffle=True)
-        assert self.assertEqual(x_train, result_ori[0]) and self.assertEqual(
-            x_test, result_ori[1]) and self.assertEqual(
-                y_train, result_ori[2]) and self.assertEqual(
-                    y_test, result_ori[3])
+        assert assert_array_equal(
+            x_train, result_ori[0]) and assert_array_equal(
+                x_test, result_ori[1]) and assert_array_equal(
+                    y_train, result_ori[2]) and assert_array_equal(
+                        y_test, result_ori[3])
 
     def test_training(self):
         target = "PGA"
@@ -86,10 +88,11 @@ class Testprocess_train(unittest.TestCase):
         score_test = XGBModel.score(result_ori[1], result_ori[3])
         model = XGBModel
 
-        assert self.assertEqual(score_model, score_test) and self.assertEqual(
-            final_predict_model[0],
-            final_predict_test[0]) and self.assertEqual(
-                feature_importances_model, feature_importances_test)
+        assert self.assertEqual(
+            score_model, score_test) and assert_array_equal(
+                final_predict_model[0],
+                final_predict_test[0]) and self.assertEqual(
+                    feature_importances_model[0], feature_importances_test[0])
 
     def test_predicted_original(self):
         target = "PGA"
@@ -107,8 +110,8 @@ class Testprocess_train(unittest.TestCase):
             ML_model, original_data)
 
         predicted_result = ML_model.predict(original_data[0])
-        assert self.assertEqual(originaldata_predicted_result[0],
-                                predicted_result[0])
+        assert assert_array_equal(originaldata_predicted_result[0],
+                                  predicted_result[0])
 
 
 suite = unittest.TestSuite()

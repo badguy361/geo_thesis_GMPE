@@ -220,7 +220,7 @@ class plot_fig:
             f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
             (score))
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.jpg',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
         plt.show()
 
@@ -327,7 +327,7 @@ class plot_fig:
             f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
             (score))
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.jpg',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
         plt.show()
 
@@ -441,7 +441,7 @@ class plot_fig:
             f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
             (score))
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.jpg',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
         plt.show()
 
@@ -519,7 +519,7 @@ class plot_fig:
         # 這裡看是否需要變log10
         # total_data_df["residual"] = np.abs((np.exp(total_data_df["predicted"]) - np.exp(total_data_df["lnPGA(gal)"]))/980)
         total_data_df["residual"] = total_data_df["predicted"] - total_data_df[
-            "lnPGA(gal)"]
+            f"ln{self.target}(gal)"]
 
         # build new dataframe to collect inter-event value
         summeries = {'residual': 'mean', 'MW': 'max'}
@@ -576,9 +576,9 @@ class plot_fig:
         i = 0
         while i < len(residual):  # 計算每個網格中總點數
             x_net = (round(total_data_df['Rrup'][i], 2) -
-                     (-50)) / ((600 - (-50)) / net)
+                     (-50)) / ((600 - (-50)) / net) # -50為圖中最小值 600為圖中最大值
             y_net = (round(total_data_df['intra_event_residual'][i], 2) -
-                     (-2.5)) / ((2.5 - (-2.5)) / net)
+                     (-2.5)) / ((2.5 - (-2.5)) / net) # -2.5為圖中最小值 2.5為圖中最大值
             zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
             i += 1
 
@@ -622,7 +622,7 @@ class plot_fig:
         plt.title(
             f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean}')
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Intra-event Residual.jpg',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Intra-event Residual.png',
             dpi=300)
         plt.show()
 
@@ -729,10 +729,10 @@ class plot_fig:
         plt.title(
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predicted Distribution'
         )
-        plt.text(5, 0, f"R2 score = {round(score,2)}")
+        plt.text(4.5, 0, f"R2 score = {round(score,2)}")
         plt.colorbar(extend='both', label='number value')
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Measured Predicted Comparison.jpg',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Measured Predicted Comparison.png',
             dpi=300)
         plt.show()
 

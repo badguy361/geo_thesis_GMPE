@@ -21,6 +21,7 @@ class Testprocess_train(unittest.TestCase):
         data['fault.type'] = data['fault.type'].str.replace("NO", "2")
         data['fault.type'] = data['fault.type'].str.replace("SS", "3")
         data['fault.type'] = pd.to_numeric(data['fault.type'])
+        data[f'ln{target}(gal)'] = np.log(data[f'{target}'] * 980)
         after_process_data = data[(data["eq.type"] != "subduction interface")
                                   & (data["eq.type"] != "subduction intraslab")
                                   & (data["eq.type"] != "deep crustal")]

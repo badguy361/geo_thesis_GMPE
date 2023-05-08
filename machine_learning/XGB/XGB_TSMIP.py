@@ -12,7 +12,7 @@ from design_pattern.process_train import dataprocess
 from design_pattern.plot_figure import plot_fig
 
 #? parameters 
-target = "Sa001"
+target = "PGA"
 Mw = 6.35
 Rrup = 30
 Vs30 = 440
@@ -34,7 +34,7 @@ model = dataprocess()
 after_process_SMOGN_data = model.preprocess(TSMIP_smogn_df, target, False)
 after_process_ori_data = model.preprocess(TSMIP_df, target, True)
 
-model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
+model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y']
 result_SMOGN = model.split_dataset(after_process_SMOGN_data,
                                    f'ln{target}(gal)', True, *model_feture)
 result_ori = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
@@ -44,23 +44,23 @@ original_data = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
 
 #? model train
 #! result_ori[0](訓練資料)之shape : (29896,5) 為 29896筆 records 加上以下5個columns ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-# score, feature_importances, fit_time, final_predict, ML_model = model.training(
-#     target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2],
-#     result_ori[3])
+score, feature_importances, fit_time, final_predict, ML_model = model.training(
+    target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2],
+    result_ori[3])
 
-# originaldata_predicted_result = model.predicted_original(
-#     ML_model, original_data)
+originaldata_predicted_result = model.predicted_original(
+    ML_model, original_data)
 
 #? plot figure
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.predicted_distribution(result_ori[1], result_ori[3],
 #                                        final_predict, fit_time, score)
-# plot_something.residual(original_data[0], original_data[1],
-#                         originaldata_predicted_result, after_process_ori_data,
-#                         score)
+plot_something.residual(original_data[0], original_data[1],
+                        originaldata_predicted_result, after_process_ori_data,
+                        score)
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score)
-plot_something.distance_scaling(Vs30, Mw, Rrup, fault_type, station_rank,
-                                original_data[0], original_data[1], ML_model)
+# plot_something.distance_scaling(Vs30, Mw, Rrup, fault_type, station_rank,
+#                                 original_data[0], original_data[1], ML_model)
 # plot_something.explainable(original_data[0], model_feture, ML_model, seed)
 # plot_something.respond_spetrum(Vs30, Mw, Rrup, fault_type, station_rank,
 #                                *model)

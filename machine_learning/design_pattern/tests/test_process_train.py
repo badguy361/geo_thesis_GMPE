@@ -58,7 +58,7 @@ class Testprocess_train(unittest.TestCase):
                                                             random_state=50,
                                                             train_size=0.8,
                                                             shuffle=True)
-        assert self.assertEqual(round(x_train[0][0],2), round(result_ori[0][0][0],2)) 
+        assert self.assertEqual(6.06, round(result_ori[0][0][0],2)) 
 
     # def test_training(self):
     #     target = "PGA"

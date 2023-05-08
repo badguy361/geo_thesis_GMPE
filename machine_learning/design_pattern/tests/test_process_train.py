@@ -45,7 +45,7 @@ class Testprocess_train(unittest.TestCase):
         after_process_data = model.preprocess(data, target, True)
 
         model_feture = [
-            'lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y'
+            'lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank'
         ]
         result_ori = model.split_dataset(after_process_data,
                                          f'ln{target}(gal)', True,
@@ -67,9 +67,10 @@ class Testprocess_train(unittest.TestCase):
     def test_training(self):
         target = "PGA"
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
+        model = dataprocess()
         after_process_data = model.preprocess(data, target, True)
         model_feture = [
-            'lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y'
+            'lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank'
         ]
         result_ori = model.split_dataset(after_process_data,
                                          f'ln{target}(gal)', True,
@@ -88,8 +89,7 @@ class Testprocess_train(unittest.TestCase):
         score_test = XGBModel.score(result_ori[1], result_ori[3])
         model = XGBModel
 
-        assert self.assertEqual(
-            score_model, score_test) and assert_array_equal(
+        assert self.assertEqual(score_model, score_test) and assert_array_equal(
                 final_predict_model[0],
                 final_predict_test[0]) and self.assertEqual(
                     feature_importances_model[0], feature_importances_test[0])
@@ -98,7 +98,7 @@ class Testprocess_train(unittest.TestCase):
         target = "PGA"
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
         model_feture = [
-            'lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y'
+            'lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank'
         ]
         after_process_ori_data = model.preprocess(data, target, True)
         original_data = model.split_dataset(after_process_ori_data,

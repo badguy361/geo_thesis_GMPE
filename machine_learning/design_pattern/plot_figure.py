@@ -791,7 +791,7 @@ class plot_fig:
         plt.yscale("log")
         plt.xscale("log")
         plt.xticks([1, 10, 50, 100, 200, 300], [1, 10, 50, 100, 200, 300])
-        plt.title(f"M = {Mw}, Vs30 = {Vs30}m/s")
+        plt.title(f"distance scaling [M = {Mw}, Vs30 = {Vs30}m/s]")
         plt.legend()
         plt.savefig(
             f"distance scaling-{self.target} Mw{Mw} Vs30{Vs30} fault-type{fault_type} station{station_rank}.jpg",

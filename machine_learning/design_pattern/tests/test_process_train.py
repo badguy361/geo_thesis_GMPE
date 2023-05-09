@@ -32,7 +32,7 @@ class Testprocess_train(unittest.TestCase):
         data[f'ln{target}(gal)'] = np.log(data[f'{target}'] * 980)
         after_process_data = data[(data["eq.type"] != "subduction interface")
                                   & (data["eq.type"] != "subduction intraslab")
-                                  & (data["eq.type"] != "deep crustal")]
+                                  & (data["eq.type"] != "deep crustal")].reset_index() 
 
         df = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
         result = model.preprocess(df, target, True)

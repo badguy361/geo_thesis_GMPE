@@ -867,11 +867,8 @@ class plot_fig:
         # 強制刷新緩存
         fig.canvas.draw()
 
-    def respond_spetrum(self, Vs30, Mw, Rrup, fault_type, station_rank,
+    def respond_spetrum(self, Vs30, Mw, Rrup, fault_type, station_rank, local,
                         *args: "model"):
-        RSCon = np.array(
-            [[np.log(Vs30), Mw,
-              np.log(Rrup), fault_type, station_rank]])
         PGA_model = pickle.load(open(args[0], 'rb'))
         PGV_model = pickle.load(open(args[1], 'rb'))
         Sa001_model = pickle.load(open(args[2], 'rb'))
@@ -884,42 +881,85 @@ class plot_fig:
         Sa40_model = pickle.load(open(args[9], 'rb'))
         Sa100_model = pickle.load(open(args[10], 'rb'))
 
-        PGA_predict = np.exp(PGA_model.predict(RSCon)) / 980
-        PGV_predict = np.exp(PGV_model.predict(RSCon)) / 980
-        Sa001_predict = np.exp(Sa001_model.predict(RSCon)) / 980
-        Sa005_predict = np.exp(Sa005_model.predict(RSCon)) / 980
-        Sa01_predict = np.exp(Sa01_model.predict(RSCon)) / 980
-        Sa02_predict = np.exp(Sa02_model.predict(RSCon)) / 980
-        Sa05_predict = np.exp(Sa05_model.predict(RSCon)) / 980
-        Sa10_predict = np.exp(Sa10_model.predict(RSCon)) / 980
-        Sa30_predict = np.exp(Sa30_model.predict(RSCon)) / 980
-        Sa40_predict = np.exp(Sa40_model.predict(RSCon)) / 980
-        Sa100_predict = np.exp(Sa100_model.predict(RSCon)) / 980
-        fault_type_list = ["0", "REV", "NM", "SS"]
-        plt.grid(which="both",
-                 axis="both",
-                 linestyle="-",
-                 linewidth=0.5,
-                 alpha=0.5)
-        plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
-            Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
-            Sa02_predict[0], Sa05_predict[0], Sa10_predict[0], Sa30_predict[0],
-            Sa40_predict[0], Sa100_predict[0]
-        ],
-                 label=fault_type_list[fault_type])
-        plt.title(f"M = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
-        plt.xlabel("Period(s)")
-        plt.ylabel("PSA(g)")
-        plt.ylim(10e-6, 1)
-        plt.xlim(0.01, 10.0)
-        plt.yscale("log")
-        plt.xscale("log")
-        plt.xticks([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
-                   [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
-        plt.legend()
-        plt.savefig(
-            f"response spectrum-Mw{Mw} Rrup{Rrup} Vs30{Vs30} fault-type{fault_type} station{station_rank}.png",
-            dpi=300)
+        if local == True:
+            RSCon = np.array(
+                [[np.log(Vs30), Mw,
+                  np.log(Rrup), fault_type, station_rank]])
+            Sa001_predict = np.exp(Sa001_model.predict(RSCon)) / 980
+            Sa005_predict = np.exp(Sa005_model.predict(RSCon)) / 980
+            Sa01_predict = np.exp(Sa01_model.predict(RSCon)) / 980
+            Sa02_predict = np.exp(Sa02_model.predict(RSCon)) / 980
+            Sa05_predict = np.exp(Sa05_model.predict(RSCon)) / 980
+            Sa10_predict = np.exp(Sa10_model.predict(RSCon)) / 980
+            Sa30_predict = np.exp(Sa30_model.predict(RSCon)) / 980
+            Sa40_predict = np.exp(Sa40_model.predict(RSCon)) / 980
+            Sa100_predict = np.exp(Sa100_model.predict(RSCon)) / 980
+            fault_type_list = ["REV", "NM", "SS"]
+            plt.grid(which="both",
+                     axis="both",
+                     linestyle="-",
+                     linewidth=0.5,
+                     alpha=0.5)
+            plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
+                Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
+                Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
+                Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
+            ],
+                     label=fault_type_list[fault_type-1])
+            plt.title(f"M = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
+            plt.xlabel("Period(s)")
+            plt.ylabel("PSA(g)")
+            plt.ylim(10e-6, 1)
+            plt.xlim(0.01, 10.0)
+            plt.yscale("log")
+            plt.xscale("log")
+            plt.xticks([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
+                       [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
+            plt.legend()
+            plt.savefig(
+                f"response spectrum-local Mw{Mw} Rrup{Rrup} Vs30{Vs30} fault-type{fault_type_list[fault_type-1]} station{station_rank}.png",
+                dpi=300)
+        else:
+            fault_type_list = ["REV", "NM", "SS"]
+            for i, fault_type in enumerate(fault_type_list):
+                RSCon = np.array([[
+                    np.log(Vs30), Mw,
+                    np.log(Rrup), i+1, station_rank
+                ]])
+                Sa001_predict = np.exp(Sa001_model.predict(RSCon)) / 980
+                Sa005_predict = np.exp(Sa005_model.predict(RSCon)) / 980
+                Sa01_predict = np.exp(Sa01_model.predict(RSCon)) / 980
+                Sa02_predict = np.exp(Sa02_model.predict(RSCon)) / 980
+                Sa05_predict = np.exp(Sa05_model.predict(RSCon)) / 980
+                Sa10_predict = np.exp(Sa10_model.predict(RSCon)) / 980
+                Sa30_predict = np.exp(Sa30_model.predict(RSCon)) / 980
+                Sa40_predict = np.exp(Sa40_model.predict(RSCon)) / 980
+                Sa100_predict = np.exp(Sa100_model.predict(RSCon)) / 980
+                plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
+                    Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
+                    Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
+                    Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
+                ],
+                         label=fault_type)
+
+            plt.grid(which="both",
+                     axis="both",
+                     linestyle="-",
+                     linewidth=0.5,
+                     alpha=0.5)
+            plt.title(f"M = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
+            plt.xlabel("Period(s)")
+            plt.ylabel("PSA(g)")
+            plt.ylim(10e-6, 1)
+            plt.xlim(0.01, 10.0)
+            plt.yscale("log")
+            plt.xscale("log")
+            plt.xticks([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
+                       [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
+            plt.legend()
+            plt.savefig(
+                f"response spectrum-global Mw{Mw} Rrup{Rrup} Vs30{Vs30} station{station_rank}.png",
+                dpi=300)
 
 
 if __name__ == '__main__':

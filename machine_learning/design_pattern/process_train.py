@@ -39,7 +39,7 @@ class dataprocess:
             after_process_data = data[
                 (data["eq.type"] != "subduction interface")
                 & (data["eq.type"] != "subduction intraslab")
-                & (data["eq.type"] != "deep crustal")]
+                & (data["eq.type"] != "deep crustal")].reset_index() 
         else:
             after_process_data = data
         return after_process_data

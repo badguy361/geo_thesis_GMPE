@@ -502,7 +502,7 @@ class plot_fig:
         plt.ylabel('Numbers')
         plt.title(f'{self.abbreviation_name} Total-Residual Distribution')
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Total-Residual Distribution.jpg',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Total-Residual Distribution.png',
             dpi=300)
         plt.show()
         """
@@ -554,7 +554,7 @@ class plot_fig:
         plt.title(
             f'{self.abbreviation_name} Inter-event Residual Mean:{inter_mean}')
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Inter-event Residual.jpg',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Inter-event Residual.png',
             dpi=300)
         plt.show()
 
@@ -568,17 +568,16 @@ class plot_fig:
             'residual'] - total_data_df['inter_event_residual']
 
         # * Rrup intra-event
-        Rrup_xticks = [0, 50, 100, 150, 200, 250, 300, 400, 500]
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
         color_column = []
 
         i = 0
         while i < len(residual):  # 計算每個網格中總點數
-            x_net = (round(total_data_df['Rrup'][i], 2) -
-                     (-50)) / ((600 - (-50)) / net) # -50為圖中最小值 600為圖中最大值
+            x_net = (round(total_data_df['Rrup'][i], 2) - (-50)) / (
+                (600 - (-50)) / net)  # -50為圖中最小值 600為圖中最大值
             y_net = (round(total_data_df['intra_event_residual'][i], 2) -
-                     (-2.5)) / ((2.5 - (-2.5)) / net) # -2.5為圖中最小值 2.5為圖中最大值
+                     (-2.5)) / ((2.5 - (-2.5)) / net)  # -2.5為圖中最小值 2.5為圖中最大值
             zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
             i += 1
 
@@ -597,7 +596,11 @@ class plot_fig:
                                                    colors=colorlist,
                                                    N=256)
 
-        plt.grid(linestyle=':', color='darkgrey')
+        plt.grid(which="both",
+                 axis="both",
+                 linestyle="--",
+                 linewidth=0.5,
+                 alpha=0.5)
         plt.scatter(total_data_df['Rrup'],
                     total_data_df['intra_event_residual'],
                     marker='o',
@@ -612,10 +615,17 @@ class plot_fig:
                  'b--',
                  label="mean value",
                  linewidth=0.5)
-        plt.xlim(-50, 600)
+        plt.xlim(1, 600)
         plt.ylim(-2.5, 2.5)
-        plt.xticks(Rrup_xticks)
         plt.legend()
+        plt.xscale("symlog")
+        plt.xticks([
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+            200, 300, 400, 500
+        ], [
+            1, '', '', '', '', '', '', '', '', 10, '', '', '', 50, '', '', '',
+            '', 100, 200, 300, '', 500
+        ])
         plt.xlabel('Rrup(km)')
         plt.ylabel(f'Intra-event Residual ln({self.target})(cm/s^2)')
         intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
@@ -681,7 +691,7 @@ class plot_fig:
         plt.title(
             f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean}')
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Intra-event Residual.jpg',
+            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Intra-event Residual.png',
             dpi=300)
         plt.show()
 
@@ -769,9 +779,9 @@ class plot_fig:
                  color='r',
                  label=fault_type_list[fault_type])
         plt.scatter(np.exp(x_total[2]),
-                    np.exp(y_total)/980,
+                    np.exp(y_total) / 980,
                     marker='o',
-                    facecolors='none', 
+                    facecolors='none',
                     color='grey',
                     label='data')
         plt.xlabel('Rrup(km)')
@@ -908,7 +918,7 @@ class plot_fig:
                    [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
         plt.legend()
         plt.savefig(
-            f"response spectrum-Mw{Mw} Rrup{Rrup} Vs30{Vs30} fault-type{fault_type} station{station_rank}.jpg",
+            f"response spectrum-Mw{Mw} Rrup{Rrup} Vs30{Vs30} fault-type{fault_type} station{station_rank}.png",
             dpi=300)
 
 

@@ -25,7 +25,7 @@ station_rank = 265
 #     'model/XGB_Sa40.pkl', 'model/XGB_Sa100.pkl'
 # ]
 # seed = 18989
-ML_model = pickle.load(open(f'model/XGB_{target}.pkl', 'rb'))
+# ML_model = pickle.load(open(f'model/XGB_{target}.pkl', 'rb'))
 
 #? data preprocess 
 TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_smogn_{target}.csv")
@@ -34,7 +34,7 @@ model = dataprocess()
 after_process_SMOGN_data = model.preprocess(TSMIP_smogn_df, target, False)
 after_process_ori_data = model.preprocess(TSMIP_df, target, True)
 
-model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_Lon_X', 'STA_Lat_Y']
+model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
 result_SMOGN = model.split_dataset(after_process_SMOGN_data,
                                    f'ln{target}(gal)', True, *model_feture)
 result_ori = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
@@ -64,3 +64,5 @@ plot_something.residual(original_data[0], original_data[1],
 # plot_something.explainable(original_data[0], model_feture, ML_model, seed)
 # plot_something.respond_spetrum(Vs30, Mw, Rrup, fault_type, station_rank,
 #                                *model)
+
+# 生成數據

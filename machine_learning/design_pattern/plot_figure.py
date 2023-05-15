@@ -19,7 +19,6 @@ from design_pattern.process_train import dataprocess
 
 
 class plot_fig:
-
     def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP, target):
         self.model_name = model_name
         self.abbreviation_name = abbreviation_name
@@ -171,33 +170,35 @@ class plot_fig:
                     marker='o',
                     color='black',
                     label='mean value')
-        plt.plot([121, 121], [
-            residual_121_mean + residual_121_std,
-            residual_121_mean - residual_121_std
-        ],
-                 'black',
-                 label='1 std.')
-        plt.plot([199, 199], [
-            residual_199_mean + residual_199_std,
-            residual_199_mean - residual_199_std
-        ], 'black')
-        plt.plot([398, 398], [
-            residual_398_mean + residual_398_std,
-            residual_398_mean - residual_398_std
-        ], 'black')
-        plt.plot([794, 794], [
-            residual_794_mean + residual_794_std,
-            residual_794_mean - residual_794_std
-        ], 'black')
-        plt.plot([1000, 1000], [
-            residual_1000_mean + residual_1000_std,
-            residual_1000_mean - residual_1000_std
-        ], 'black')
+        # plt.plot([121, 121], [
+        #     residual_121_mean + residual_121_std,
+        #     residual_121_mean - residual_121_std
+        # ],
+        #          'black',
+        #          label='1 std.')
+        # plt.plot([199, 199], [
+        #     residual_199_mean + residual_199_std,
+        #     residual_199_mean - residual_199_std
+        # ], 'black')
+        # plt.plot([398, 398], [
+        #     residual_398_mean + residual_398_std,
+        #     residual_398_mean - residual_398_std
+        # ], 'black')
+        # plt.plot([794, 794], [
+        #     residual_794_mean + residual_794_std,
+        #     residual_794_mean - residual_794_std
+        # ], 'black')
+        # plt.plot([1000, 1000], [
+        #     residual_1000_mean + residual_1000_std,
+        #     residual_1000_mean - residual_1000_std
+        # ], 'black')
 
         plt.plot([121, 199, 398, 794, 1000], [
             residual_121_mean, residual_199_mean, residual_398_mean,
             residual_794_mean, residual_1000_mean
-        ], 'k--')
+        ],
+                 'k--',
+                 label='1 std.')
         plt.plot([121, 199, 398, 794, 1000], [
             residual_121_mean + residual_121_std, residual_199_mean +
             residual_199_std, residual_398_mean + residual_398_std,
@@ -285,29 +286,31 @@ class plot_fig:
                     marker='o',
                     color='black',
                     label='mean value')
-        plt.plot([3.5, 3.5], [
-            residual_3_5_mean + residual_3_5_std,
-            residual_3_5_mean - residual_3_5_std
-        ],
-                 'black',
-                 label='1 std.')
-        plt.plot([4.5, 4.5], [
-            residual_4_5_mean + residual_4_5_std,
-            residual_4_5_mean - residual_4_5_std
-        ], 'black')
-        plt.plot([5.5, 5.5], [
-            residual_5_5_mean + residual_5_5_std,
-            residual_5_5_mean - residual_5_5_std
-        ], 'black')
-        plt.plot([6.5, 6.5], [
-            residual_6_5_mean + residual_6_5_std,
-            residual_6_5_mean - residual_6_5_std
-        ], 'black')
+        # plt.plot([3.5, 3.5], [
+        #     residual_3_5_mean + residual_3_5_std,
+        #     residual_3_5_mean - residual_3_5_std
+        # ],
+        #          'black',
+        #          label='1 std.')
+        # plt.plot([4.5, 4.5], [
+        #     residual_4_5_mean + residual_4_5_std,
+        #     residual_4_5_mean - residual_4_5_std
+        # ], 'black')
+        # plt.plot([5.5, 5.5], [
+        #     residual_5_5_mean + residual_5_5_std,
+        #     residual_5_5_mean - residual_5_5_std
+        # ], 'black')
+        # plt.plot([6.5, 6.5], [
+        #     residual_6_5_mean + residual_6_5_std,
+        #     residual_6_5_mean - residual_6_5_std
+        # ], 'black')
 
         plt.plot([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean, residual_4_5_mean, residual_5_5_mean,
             residual_6_5_mean
-        ], 'k--')
+        ],
+                 'k--',
+                 label='1 std.')
         plt.plot([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean + residual_3_5_std, residual_4_5_mean +
             residual_4_5_std, residual_5_5_mean + residual_5_5_std,
@@ -398,29 +401,30 @@ class plot_fig:
                     marker='o',
                     color='black',
                     label='mean value')
-        plt.plot([10, 10], [
-            residual_10_mean + residual_10_std,
-            residual_10_mean - residual_10_std
-        ],
-                 'black',
-                 label='1 std.')
-        plt.plot([31, 31], [
-            residual_31_mean + residual_31_std,
-            residual_31_mean - residual_31_std
-        ], 'black')
-        plt.plot([100, 100], [
-            residual_100_mean + residual_100_std,
-            residual_100_mean - residual_100_std
-        ], 'black')
-        plt.plot([316, 316], [
-            residual_316_mean + residual_316_std,
-            residual_316_mean - residual_316_std
-        ], 'black')
+        # plt.plot([10, 10], [
+        #     residual_10_mean + residual_10_std,
+        #     residual_10_mean - residual_10_std
+        # ],
+        #          'black')
+        # plt.plot([31, 31], [
+        #     residual_31_mean + residual_31_std,
+        #     residual_31_mean - residual_31_std
+        # ], 'black')
+        # plt.plot([100, 100], [
+        #     residual_100_mean + residual_100_std,
+        #     residual_100_mean - residual_100_std
+        # ], 'black')
+        # plt.plot([316, 316], [
+        #     residual_316_mean + residual_316_std,
+        #     residual_316_mean - residual_316_std
+        # ], 'black')
 
         plt.plot([10, 31, 100, 316], [
             residual_10_mean, residual_31_mean, residual_100_mean,
             residual_316_mean
-        ], 'k--')
+        ],
+                 'k--',
+                 label='1 std.')
         plt.plot([10, 31, 100, 316], [
             residual_10_mean + residual_10_std, residual_31_mean +
             residual_31_std, residual_100_mean + residual_100_std,
@@ -905,7 +909,7 @@ class plot_fig:
                 Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
                 Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
             ],
-                     label=fault_type_list[fault_type-1])
+                     label=fault_type_list[fault_type - 1])
             plt.title(f"M = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
             plt.xlabel("Period(s)")
             plt.ylabel("PSA(g)")
@@ -922,10 +926,9 @@ class plot_fig:
         else:
             fault_type_list = ["REV", "NM", "SS"]
             for i, fault_type in enumerate(fault_type_list):
-                RSCon = np.array([[
-                    np.log(Vs30), Mw,
-                    np.log(Rrup), i+1, station_rank
-                ]])
+                RSCon = np.array(
+                    [[np.log(Vs30), Mw,
+                      np.log(Rrup), i + 1, station_rank]])
                 Sa001_predict = np.exp(Sa001_model.predict(RSCon)) / 980
                 Sa005_predict = np.exp(Sa005_model.predict(RSCon)) / 980
                 Sa01_predict = np.exp(Sa01_model.predict(RSCon)) / 980

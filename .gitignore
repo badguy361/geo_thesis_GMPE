@@ -2,3 +2,5 @@
 *.png
 PowerBI
 *.jpg
+*.src*
+*.pkl

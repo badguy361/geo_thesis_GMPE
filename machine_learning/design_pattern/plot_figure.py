@@ -19,6 +19,7 @@ from design_pattern.process_train import dataprocess
 
 
 class plot_fig:
+
     def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP, target):
         self.model_name = model_name
         self.abbreviation_name = abbreviation_name
@@ -131,6 +132,8 @@ class plot_fig:
         residual_794_std = np.std(residual_794)
         residual_1000_std = np.std(residual_1000)
 
+        total_std = np.std(residual)
+
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
         color_column = []
@@ -218,8 +221,8 @@ class plot_fig:
         plt.legend()
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.title(
-            f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
-            (score))
+            f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
+            % (score ,total_std))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
@@ -251,6 +254,8 @@ class plot_fig:
         residual_4_5_std = np.std(residual_4_5)
         residual_5_5_std = np.std(residual_5_5)
         residual_6_5_std = np.std(residual_6_5)
+
+        total_std = np.std(residual)
 
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
@@ -327,8 +332,8 @@ class plot_fig:
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.legend()
         plt.title(
-            f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
-            (score))
+            f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
+            % (score ,total_std))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
@@ -360,6 +365,8 @@ class plot_fig:
         residual_31_std = np.std(residual_31)
         residual_100_std = np.std(residual_100)
         residual_316_std = np.std(residual_316)
+
+        total_std = np.std(residual)
 
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
@@ -442,8 +449,8 @@ class plot_fig:
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.legend()
         plt.title(
-            f'{self.abbreviation_name} Predicted Residual R2 score: %.3f' %
-            (score))
+            f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
+            % (score ,total_std))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
@@ -555,8 +562,9 @@ class plot_fig:
         plt.xlabel('Mw')
         plt.ylabel(f'Inter-event Residual ln({self.target})(cm/s^2)')
         inter_mean = round(inter_event['inter_event_residual'].mean(), 2)
+        inter_std = round(inter_event['inter_event_residual'].std(), 2)
         plt.title(
-            f'{self.abbreviation_name} Inter-event Residual Mean:{inter_mean}')
+            f'{self.abbreviation_name} Inter-event Residual Mean:{inter_mean} Std:{inter_std}')
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Inter-event Residual.png',
             dpi=300)
@@ -633,8 +641,9 @@ class plot_fig:
         plt.xlabel('Rrup(km)')
         plt.ylabel(f'Intra-event Residual ln({self.target})(cm/s^2)')
         intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
+        intra_std = round(total_data_df['intra_event_residual'].std(), 2)
         plt.title(
-            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean}')
+            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean} Std:{intra_std}')
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Intra-event Residual.png',
             dpi=300)
@@ -692,8 +701,9 @@ class plot_fig:
         plt.xlabel('Vs30(m/s)')
         plt.ylabel(f'Intra-event Residual ln({self.target})(cm/s^2)')
         intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
+        intra_std = round(total_data_df['intra_event_residual'].std(), 2)
         plt.title(
-            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean}')
+            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean} Std:{intra_std}')
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Intra-event Residual.png',
             dpi=300)

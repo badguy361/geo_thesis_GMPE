@@ -8,6 +8,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.model_selection import KFold
 from xgboost import XGBRegressor
+import xgboost
 from sklearn.svm import SVR
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_val_score
@@ -180,6 +181,8 @@ class dataprocess:
             print("cross_val R2 score:", cv_scores)
 
             model = XGBModel
+            pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
+            XGBModel.save_model(f"{model_name}_{target}.json")
 
         elif model_name == "SVR":
             feature_importances = 0
@@ -206,7 +209,7 @@ class dataprocess:
         else:
             pass
 
-        pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
+        # pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
         return score, feature_importances, fit_time, final_predict, model
 
     def predicted_original(self, model, ori_dataset):

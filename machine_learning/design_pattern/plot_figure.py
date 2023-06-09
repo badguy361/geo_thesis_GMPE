@@ -799,7 +799,7 @@ class plot_fig:
                     color='grey',
                     label='data')
         plt.xlabel('Rrup(km)')
-        plt.ylabel(f"PSA({self.target})(g)")
+        plt.ylabel(f"{self.target}(g)")
         plt.ylim(10e-5, 10)
         plt.xlim(1, 300)
         plt.yscale("log")

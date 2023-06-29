@@ -29,10 +29,10 @@ class dataprocess:
         data['lnRrup'] = np.log(data['Rrup'])
         data['log10Vs30'] = np.log10(data['Vs30'])
         data['log10Rrup'] = np.log10(data['Rrup'])
-        data['fault.type'] = data['fault.type'].str.replace("RO", "45")
-        data['fault.type'] = data['fault.type'].str.replace("RV", "45")
-        data['fault.type'] = data['fault.type'].str.replace("NM", "-45")
-        data['fault.type'] = data['fault.type'].str.replace("NO", "-45")
+        data['fault.type'] = data['fault.type'].str.replace("RO", "90")
+        data['fault.type'] = data['fault.type'].str.replace("RV", "90")
+        data['fault.type'] = data['fault.type'].str.replace("NM", "-90")
+        data['fault.type'] = data['fault.type'].str.replace("NO", "-90")
         data['fault.type'] = data['fault.type'].str.replace("SS", "0")
         data['fault.type'] = pd.to_numeric(data['fault.type'])
         data[f'ln{target}(gal)'] = np.log(data[f'{target}'] * 980)
@@ -181,7 +181,6 @@ class dataprocess:
             print("cross_val R2 score:", cv_scores)
 
             model = XGBModel
-            pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
             XGBModel.save_model(f"{model_name}_{target}.json")
 
         elif model_name == "SVR":

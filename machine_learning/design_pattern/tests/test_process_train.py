@@ -8,7 +8,7 @@ from xgboost import XGBRegressor
 import time
 import pickle
 from numpy.testing import assert_array_equal
-
+import xgboost as xgb
 sys.path.append("/TSMIP/machine_learning/design_pattern")
 from process_train import dataprocess
 
@@ -92,12 +92,12 @@ class Testprocess_train(unittest.TestCase):
         original_data = model.split_dataset(after_process_ori_data,
                                             f'ln{target}(gal)', False,
                                             *model_feture)
-        ML_model = pickle.load(
-            open(f'/TSMIP/machine_learning/XGB/model/XGB_{target}.pkl', 'rb'))
+        booster = xgb.Booster()
+        booster.load_model(f'XGB_{target}.json')  
         originaldata_predicted_result = model.predicted_original(
-            ML_model, original_data)
+            booster, original_data)
 
-        predicted_result = ML_model.predict(original_data[0])
+        predicted_result = booster.predict(original_data[0])
         self.assertEqual(originaldata_predicted_result[0], predicted_result[0])
 
 

@@ -16,8 +16,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score, mean_squared_error, make_scorer
 from sklearn.tree import plot_tree
 import pickle
-# from dtreeviz.trees import dtreeviz
-
+import xgboost as xgb
 
 class dataprocess:
 
@@ -212,7 +211,7 @@ class dataprocess:
         return score, feature_importances, fit_time, final_predict, model
 
     def predicted_original(self, model, ori_dataset):
-        predicted_result = model.predict(ori_dataset[0])
+        predicted_result = model.predict(xgb.DMatrix(ori_dataset[0]))
         return predicted_result
 
 

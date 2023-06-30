@@ -26,9 +26,6 @@ fault_type = 90
 #     'model/XGB_Sa30.pkl', 'model/XGB_Sa40.pkl', 'model/XGB_Sa100.pkl'
 # ]
 # seed = 18989
-# booster = xgb.Booster()
-# booster.load_model(f'XGB_{target}.json')
-# booster.predict(xgb.DMatrix([(np.log(760), 7, np.log(200), -45, 256)]))
 
 score = 0.88 # note
 
@@ -49,17 +46,21 @@ original_data = model.split_dataset(after_process_ori_data, f'ln{target}(gal)',
 
 #? model train
 #! result_ori[0](訓練資料)之shape : (29896,5) 為 29896筆 records 加上以下5個columns ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-score, feature_importances, fit_time, final_predict, ML_model = model.training(
-    target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2],
-    result_ori[3])
+# score, feature_importances, fit_time, final_predict, ML_model = model.training(
+#     target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2],
+#     result_ori[3])
 
-# originaldata_predicted_result = model.predicted_original(
-#     booster, original_data)
+#? model predicted
+booster = xgb.Booster()
+booster.load_model(f'XGB_{target}.json')
+# booster.predict(xgb.DMatrix([(np.log(760), 7, np.log(200), -45, 256)]))
+originaldata_predicted_result = model.predicted_original(
+    booster, original_data)
 
 #? plot figure
 # plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-# plot_something.predicted_distribution(result_ori[1], result_ori[3],
-#                                        final_predict, fit_time, score)
+# # plot_something.predicted_distribution(result_ori[1], result_ori[3],
+# #                                        final_predict, fit_time, score)
 # plot_something.residual(original_data[0], original_data[1],
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score)

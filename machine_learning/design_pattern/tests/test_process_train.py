@@ -97,7 +97,7 @@ class Testprocess_train(unittest.TestCase):
         originaldata_predicted_result = model.predicted_original(
             booster, original_data)
 
-        predicted_result = booster.predict(original_data[0])
+        predicted_result = booster.predict(xgb.DMatrix(original_data[0]))
         self.assertEqual(originaldata_predicted_result[0], predicted_result[0])
 
 

@@ -27,6 +27,8 @@ from coeffs_table import CoeffsTable
 from imt import PGA, SA
 from numpy.lib import recfunctions
 import queue
+import pandas as pd
+import matplotlib.pyplot as plt
 
 def get_stddevs(C):
     """
@@ -185,16 +187,11 @@ class PhungEtAl2020Asc():
             lnmed += _basin_term(self.region, C, ctx.vs30, ctx.z1pt0)
             mean[m] = lnmed
             sig[m], tau[m], phi[m] = get_stddevs(C)
-            # return mean, sig, tau, phi
+            return mean, sig, tau, phi
         
-        ctx = recfunctions.append_fields(ctx, 'mean', np.exp(mean[0]))
-        header = ','.join(ctx.dtype.names)
-        print('header',header)
-        print('ctx',len(ctx))
-        print(len(np.exp(mean[0])))
-
-        np.savetxt('D:/recarray_data.csv', ctx, delimiter=',',header=header, fmt='%s')
-        print(mean)
+        # ctx = recfunctions.append_fields(ctx, 'mean', np.exp(mean[0]))
+        # header = ','.join(ctx.dtype.names)
+        # np.savetxt('D:/recarray_data.csv', ctx, delimiter=',',header=header, fmt='%s')
             
         
 
@@ -238,20 +235,15 @@ class PhungEtAl2020Asc():
 
 
 if __name__ == '__main__':
-    dist = np.array([10,20,50,100,200])
-    ctx = np.array([(45., 7.65, -90., 0., 449., 100., dist[0], dist[0],
-                     dist[0],8),
-                    (45., 7.65, -90., 0., 449., 100., dist[1], dist[1],
-                     dist[1],8),
-                     (45., 7.65, -90., 0., 449., 100., dist[2], dist[2],
-                     dist[2],8),
-                     (45., 7.65, -90., 0., 449., 100., dist[3], dist[3],
-                     dist[3],8),
-                     (45., 7.65, -90., 0., 449., 100., dist[4], dist[4],
-                     dist[4],[0])],
-                   dtype=[('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
-                          ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
-                          ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'), ('test', '<f8', (0,))])
+    df = pd.read_csv('test.csv')
+    ctx = df.to_records()
+    ctx = recfunctions.drop_fields(ctx, ['index','src_id','rup_id','sids','occurrence_rate','clon','clat','mean'])
+    ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'), ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'), ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8')])
+    # ctx = np.array([(df['dip'], df['mag'], df['rake'], df['ztor'], df['vs30'], df['z1pt0'], df['rjb'], df['rrup'],
+    #                  df['rx'],0)],
+    #                dtype=[('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
+    #                       ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
+    #                       ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'), ('test', '<f8', (0,))])
     ctx = ctx.view(np.recarray)
     # print(ctx.dtype.names)
     imts = [PGA()]
@@ -261,8 +253,27 @@ if __name__ == '__main__':
     phi = [[0] * 5]
     # print(ctx.mag)
     gmm = PhungEtAl2020Asc()
-    gmm.compute(ctx, imts, mean, sig, tau, phi)
+    mean, sig, tau, phi = gmm.compute(ctx, imts, mean, sig, tau, phi)
     # print(mean)
     # print(sig)
     # print(tau)
     # print(phi)
+    mean = np.exp(mean)
+    
+    plt.grid(linestyle=':')
+    plt.scatter(ctx['rrup'],
+                mean,
+                marker='o',
+                facecolors='none',
+                edgecolors='b',
+                label='original value')
+    plt.xlabel(f'rrup(km)')
+    plt.ylabel('PGA(g)')
+    plt.title(f'Distance Scaling Phung')
+    plt.ylim(10e-5, 10)
+    plt.xscale("log")
+    plt.xticks([1, 10, 50, 100, 200, 300], [1, 10, 50, 100, 200, 300])
+    plt.yscale("log")
+    plt.legend()
+    plt.savefig('Distance Scaling Phung.png',dpi=300)
+    plt.show()

@@ -759,7 +759,8 @@ class plot_fig:
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Measured Predicted Comparison.png',
             dpi=300)
         plt.show()
-
+z
+    
     def distance_scaling(
             self,  # change Mw Vs30 etc. condition by csv file
             Vs30,

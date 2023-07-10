@@ -24,7 +24,7 @@ import math
 import numpy as np
 import const
 from coeffs_table import CoeffsTable
-from imt import PGA, SA
+from imt import PGA, SA, PGV
 from numpy.lib import recfunctions
 import queue
 import pandas as pd
@@ -131,7 +131,7 @@ class PhungEtAl2020Asc():
 
     REQUIRES_SITES_PARAMETERS = {'vs30', 'z1pt0'}
 
-    def __init__(self, region='glb', aftershocks=False, d_dpp=0, **kwargs):
+    def __init__(self, region='tw', aftershocks=False, d_dpp=0, **kwargs):
         # regions options:
         # 'glb', 'tw', 'ca', 'jp' (global, Taiwan, California, Japan)
         self.region = region

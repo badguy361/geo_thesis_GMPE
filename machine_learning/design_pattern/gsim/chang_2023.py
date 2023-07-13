@@ -66,18 +66,11 @@ class Chang2023():
         ML_model = xgb.Booster()
         ML_model.load_model(f'XGB_PGA.json')
         self.ML_model = ML_model
-        Sta_ID_thread = pd.read_csv(f"Sta_ID_info.csv")
-        self.Sta_ID_thread = Sta_ID_thread
 
     def compute(self, ctx: np.recarray, imts, mean, sig, tau, phi):
-        point = [119.5635611,21.90093889] # standard
         for m, imt in enumerate(imts):
-            # cal sta_id by distance
-            sta_dist = self.Sta_ID_thread['STA_DIST'].values.tolist()
-            new_number = ((((ctx.clat-point[1])*110)**2 + ((ctx.clon-point[0])*101)**2)**(1/2))
-            sta_id = np.searchsorted(sta_dist, new_number)
-
-            predict = self.ML_model.predict(xgb.DMatrix(np.column_stack((np.log(ctx.vs30), ctx.mag, np.log(ctx.rrup), ctx.rake, sta_id))))
+            print(ctx.sta_id)
+            predict = self.ML_model.predict(xgb.DMatrix(np.column_stack((np.log(ctx.vs30), ctx.mag, np.log(ctx.rrup), ctx.rake, ctx.sta_id))))
             mean[m] = np.log(np.exp(predict)/980)
             sig[m], tau[m], phi[m] = 0.35,0.12,0.34
         

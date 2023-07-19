@@ -8,6 +8,8 @@ from phung_2020 import PhungEtAl2020Asc
 from chang_2023 import Chang2023
 from lin_2009 import Lin2009
 from abrahamson_2014 import AbrahamsonEtAl2014
+from campbell_bozorgnia_2014 import CampbellBozorgnia2014
+from chao_2020 import ChaoEtAl2020Asc
 
 # df = pd.read_csv('test2.csv')
 # df = df.append([df]*731)
@@ -24,7 +26,7 @@ for i in range(1):
                     ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
                     ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'), 
                     ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
-                    ('sta_id', '<i8')])
+                    ('sta_id', '<i8'),('hypo_depth', '<f8'),('z2pt5', '<f8')])
     ctx = ctx.view(np.recarray)
     imts = [PGA()]
     chang = Chang2023()
@@ -66,6 +68,22 @@ abr_phi = [[0] * 13]
 abr_mean, abr_sig, abr_tau, abr_phi = abrahamson.compute(ctx, imts, abr_mean, abr_sig, abr_tau, abr_phi)
 abr_mean = np.exp(abr_mean)
 
+# campbell = CampbellBozorgnia2014()
+# cam_mean = [[0] * 13]
+# cam_sig = [[0] * 13]
+# cam_tau = [[0] * 13]
+# cam_phi = [[0] * 13]
+# cam_mean, cam_sig, cam_tau, cam_phi = campbell.compute(ctx, imts, cam_mean, cam_sig, cam_tau, cam_phi)
+# cam_mean = np.exp(cam_mean)
+
+choa = ChaoEtAl2020Asc()
+choa_mean = [[0] * 13]
+choa_sig = [[0] * 13]
+choa_tau = [[0] * 13]
+choa_phi = [[0] * 13]
+choa_mean, choa_sig, choa_tau, choa_phi = choa.compute(ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
+choa_mean = np.exp(choa_mean)
+
 plt.grid(which="both",
         axis="both",
         linestyle="-",
@@ -82,6 +100,9 @@ plt.plot(ctx['rrup'], lin_mean[0], 'g', label="Lin2009")
 plt.plot(ctx['rrup'], abr_mean[0], 'b', label="Abrahamson2014")
 # plt.plot(ctx['rrup'], abr_mean[0] + abr_sig[0], 'r--')
 # plt.plot(ctx['rrup'], abr_mean[0] - abr_sig[0], 'r--')
+plt.plot(ctx['rrup'], choa_mean[0], 'yellow', label="ChaoEtAl2020Asc")
+# plt.plot(ctx['rrup'], choa_mean[0] + choa_sig[0], 'r--')
+# plt.plot(ctx['rrup'], choa_mean[0] - choa_sig[0], 'r--')
 plt.xlabel(f'rrup(km)')
 plt.ylabel('PGA(g)')
 plt.title(f'Distance Scaling')

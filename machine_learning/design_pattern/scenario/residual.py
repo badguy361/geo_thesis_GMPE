@@ -2,15 +2,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pygmt
-from scipy.interpolate import griddata
-from pykrige import OrdinaryKriging
 
-name = 'Chang2023'
+df_chang = pd.read_csv('scenario_result/Chang2023/chichi_interpolate_Chang2023.csv')
+df_lin = pd.read_csv(f'scenario_result/Lin2009/chichi_interpolate_Lin2009.csv')
+df_true = pd.read_csv(f'scenario_result/true/chichi_interpolate_true.csv')
 
-df = pd.read_csv('../../../TSMIP_FF.csv')
-df_int = pd.read_csv(f'scenario/scenario_result/Chang2023/chichi_interpolate_{name}.csv')
-
-chichi_df = df[df["MW"] == 7.65] # choose chichi eq
 fault_data = [
     120.6436, 23.6404, 120.6480, 23.6424, 120.6511, 23.6459, 120.6543, 23.6493,
     120.6574, 23.6528, 120.6601, 23.6566, 120.6632, 23.6600, 120.6665, 23.6633,
@@ -60,47 +56,64 @@ fault_data = [
     120.8276, 24.3040, 120.8299, 24.3080, 120.8310, 24.3123, 120.8323, 24.3167,
     120.8334, 24.3203
 ]
-
 hyp_lat = 23.85
 hyp_long = 120.82
 
-
-# after interpolate
-PGA_int = df_int["PGA"]
-x_int = df_int["STA_Lon_X"]
-y_int = df_int["STA_Lat_Y"]
+gmm = 'Chang2023'
+PGA_residual = df_chang["PGA"] - df_true["PGA"]
+lon = df_chang["STA_Lon_X"]
+lat = df_chang["STA_Lat_Y"]
 
 fig = pygmt.Figure()
 region = [119.5, 122.5, 21.5, 25.5]
 fig.basemap(region=region,
             projection="M12c",
-            frame=["af", f"WSne+tchichi earthquake Hazard Distribution"])
-pygmt.makecpt(cmap="turbo", series=(0, 1.5, 0.1))
+            frame=["af", f"WSne+tchichi earthquake Hazard Residual {gmm}"])
+pygmt.makecpt(cmap="turbo", series=(-0.5, 0.5, 0.1))
 fig.coast(land="gray", water="gray")
-fig.plot(x=x_int, y=y_int, style="c0.2c", cmap=True, color=PGA_int)
+fig.plot(x=lon, y=lat, style="c0.2c", cmap=True, color=PGA_residual)
 fig.plot(x=hyp_long, y=hyp_lat, style='kstar4/0.3c', color="red")
 fig.plot(x=fault_data[::2], y=fault_data[1::2], pen="thick,red")
 fig.coast(shorelines="1p,black")
 fig.colorbar(frame=["x+lPGA(g)"])
-fig.savefig(f'chichi earthquake Hazard Distribution interpolate {name}.png', dpi=300)
+fig.savefig(f'scenario_result/{gmm}/chichi earthquake Hazard Distribution interpolate residual {gmm}.png', dpi=300)
 fig.show()
 
+########### residual ##########
+total_num_residual = [0] * 10
+total_num_residual[0] = np.count_nonzero((PGA_residual >= -0.5)
+                                            & (PGA_residual < -0.4))
+total_num_residual[1] = np.count_nonzero((PGA_residual >= -0.4)
+                                            & (PGA_residual < -0.3))
+total_num_residual[2] = np.count_nonzero((PGA_residual >= -0.3)
+                                            & (PGA_residual < -0.2))
+total_num_residual[3] = np.count_nonzero((PGA_residual >= -0.2)
+                                            & (PGA_residual < -0.1))
+total_num_residual[4] = np.count_nonzero((PGA_residual >= -0.1)
+                                            & (PGA_residual < 0))
+total_num_residual[5] = np.count_nonzero((PGA_residual >= 0)
+                                            & (PGA_residual < 0.1))
+total_num_residual[6] = np.count_nonzero((PGA_residual >= 0.1)
+                                            & (PGA_residual < 0.2))
+total_num_residual[7] = np.count_nonzero((PGA_residual >= 0.2)
+                                            & (PGA_residual < 0.3))
+total_num_residual[8] = np.count_nonzero((PGA_residual >= 0.3)
+                                            & (PGA_residual < 0.4))
+total_num_residual[9] = np.count_nonzero((PGA_residual >= 0.4)
+                                            & (PGA_residual <= 0.5))
 
-# before interpolate
-# PGA = chichi_df["PGA"]
-# x = chichi_df["STA_Lon_X"]
-# y = chichi_df["STA_Lat_Y"]
 
-# fig = pygmt.Figure()
-# region = [119.5, 122.5, 21.5, 25.5]
-# fig.basemap(region=region,
-#             projection="M12c",
-#             frame=["af", f"WSne+tchichi earthquake Hazard Distribution"])
-# fig.coast(land="gray", water="gray", shorelines="1p,black")
-# pygmt.makecpt(cmap="turbo", series=(0, 1.5, 0.1))
-# fig.plot(x=fault_data[::2], y=fault_data[1::2], pen="thick,red")
-# fig.plot(x=x, y=y, style="c0.2c", cmap=True, color=PGA)
-# fig.plot(x=hyp_long, y=hyp_lat, style='kstar4/0.3c', color="red")
-# fig.colorbar(frame=["x+lPGA(g)"])
-# fig.savefig('chichi earthquake Hazard Distribution.png', dpi=300)
-# fig.show()
+x_bar = np.linspace(-0.5, 0.5, 10)
+plt.bar(x_bar, total_num_residual, edgecolor='white', width=0.1)
+mu = np.mean(PGA_residual)
+sigma = np.std(PGA_residual)
+plt.text(-0.5, 1500, f'mean = {round(mu,2)}')
+plt.text(-0.5, 1000, f'sd = {round(sigma,2)}')
+plt.grid(linestyle=':', color='darkgrey')
+plt.xlabel('Total-Residual')
+plt.ylabel('Numbers')
+plt.title(f'{gmm} Total-Residual Distribution')
+plt.savefig(
+    f'scenario_result/{gmm}/{gmm} Total-Residual Distribution.png',
+    dpi=300)
+plt.show()

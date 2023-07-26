@@ -104,39 +104,3 @@ fig.show()
 # fig.colorbar(frame=["x+lPGA(g)"])
 # fig.savefig('chichi earthquake Hazard Distribution.png', dpi=300)
 # fig.show()
-
-# ----------------------------intreperlate by ourself---------------------------- #
-# chichi_inter_df = chichi_df.merge(df_int,how="outer")
-# known_data = chichi_inter_df.dropna(subset=['EQ_ID'])
-# PGA = known_data["PGA"]
-# x = known_data["STA_Lon_X"]
-# y = known_data["STA_Lat_Y"]
-# x_int = chichi_inter_df["STA_Lon_X"]
-# y_int = chichi_inter_df["STA_Lat_Y"]
-# interpolated_values = griddata((x, y), PGA, (x_int, y_int), method='cubic')
-# chichi_inter_df['interpolated_values'] = interpolated_values
-
-# grid_lat = np.arange(119.563, 121.997, 0.03, dtype='float64')
-# grid_long = np.arange(21.913, 25.258, 0.03, dtype='float64')
-# OK = OrdinaryKriging(x=chichi_df['STA_Lon_X'], 
-#                       y=chichi_df['STA_Lat_Y'], 
-#                       z=chichi_df['PGA'],
-#                       variogram_model='exponential',
-#                       verbose=True, enable_plotting=True,
-#                       coordinates_type='geographic')
-
-# zstar, ss = OK.execute('grid', grid_lat, grid_long)
-
-# fig, ax = plt.subplots(figsize=(10,10))
-# image = ax.imshow(zstar, extent=(119.563, 121.997, 21.913, 25.258), cmap='turbo' , origin='lower', vmin=0, vmax=1.5)
-# colorbar = fig.colorbar(image)
-# plt.show()
-
-
-# df = pd.read_csv('data.csv')
-# OK = OrdinaryKriging(x=df['X'], 
-#                       y=df['Y'], 
-#                       z=df['数值'])
-# grid_lat = np.arange(57.5, 62, 0.01, dtype='float64')
-# grid_long = np.arange(1.5, 4.5, 0.01,dtype='float64')
-# zstar, ss = OK.execute('grid', grid_long, grid_lat)

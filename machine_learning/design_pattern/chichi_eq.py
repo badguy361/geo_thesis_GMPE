@@ -2,10 +2,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pygmt
+from scipy.interpolate import griddata
+from pykrige import OrdinaryKriging
+
+name = 'lin2009'
 
 df = pd.read_csv('../../../TSMIP_FF.csv')
-chichi_df = df[df["MW"] == 7.65]
+df_int = pd.read_csv(f'chichi_{name}.csv')
 
+chichi_df = df[df["MW"] == 7.65] # choose chichi eq
 fault_data = [
     120.6436, 23.6404, 120.6480, 23.6424, 120.6511, 23.6459, 120.6543, 23.6493,
     120.6574, 23.6528, 120.6601, 23.6566, 120.6632, 23.6600, 120.6665, 23.6633,
@@ -56,23 +61,82 @@ fault_data = [
     120.8334, 24.3203
 ]
 
-PGA = chichi_df["PGA"]
-x = chichi_df["STA_Lon_X"]
-y = chichi_df["STA_Lat_Y"]
 hyp_lat = 23.85
 hyp_long = 120.82
 
+
+# after interpolate
+PGA_int = df_int["PGA"]
+x_int = df_int["STA_Lon_X"]
+y_int = df_int["STA_Lat_Y"]
+
 fig = pygmt.Figure()
 region = [119.5, 122.5, 21.5, 25.5]
-
 fig.basemap(region=region,
             projection="M12c",
             frame=["af", f"WSne+tchichi earthquake Hazard Distribution"])
-fig.coast(land="gray", water="gray", shorelines="1p,black")
 pygmt.makecpt(cmap="turbo", series=(0, 1.5, 0.1))
-fig.plot(x=fault_data[::2], y=fault_data[1::2], pen="thick,red")
-fig.plot(x=x, y=y, style="c0.2c", cmap=True, color=PGA)
+fig.coast(land="gray", water="gray")
+fig.plot(x=x_int, y=y_int, style="c0.2c", cmap=True, color=PGA_int)
 fig.plot(x=hyp_long, y=hyp_lat, style='kstar4/0.3c', color="red")
+fig.plot(x=fault_data[::2], y=fault_data[1::2], pen="thick,red")
+fig.coast(shorelines="1p,black")
 fig.colorbar(frame=["x+lPGA(g)"])
-fig.savefig('chichi earthquake Hazard Distribution.png', dpi=300)
+fig.savefig(f'chichi earthquake Hazard Distribution interpolate {name}.png', dpi=300)
 fig.show()
+
+
+# before interpolate
+# PGA = chichi_df["PGA"]
+# x = chichi_df["STA_Lon_X"]
+# y = chichi_df["STA_Lat_Y"]
+
+# fig = pygmt.Figure()
+# region = [119.5, 122.5, 21.5, 25.5]
+# fig.basemap(region=region,
+#             projection="M12c",
+#             frame=["af", f"WSne+tchichi earthquake Hazard Distribution"])
+# fig.coast(land="gray", water="gray", shorelines="1p,black")
+# pygmt.makecpt(cmap="turbo", series=(0, 1.5, 0.1))
+# fig.plot(x=fault_data[::2], y=fault_data[1::2], pen="thick,red")
+# fig.plot(x=x, y=y, style="c0.2c", cmap=True, color=PGA)
+# fig.plot(x=hyp_long, y=hyp_lat, style='kstar4/0.3c', color="red")
+# fig.colorbar(frame=["x+lPGA(g)"])
+# fig.savefig('chichi earthquake Hazard Distribution.png', dpi=300)
+# fig.show()
+
+# ----------------------------intreperlate by ourself---------------------------- #
+# chichi_inter_df = chichi_df.merge(df_int,how="outer")
+# known_data = chichi_inter_df.dropna(subset=['EQ_ID'])
+# PGA = known_data["PGA"]
+# x = known_data["STA_Lon_X"]
+# y = known_data["STA_Lat_Y"]
+# x_int = chichi_inter_df["STA_Lon_X"]
+# y_int = chichi_inter_df["STA_Lat_Y"]
+# interpolated_values = griddata((x, y), PGA, (x_int, y_int), method='cubic')
+# chichi_inter_df['interpolated_values'] = interpolated_values
+
+# grid_lat = np.arange(119.563, 121.997, 0.03, dtype='float64')
+# grid_long = np.arange(21.913, 25.258, 0.03, dtype='float64')
+# OK = OrdinaryKriging(x=chichi_df['STA_Lon_X'], 
+#                       y=chichi_df['STA_Lat_Y'], 
+#                       z=chichi_df['PGA'],
+#                       variogram_model='exponential',
+#                       verbose=True, enable_plotting=True,
+#                       coordinates_type='geographic')
+
+# zstar, ss = OK.execute('grid', grid_lat, grid_long)
+
+# fig, ax = plt.subplots(figsize=(10,10))
+# image = ax.imshow(zstar, extent=(119.563, 121.997, 21.913, 25.258), cmap='turbo' , origin='lower', vmin=0, vmax=1.5)
+# colorbar = fig.colorbar(image)
+# plt.show()
+
+
+# df = pd.read_csv('data.csv')
+# OK = OrdinaryKriging(x=df['X'], 
+#                       y=df['Y'], 
+#                       z=df['数值'])
+# grid_lat = np.arange(57.5, 62, 0.01, dtype='float64')
+# grid_long = np.arange(1.5, 4.5, 0.01,dtype='float64')
+# zstar, ss = OK.execute('grid', grid_long, grid_lat)

@@ -24,6 +24,7 @@ Module exports :class:`ChaoEtAl2020SInter`
 import math
 
 import numpy as np
+import pandas as pd
 
 from general import CallableDict
 from coeffs_table import CoeffsTable
@@ -182,11 +183,7 @@ class ChaoEtAl2020SInter():
 
     def __init__(self, manila=False, aftershocks=False, geology=True,
                  **kwargs):
-        """
-        Aditional parameters.
-        """
-        super().__init__(manila=manila, aftershocks=aftershocks,
-                         geology=geology, **kwargs)
+
         # Manila or Ryukyu subduction zone
         self.manila = manila
         # aftershocks or mainshocks
@@ -202,12 +199,11 @@ class ChaoEtAl2020SInter():
         for spec of input and result values.
         """
         trt = self.DEFINED_FOR_TECTONIC_REGION_TYPE
+        print(imts)
         for m, imt in enumerate(imts):
             C = self.COEFFS[imt]
-
             s = CONSTANTS
             med = mean[m]
-
             med += _ftype(trt, self.SUFFIX, C, ctx)
             med += (ctx.ztor - self.CONST_FAULT['href']) * C[
                 'c14' + self.SUFFIX]
@@ -229,15 +225,7 @@ class ChaoEtAl2020SInter():
 
             sig[m], tau[m], phi[m] = get_stddevs(self.SBCR, C, ctx.mag)
         
-        # name = []
-        # thread_id = threading.get_ident()
-        # ctx_tmp = recfunctions.drop_fields(ctx.copy(), ['probs_occur'])
-        # ctx_tmp = recfunctions.append_fields(ctx_tmp, 'mean', np.exp(mean[0]))
-        # name = [self.__class__.__name__]*len(ctx_tmp)
-        # ctx_tmp = recfunctions.append_fields(ctx_tmp, 'gmm', name) # 跑多斷層要註解掉，不然會報錯
-        # header = ','.join(ctx_tmp.dtype.names)
-        # np.savetxt(f'/usr/src/oq-engine/demos/hazard/TEM PSHA2020/{self.__class__.__name__}_S04_{thread_id}.csv', ctx_tmp, delimiter=',',header=header, fmt='%s')
-
+        return mean, sig, tau, phi
     COEFFS = CoeffsTable(sa_damping=5, table="""\
     imt    c1                  c2                  c3                  c4_if               c4_is               c6                  c7                 c8_cr              c8_sb               c10                 c11_cr              c11_sb              c13                 c14_cr              c14_if              c14_is              c17_cr              c17_sb             c19_cr             c19_sb              c21_cr              c21_sb              c23                 c24                c25                 c26                 c27                 c28                 c29_if              c29_is             tau1_cr            tau2_cr            tau1_sb            tau2_sb            phiss1_cr          phiss2_cr          phiss1_sb          phiss2_sb          phis2s
     pga   -0.5192892547128840 -0.6150055029113330 -0.6487900726643910 -0.5859618870941580  0.2995078226527580 -0.1252895878217900  0.1860213693406720 0.4128529204313240 0.6654099729223670 -0.1376176044286790 -0.0000003768045793 -0.0000002632651801 -0.0000003479033210  0.0325013808122898  0.0188003326071965  0.0066214814780273 -1.3033352051553600 -1.4222150700864700 0.3874353293578060 0.1816390684494260 -0.0034295741595448 -0.0034489780547407 -2.5525572055834000 -0.4820755783830470 0.0636111092153052 -0.5680621936097360 -0.6441908224323110 -0.6148407238174470 -0.4944663117848010 -0.4948250053327020 0.3674988948492440 0.3156766103555770 0.2747114934261350 0.5404436414423900 0.5284243730959070 0.4400249261948010 0.4358918335042310 0.4982604989025690 0.3435860891378130
@@ -296,3 +284,25 @@ class ChaoEtAl2020Asc(ChaoEtAl2020SInter):
     SBCR = "_cr"
     SUFFIX = "_cr"
     MC = 7.6
+
+if __name__=='__main__':
+    df = pd.read_csv('test2.csv')
+    ctx = df[df['sta_id']==1].to_records()
+    ctx = recfunctions.drop_fields(
+        ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
+    ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
+                    ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
+                    ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'), 
+                    ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
+                    ('sta_id', '<i8'),('hypo_depth', '<f8'),('z2pt5', '<f8')])
+    ctx = ctx.view(np.recarray)
+    imts = [PGA()]
+    choa = ChaoEtAl2020Asc()
+    choa_mean = [[0] * 17]
+    choa_sig = [[0] * 17]
+    choa_tau = [[0] * 17]
+    print(choa_mean)
+    choa_phi = [[0] * 17]
+    choa_mean, choa_sig, choa_tau, choa_phi = choa.compute(ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
+    choa_mean = np.exp(choa_mean)
+    

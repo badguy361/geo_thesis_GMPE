@@ -462,7 +462,8 @@ class CampbellBozorgnia2014():
             sig[m] = np.sqrt(t**2 + p**2)
             tau[m] = t
             phi[m] = p
-
+        return mean, sig, tau, phi
+    
     COEFFS = CoeffsTable(sa_damping=5, table="""\
     IMT         c0      c1       c2       c3       c4       c5      c6      c7       c9     c10      c11      c12     c13       c14      c15     c16       c17      c18       c19       c20     Dc20      a2      h1      h2       h3       h5       h6     k1       k2      k3    phi1    phi2    tau1    tau2    phiC   rholny
     pgv     -2.895   1.510    0.270   -1.299   -0.453   -2.466   0.204   5.837   -0.168   0.305    1.713    2.602   2.457    0.1060    0.332   0.585    0.0517   0.0327   0.00613   -0.0017   0.0000   0.596   0.117   1.616   -0.733   -0.128   -0.756    400   -1.955   1.929   0.655   0.494   0.317   0.297   0.190    0.684

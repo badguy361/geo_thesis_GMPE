@@ -17,6 +17,8 @@ from chao_2020 import ChaoEtAl2020Asc
 # df['sta_id'] = sta
 # df.to_csv("test2.csv",index=False)
 
+dataLen = 17
+
 df = pd.read_csv('test2.csv')
 for i in range(1):
     ctx = df[df['sta_id']==i+1].to_records()
@@ -30,10 +32,10 @@ for i in range(1):
     ctx = ctx.view(np.recarray)
     imts = [PGA()]
     chang = Chang2023()
-    ch_mean = [[0] * 13]
-    ch_sig = [[0] * 13]
-    ch_tau = [[0] * 13]
-    ch_phi = [[0] * 13]
+    ch_mean = [[0] * dataLen]
+    ch_sig = [[0] * dataLen]
+    ch_tau = [[0] * dataLen]
+    ch_phi = [[0] * dataLen]
     ch_mean, ch_sig, ch_tau, ch_phi = chang.compute(ctx, imts, ch_mean, ch_sig, ch_tau, ch_phi)
     ch_mean_copy = np.exp(ch_mean.copy())
     plt.plot(ctx['rrup'], ch_mean_copy[0])
@@ -45,44 +47,44 @@ for i in range(1):
 
 
 phung = PhungEtAl2020Asc()
-ph_mean = [[0] * 13]
-ph_sig = [[0] * 13]
-ph_tau = [[0] * 13]
-ph_phi = [[0] * 13]
+ph_mean = [[0] * dataLen]
+ph_sig = [[0] * dataLen]
+ph_tau = [[0] * dataLen]
+ph_phi = [[0] * dataLen]
 ph_mean, ph_sig, ph_tau, ph_phi = phung.compute(ctx, imts, ph_mean, ph_sig, ph_tau, ph_phi)
 ph_mean = np.exp(ph_mean)
 
 lin = Lin2009()
-lin_mean = [[0] * 13]
-lin_sig = [[0] * 13]
-lin_tau = [[0] * 13]
-lin_phi = [[0] * 13]
+lin_mean = [[0] * dataLen]
+lin_sig = [[0] * dataLen]
+lin_tau = [[0] * dataLen]
+lin_phi = [[0] * dataLen]
 lin_mean, lin_sig = lin.compute(ctx, imts, lin_mean, lin_sig, lin_tau, lin_phi)
 lin_mean = np.exp(lin_mean)
 
 abrahamson = AbrahamsonEtAl2014()
-abr_mean = [[0] * 13]
-abr_sig = [[0] * 13]
-abr_tau = [[0] * 13]
-abr_phi = [[0] * 13]
+abr_mean = [[0] * dataLen]
+abr_sig = [[0] * dataLen]
+abr_tau = [[0] * dataLen]
+abr_phi = [[0] * dataLen]
 abr_mean, abr_sig, abr_tau, abr_phi = abrahamson.compute(ctx, imts, abr_mean, abr_sig, abr_tau, abr_phi)
 abr_mean = np.exp(abr_mean)
 
-# campbell = CampbellBozorgnia2014()
-# cam_mean = [[0] * 13]
-# cam_sig = [[0] * 13]
-# cam_tau = [[0] * 13]
-# cam_phi = [[0] * 13]
-# cam_mean, cam_sig, cam_tau, cam_phi = campbell.compute(ctx, imts, cam_mean, cam_sig, cam_tau, cam_phi)
-# cam_mean = np.exp(cam_mean)
+campbell = CampbellBozorgnia2014()
+cam_mean = [[0] * dataLen]
+cam_sig = [[0] * dataLen]
+cam_tau = [[0] * dataLen]
+cam_phi = [[0] * dataLen]
+cam_mean, cam_sig, cam_tau, cam_phi = campbell.compute(ctx, imts, cam_mean, cam_sig, cam_tau, cam_phi)
+cam_mean = np.exp(cam_mean)
 
-choa = ChaoEtAl2020Asc()
-choa_mean = [[0] * 13]
-choa_sig = [[0] * 13]
-choa_tau = [[0] * 13]
-choa_phi = [[0] * 13]
-choa_mean, choa_sig, choa_tau, choa_phi = choa.compute(ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
-choa_mean = np.exp(choa_mean)
+# choa = ChaoEtAl2020Asc()
+# choa_mean = [[0] * dataLen]
+# choa_sig = [[0] * dataLen]
+# choa_tau = [[0] * dataLen]
+# choa_phi = [[0] * dataLen]
+# choa_mean, choa_sig, choa_tau, choa_phi = choa.compute(ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
+# choa_mean = np.exp(choa_mean)
 
 plt.grid(which="both",
         axis="both",
@@ -100,7 +102,10 @@ plt.plot(ctx['rrup'], lin_mean[0], 'g', label="Lin2009")
 plt.plot(ctx['rrup'], abr_mean[0], 'b', label="Abrahamson2014")
 # plt.plot(ctx['rrup'], abr_mean[0] + abr_sig[0], 'r--')
 # plt.plot(ctx['rrup'], abr_mean[0] - abr_sig[0], 'r--')
-plt.plot(ctx['rrup'], choa_mean[0], 'yellow', label="ChaoEtAl2020Asc")
+plt.plot(ctx['rrup'], cam_mean[0], 'yellow', label="CampbellBozorgnia2014")
+# plt.plot(ctx['rrup'], cam_mean[0] + choa_sig[0], 'r--')
+# plt.plot(ctx['rrup'], cam_mean[0] - choa_sig[0], 'r--')
+# plt.plot(ctx['rrup'], choa_mean[0], 'yellow', label="ChaoEtAl2020Asc")
 # plt.plot(ctx['rrup'], choa_mean[0] + choa_sig[0], 'r--')
 # plt.plot(ctx['rrup'], choa_mean[0] - choa_sig[0], 'r--')
 plt.xlabel(f'rrup(km)')

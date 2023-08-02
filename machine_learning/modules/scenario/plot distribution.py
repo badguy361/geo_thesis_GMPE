@@ -92,7 +92,7 @@ fig.show()
 # y = chichi_df["STA_Lat_Y"]
 
 # fig = pygmt.Figure()
-# region = [119.5, 122.5, 21.5, 25.5]
+## region = [119.5, 122.5, 21.5, 25.5]
 # fig.basemap(region=region,
 #             projection="M12c",
 #             frame=["af", f"WSne+tchichi earthquake Hazard Distribution"])

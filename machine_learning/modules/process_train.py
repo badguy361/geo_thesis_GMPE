@@ -6,21 +6,25 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import AdaBoostRegressor
-from sklearn.model_selection import KFold
 from xgboost import XGBRegressor
-import xgboost
 from sklearn.svm import SVR
-from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import cross_val_score
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import r2_score, mean_squared_error, make_scorer
-from sklearn.tree import plot_tree
-import pickle
 import xgboost as xgb
 
 class dataprocess:
 
-    def preprocess(self, data, target, eqtype):
+    """
+    
+    A class process the dataset
+    
+    """
+    def preProcess(self, data, target, eqtype):
+
+        """
+        
+        preprocess flatfile dataset
+
+        """
         assert str(
             type(data)
         ) == "<class 'pandas.core.frame.DataFrame'>", "please input DataFrame"
@@ -44,7 +48,13 @@ class dataprocess:
             after_process_data = data
         return after_process_data
 
-    def split_dataset(self, after_process_data, target, split, *args):
+    def splitDataset(self, after_process_data, target, split, *args):
+
+        """
+        
+        Split or not dataset, and change some data structure 
+
+        """
         assert str(
             type(after_process_data)
         ) == "<class 'pandas.core.frame.DataFrame'>", "please input DataFrame"
@@ -68,6 +78,12 @@ class dataprocess:
             return [x.values, y.values]
 
     def training(self, target, model_name, x_train, x_test, y_train, y_test):
+
+        """
+        
+        train our model by our input train and test dataset.
+        
+        """
         assert model_name in [
             "SVR", "RF", "XGB", "GBDT", "DNN", "Ada"
         ], "please choose one method in [SVR, RF, XGB, GBDT, DNN, Ada] or add the new method by yourself"
@@ -77,7 +93,6 @@ class dataprocess:
                 'criterion': 'squared_error',
                 'bootstrap': True,
                 'oob_score': True,
-                #   verbose=True,
                 'n_jobs': -1
             }
             randomForestModel = RandomForestRegressor(**rfr_params)
@@ -88,7 +103,6 @@ class dataprocess:
             print("feature importances :", grid_result.feature_importances_)
             fit_time = time.time() - t0
             final_predict = randomForestModel.predict(x_test)
-            # 評估，打分數
             score = randomForestModel.score(x_test, y_test)
             print("test_R2_score :", score)
 
@@ -117,7 +131,6 @@ class dataprocess:
             print("feature importances :", grid_result.feature_importances_)
             fit_time = time.time() - t0
             final_predict = GradientBoostingModel.predict(x_test)
-            # 評估，打分數
             score = GradientBoostingModel.score(x_test, y_test)
             print("test_R2_score :", score)
 
@@ -144,7 +157,6 @@ class dataprocess:
             print("feature importances :", grid_result.feature_importances_)
             fit_time = time.time() - t0
             final_predict = AdaBoostModel.predict(x_test)
-            # 評估，打分數
             score = AdaBoostModel.score(x_test, y_test)
             print("test_R2_score :", score)
 
@@ -167,7 +179,6 @@ class dataprocess:
             print("feature importances :", grid_result.feature_importances_)
             fit_time = time.time() - t0
             final_predict = XGBModel.predict(x_test)
-            # 評估，打分數
             score = XGBModel.score(x_test, y_test)
             print("test_R2_score :", score)
 
@@ -205,12 +216,17 @@ class dataprocess:
             model = SVRModel
 
         else:
-            pass
+            print("Method not in this funcion, please add this by manual")
 
         # pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
         return score, feature_importances, fit_time, final_predict, model
 
     def predicted_original(self, model, ori_dataset):
+        """
+        
+        predicted original data which still not split.
+
+        """
         predicted_result = model.predict(xgb.DMatrix(ori_dataset[0]))
         return predicted_result
 

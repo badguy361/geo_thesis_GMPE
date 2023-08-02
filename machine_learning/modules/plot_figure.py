@@ -1,24 +1,22 @@
 import pandas as pd
-import time
 import math
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-import matplotlib.colors
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
 import sys
-import os
 import shap
 import pickle
-# append the path of the
-# parent directory
+# append the path of the parent directory
 sys.path.append("..")
-from design_pattern.process_train import dataprocess
+from modules.process_train import dataprocess
 
 
 class plot_fig:
+    """
+
+    A class plot all analysis figure
+    
+    """
 
     def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP, target):
         self.model_name = model_name
@@ -26,24 +24,23 @@ class plot_fig:
         self.SMOGN_TSMIP = SMOGN_TSMIP
         self.target = target
 
-    def predicted_distribution(self, x_test, y_test, predict_value, fit_time,
-                               score):
+    def predictedDistribution(self, x_test, y_test, predict_value, score):
         """ 
         
-        train & test distribution
+        train & test data distribution
         
         """
 
-        # 畫 Vs30 and randomForest_predict 關係圖
+        # Vs30 and train test predict value relationship
         plt.grid(linestyle=':')
         plt.scatter(x_test[:, 0],
                     y_test,
                     marker='o',
                     facecolors='none',
                     edgecolors='b',
-                    label='original value')  #數據點
+                    label='original value')
         plt.scatter(x_test[:,0], predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
+            label=f'predicted value (accuracy: %.2f)' % (score))
         plt.xlabel('Vs30(m/s)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(f'{self.model_name} Predicted Distribution')
@@ -53,16 +50,16 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-        # 畫 Mw and randomForest_predict 關係圖
+        # Mw and train test predict value relationship
         plt.grid(linestyle=':')
         plt.scatter(x_test[:, 1],
                     y_test,
                     marker='o',
                     facecolors='none',
                     edgecolors='b',
-                    label='original value')  #數據點
+                    label='original value')
         plt.scatter(x_test[:,1], predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
+            label=f'predicted value (accuracy: %.2f)' % (score))
         plt.xlabel('Mw')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(f'{self.model_name} Predicted Distribution')
@@ -72,16 +69,16 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-        # 畫 Rrup and randomForest_predict 關係圖
+        # Rrup and train test predict value relationship
         plt.grid(linestyle=':')
         plt.scatter(x_test[:, 2],
                     y_test,
                     marker='o',
                     facecolors='none',
                     edgecolors='b',
-                    label='original value')  #數據點
+                    label='original value')
         plt.scatter(x_test[:,2], predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label=f'predicted value (accuracy: %.2f)' % (score)) #迴歸線
+            label=f'predicted value (accuracy: %.2f)' % (score))
         plt.xlabel('ln(Rrup)(km)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(f'{self.model_name} Predicted Distribution')
@@ -96,7 +93,8 @@ class plot_fig:
                  ori_full_data: "ori_notsplit_data", score):
         """
         
-        Total Residual 
+        Total residual and standard deviation and inter & intra event residual.
+        Calculate residual by original anser and original predicted value.
         
         """
 
@@ -141,9 +139,10 @@ class plot_fig:
         i = 0
         while i < len(residual):  # 計算每個網格中總點數
             x_net = (round(np.exp(x_total[:, 0])[i], 2) - 1e2) / (
-                (2 * 1e3 - 1e2) / net)
-            y_net = (round(residual[i], 2) - (-3)) / ((3 - (-3)) / net)
-            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+                (2 * 1e3 - 1e2) / net)  # 看是落在哪個x網格
+            y_net = (round(residual[i], 2) - (-3)) / (
+                (3 - (-3)) / net)  # 看是落在哪個y網格
+            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格+=1
             i += 1
 
         j = 0
@@ -152,7 +151,7 @@ class plot_fig:
                 (2 * 1e3 - 1e2) / net)
             y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
-            # color_column:依照資料落在哪個網格給定該資料顏色值
+            # color_column:依照資料落在哪個網格給定該資料網格的數值(zz值) 用以畫圖
             j += 1
 
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
@@ -173,28 +172,6 @@ class plot_fig:
                     marker='o',
                     color='black',
                     label='mean value')
-        # plt.plot([121, 121], [
-        #     residual_121_mean + residual_121_std,
-        #     residual_121_mean - residual_121_std
-        # ],
-        #          'black',
-        #          label='1 std.')
-        # plt.plot([199, 199], [
-        #     residual_199_mean + residual_199_std,
-        #     residual_199_mean - residual_199_std
-        # ], 'black')
-        # plt.plot([398, 398], [
-        #     residual_398_mean + residual_398_std,
-        #     residual_398_mean - residual_398_std
-        # ], 'black')
-        # plt.plot([794, 794], [
-        #     residual_794_mean + residual_794_std,
-        #     residual_794_mean - residual_794_std
-        # ], 'black')
-        # plt.plot([1000, 1000], [
-        #     residual_1000_mean + residual_1000_std,
-        #     residual_1000_mean - residual_1000_std
-        # ], 'black')
 
         plt.plot([121, 199, 398, 794, 1000], [
             residual_121_mean, residual_199_mean, residual_398_mean,
@@ -222,7 +199,7 @@ class plot_fig:
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
-            % (score ,total_std))
+            % (score, total_std))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
@@ -258,22 +235,21 @@ class plot_fig:
         total_std = np.std(residual)
 
         net = 50
-        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        zz = np.array([0] * net * net).reshape(net, net)
         color_column = []
 
         i = 0
-        while i < len(residual):  # 計算每個網格中總點數
+        while i < len(residual):
             x_net = (round(x_total[:, 1][i], 2) - 3) / ((8 - 3) / net)
             y_net = (round(residual[i], 2) - (-3)) / ((3 - (-3)) / net)
-            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            zz[math.floor(x_net), math.floor(y_net)] += 1
             i += 1
 
         j = 0
-        while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+        while j < len(residual):
             x_net = (round(x_total[:, 1][j], 2) - 3) / ((8 - 3) / net)
             y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
-            # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
 
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
@@ -291,24 +267,6 @@ class plot_fig:
                     marker='o',
                     color='black',
                     label='mean value')
-        # plt.plot([3.5, 3.5], [
-        #     residual_3_5_mean + residual_3_5_std,
-        #     residual_3_5_mean - residual_3_5_std
-        # ],
-        #          'black',
-        #          label='1 std.')
-        # plt.plot([4.5, 4.5], [
-        #     residual_4_5_mean + residual_4_5_std,
-        #     residual_4_5_mean - residual_4_5_std
-        # ], 'black')
-        # plt.plot([5.5, 5.5], [
-        #     residual_5_5_mean + residual_5_5_std,
-        #     residual_5_5_mean - residual_5_5_std
-        # ], 'black')
-        # plt.plot([6.5, 6.5], [
-        #     residual_6_5_mean + residual_6_5_std,
-        #     residual_6_5_mean - residual_6_5_std
-        # ], 'black')
 
         plt.plot([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean, residual_4_5_mean, residual_5_5_mean,
@@ -333,7 +291,7 @@ class plot_fig:
         plt.legend()
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
-            % (score ,total_std))
+            % (score, total_std))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
@@ -369,25 +327,23 @@ class plot_fig:
         total_std = np.std(residual)
 
         net = 50
-        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        zz = np.array([0] * net * net).reshape(net, net)
         color_column = []
 
         i = 0
-        while i < len(residual):  # 計算每個網格中總點數
+        while i < len(residual):
             x_net = (round(np.exp(x_total[:, 2])[i], 2) - 5 * 1e0) / (
                 (1e3 - 5 * 1e0) / net)
             y_net = (round(residual[i], 2) - (-3)) / ((3 - (-3)) / net)
-            zz[math.floor(x_net), math.floor(y_net)] += 1  # 資料落在第x,y個網格就+1紀錄
+            zz[math.floor(x_net), math.floor(y_net)] += 1
             i += 1
 
         j = 0
-        while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+        while j < len(residual):
             x_net = (round(np.exp(x_total[:, 2])[j], 2) - 5 * 1e0) / (
                 (1e3 - 5 * 1e0) / net)
             y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
-            color_column.append(zz[math.floor(x_net),
-                                   math.floor(y_net)])  #將統計好資料寫入color_column
-            # color_column:依照資料落在哪個網格給定該資料顏色值
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
             j += 1
 
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
@@ -408,23 +364,6 @@ class plot_fig:
                     marker='o',
                     color='black',
                     label='mean value')
-        # plt.plot([10, 10], [
-        #     residual_10_mean + residual_10_std,
-        #     residual_10_mean - residual_10_std
-        # ],
-        #          'black')
-        # plt.plot([31, 31], [
-        #     residual_31_mean + residual_31_std,
-        #     residual_31_mean - residual_31_std
-        # ], 'black')
-        # plt.plot([100, 100], [
-        #     residual_100_mean + residual_100_std,
-        #     residual_100_mean - residual_100_std
-        # ], 'black')
-        # plt.plot([316, 316], [
-        #     residual_316_mean + residual_316_std,
-        #     residual_316_mean - residual_316_std
-        # ], 'black')
 
         plt.plot([10, 31, 100, 316], [
             residual_10_mean, residual_31_mean, residual_100_mean,
@@ -450,7 +389,7 @@ class plot_fig:
         plt.legend()
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
-            % (score ,total_std))
+            % (score, total_std))
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
@@ -504,7 +443,7 @@ class plot_fig:
         x_bar = np.linspace(-4, 4, 41)
         plt.bar(x_bar, total_num_residual, edgecolor='white', width=0.2)
 
-        mu = np.mean(residual)  # mean and standard deviation 可以改，如果分布有變的話
+        mu = np.mean(residual)
         sigma = np.std(residual)
         plt.text(2, 2700, f'mean = {round(mu,2)}')
         plt.text(2, 1700, f'sd = {round(sigma,2)}')
@@ -518,7 +457,7 @@ class plot_fig:
         plt.show()
         """
 
-        inter intra event residual
+        inter & intra event residual
         
         """
 
@@ -527,7 +466,6 @@ class plot_fig:
                                                         columns=['predicted'])
         total_data_df = pd.concat(
             [ori_full_data, originaldata_predicted_result_df], axis=1)
-        # 這裡看是否需要變log10
         # total_data_df["residual"] = np.abs((np.exp(total_data_df["predicted"]) - np.exp(total_data_df["lnPGA(gal)"]))/980)
         total_data_df["residual"] = total_data_df["predicted"] - total_data_df[
             f"ln{self.target}(gal)"]
@@ -564,7 +502,8 @@ class plot_fig:
         inter_mean = round(inter_event['inter_event_residual'].mean(), 2)
         inter_std = round(inter_event['inter_event_residual'].std(), 2)
         plt.title(
-            f'{self.abbreviation_name} Inter-event Residual Mean:{inter_mean} Std:{inter_std}')
+            f'{self.abbreviation_name} Inter-event Residual Mean:{inter_mean} Std:{inter_std}'
+        )
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Inter-event Residual.png',
             dpi=300)
@@ -581,26 +520,25 @@ class plot_fig:
 
         # * Rrup intra-event
         net = 50
-        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        zz = np.array([0] * net * net).reshape(net, net)
         color_column = []
 
         i = 0
-        while i < len(residual):  # 計算每個網格中總點數
+        while i < len(residual):
             x_net = (round(total_data_df['Rrup'][i], 2) - (-50)) / (
                 (600 - (-50)) / net)  # -50為圖中最小值 600為圖中最大值
             y_net = (round(total_data_df['intra_event_residual'][i], 2) -
                      (-2.5)) / ((2.5 - (-2.5)) / net)  # -2.5為圖中最小值 2.5為圖中最大值
-            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            zz[math.floor(x_net), math.floor(y_net)] += 1
             i += 1
 
         j = 0
-        while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+        while j < len(residual):
             x_net = (round(total_data_df['Rrup'][j], 2) -
                      (-50)) / ((600 - (-50)) / net)
             y_net = (round(total_data_df['intra_event_residual'][j], 2) -
                      (-2.5)) / ((2.5 - (-2.5)) / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
-            # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
 
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
@@ -643,35 +581,35 @@ class plot_fig:
         intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
         intra_std = round(total_data_df['intra_event_residual'].std(), 2)
         plt.title(
-            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean} Std:{intra_std}')
+            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean} Std:{intra_std}'
+        )
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Intra-event Residual.png',
             dpi=300)
         plt.show()
 
-        # Vs30 intra-event
+        # * Vs30 intra-event
         Vs30_xticks = [200, 400, 600, 800, 1000, 1200, 1400]
         net = 50
-        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        zz = np.array([0] * net * net).reshape(net, net)
         color_column = []
 
         i = 0
-        while i < len(residual):  # 計算每個網格中總點數
+        while i < len(residual):
             x_net = (round(total_data_df['Rrup'][i], 2) - 0) / (
                 (1400 - 0) / net)
             y_net = (round(total_data_df['intra_event_residual'][i], 2) -
                      (-2.5)) / ((2.5 - (-2.5)) / net)
-            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            zz[math.floor(x_net), math.floor(y_net)] += 1
             i += 1
 
         j = 0
-        while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+        while j < len(residual):
             x_net = (round(total_data_df['Rrup'][j], 2) - 0) / (
                 (1400 - 0) / net)
             y_net = (round(total_data_df['intra_event_residual'][j], 2) -
                      (-2.5)) / ((2.5 - (-2.5)) / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
-            # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
 
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
@@ -703,7 +641,8 @@ class plot_fig:
         intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
         intra_std = round(total_data_df['intra_event_residual'].std(), 2)
         plt.title(
-            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean} Std:{intra_std}')
+            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean} Std:{intra_std}'
+        )
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Intra-event Residual.png',
             dpi=300)
@@ -713,27 +652,26 @@ class plot_fig:
                          predict_value: "ori_predicted", score):
         """
         
-        預測PGA和實際PGA
+        predict value and true value distribution
         
         """
         net = 50
-        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        zz = np.array([0] * net * net).reshape(net, net)
         color_column = []
 
         i = 0
-        while i < len(y_test):  # 計算每個網格中總點數
+        while i < len(y_test):
             x_net = (round(y_test[i], 2) + 2) / (10 / net)
             # +2:因為網格從-2開始打 10:頭減尾8-(-2) 10/net:網格間格距離 x_net:x方向第幾個網格
             y_net = (round(predict_value[i], 2) + 2) / (10 / net)
-            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格
+            zz[math.floor(x_net), math.floor(y_net)] += 1
             i += 1
 
         j = 0
-        while j < len(y_test):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+        while j < len(y_test):
             x_net = (round(y_test[j], 2) + 2) / (10 / net)
             y_net = (round(predict_value[j], 2) + 2) / (10 / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
-            # color_column:依照資料落在哪個網格給定該資料顏色值
             j += 1
 
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
@@ -760,7 +698,6 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    
     def distance_scaling(
             self,  # change Mw Vs30 etc. condition by csv file
             Vs30,
@@ -771,14 +708,19 @@ class plot_fig:
             x_total: "ori_feature",
             y_total: "ori_ans",
             ML_model):
+        """
+        
+        distance scaling figure follow condition given by ourself
+
+        """
         DSCon = np.array(
             [[np.log(Vs30), Mw,
               np.log(Rrup), fault_type, station_rank]])
         Result = []
-        for i in np.linspace(1, 200, 100):
+        for i in np.linspace(0.01, 200, 100):
             DSCon[0][2] = np.log(round(i, 2))  # 給定距離預測值
             Result.append(np.exp(ML_model.predict(DSCon)) / 980)
-        myline = np.linspace(1, 200, 100)
+        myline = np.linspace(0.01, 200, 100)
         fault_type_list = ["0", "REV", "NM", "SS"]
         x_total = np.transpose(x_total, (1, 0))  # 轉換dim
 
@@ -802,10 +744,11 @@ class plot_fig:
         plt.xlabel('Rrup(km)')
         plt.ylabel(f"{self.target}(g)")
         plt.ylim(10e-5, 10)
-        plt.xlim(1, 300)
+        plt.xlim(0, 300)
         plt.yscale("log")
         plt.xscale("log")
-        plt.xticks([1, 10, 50, 100, 200, 300], [1, 10, 50, 100, 200, 300])
+        plt.xticks([0.1, 0.5, 1, 10, 50, 100, 200, 300],
+                   [0.1, 0.5, 1, 10, 50, 100, 200, 300])
         plt.title(f"distance scaling [M = {Mw}, Vs30 = {Vs30}m/s]")
         plt.legend()
         plt.savefig(
@@ -815,6 +758,11 @@ class plot_fig:
 
     def explainable(self, x_test: "ori_test_feature", model_feture, ML_model,
                     seed):
+        """
+        
+        explain AI model by SHAP index which include global explaination and local explaination.
+        
+        """
         df = pd.DataFrame(x_test, columns=model_feture)
         explainer = shap.Explainer(ML_model)
         shap_values = explainer(df)

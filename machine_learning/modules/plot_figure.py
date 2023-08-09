@@ -6,9 +6,9 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 import sys
 import shap
 import pickle
-# append the path of the parent directory
 sys.path.append("..")
 from modules.process_train import dataprocess
+import xgboost as xgb
 
 
 class plot_fig:
@@ -24,7 +24,7 @@ class plot_fig:
         self.SMOGN_TSMIP = SMOGN_TSMIP
         self.target = target
 
-    def predictedDistribution(self, x_test, y_test, predict_value, score):
+    def predicted_distribution(self, x_test, y_test, predict_value, score):
         """ 
         
         train & test data distribution
@@ -697,7 +697,8 @@ class plot_fig:
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Measured Predicted Comparison.png',
             dpi=300)
         plt.show()
-
+    
+    # 可取代
     def distance_scaling(
             self,  # change Mw Vs30 etc. condition by csv file
             Vs30,
@@ -719,9 +720,9 @@ class plot_fig:
         Result = []
         for i in np.linspace(0.01, 200, 100):
             DSCon[0][2] = np.log(round(i, 2))  # 給定距離預測值
-            Result.append(np.exp(ML_model.predict(DSCon)) / 980)
+            Result.append(np.exp(ML_model.predict(xgb.DMatrix(DSCon))) / 980)
         myline = np.linspace(0.01, 200, 100)
-        fault_type_list = ["0", "REV", "NM", "SS"]
+        fault_type_dict = {90:"REV", -90:"NM", 0:"SS"}
         x_total = np.transpose(x_total, (1, 0))  # 轉換dim
 
         fig = plt.figure()
@@ -734,7 +735,7 @@ class plot_fig:
                  Result,
                  linewidth='0.8',
                  color='r',
-                 label=fault_type_list[fault_type])
+                 label=fault_type_dict[fault_type])
         plt.scatter(np.exp(x_total[2]),
                     np.exp(y_total) / 980,
                     marker='o',
@@ -747,8 +748,8 @@ class plot_fig:
         plt.xlim(0, 300)
         plt.yscale("log")
         plt.xscale("log")
-        plt.xticks([0.1, 0.5, 1, 10, 50, 100, 200, 300],
-                   [0.1, 0.5, 1, 10, 50, 100, 200, 300])
+        plt.xticks([0.01, 0.1, 0.5, 1, 10, 50, 100, 200, 300],
+                   [0.01, 0.1, 0.5, 1, 10, 50, 100, 200, 300])
         plt.title(f"distance scaling [M = {Mw}, Vs30 = {Vs30}m/s]")
         plt.legend()
         plt.savefig(

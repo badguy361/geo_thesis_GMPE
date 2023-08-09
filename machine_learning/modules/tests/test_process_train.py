@@ -14,7 +14,7 @@ model = dataprocess()
 
 
 class Testprocess_train(unittest.TestCase):
-    def test_preprocess(self):
+    def test_preProcess(self):
         target = "PGA"
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
         data['lnVs30'] = np.log(data['Vs30'])
@@ -37,7 +37,7 @@ class Testprocess_train(unittest.TestCase):
 
         assert after_process_data.equals(result)
 
-    def test_split_dataset(self):
+    def test_splitDataset(self):
         target = "PGA"
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
         after_process_data = model.preProcess(data, target, True)
@@ -82,7 +82,7 @@ class Testprocess_train(unittest.TestCase):
 
         self.assertEqual(score_model, score_test)
 
-    def test_predicted_original(self):
+    def test_predictedOriginal(self):
         target = "PGA"
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
         model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
@@ -100,9 +100,9 @@ class Testprocess_train(unittest.TestCase):
 
 
 suite = unittest.TestSuite()
-suite.addTest(Testprocess_train('test_preprocess'))
-suite.addTest(Testprocess_train('test_split_dataset'))
+suite.addTest(Testprocess_train('test_preProcess'))
+suite.addTest(Testprocess_train('test_splitDataset'))
 suite.addTest(Testprocess_train('test_training'))
-suite.addTest(Testprocess_train('test_predicted_original'))
+suite.addTest(Testprocess_train('test_predictedOriginal'))
 
 unittest.TextTestRunner(verbosity=2).run(suite)

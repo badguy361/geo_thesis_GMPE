@@ -1,15 +1,13 @@
 import unittest
 import pandas as pd
 import numpy as np
-import os
 import sys
 from sklearn.model_selection import train_test_split
 from xgboost import XGBRegressor
 import time
-import pickle
 from numpy.testing import assert_array_equal
 import xgboost as xgb
-sys.path.append("/TSMIP/machine_learning/design_pattern")
+sys.path.append("/TSMIP/machine_learning/modules")
 from process_train import dataprocess
 
 model = dataprocess()

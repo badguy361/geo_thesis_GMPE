@@ -13,18 +13,16 @@ from campbell_bozorgnia_2014 import CampbellBozorgnia2014
 from chao_2020 import ChaoEtAl2020Asc
 
 dataLen = 17 # rrup 總點位
-station_id_num = 732 # station_id 總量
+df = pd.read_csv('data/DSC_condition.csv')
 
+"""
+calculate Chang2023 total station value
+"""
+station_id_num = 1 # station_id 總量
 ch_mean = [[0] * dataLen] * station_id_num
 ch_sig = [[0] * dataLen] * station_id_num
 ch_tau = [[0] * dataLen] * station_id_num
 ch_phi = [[0] * dataLen] * station_id_num
-
-df = pd.read_csv('data/DSC_condition.csv')
-
-"""
-calculate total station value
-"""
 for i in tqdm(range(station_id_num)):
     ctx = df[df['sta_id']==i+1].to_records()
     ctx = recfunctions.drop_fields(
@@ -53,6 +51,18 @@ calculate total station id mean value
 """
 others GMM
 """
+
+ctx = df[df['sta_id']==1].to_records()
+ctx = recfunctions.drop_fields(
+    ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
+ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
+                ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
+                ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'), 
+                ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
+                ('sta_id', '<i8'),('hypo_depth', '<f8'),('z2pt5', '<f8')])
+ctx = ctx.view(np.recarray)
+imts = [PGA()]
+    
 phung = PhungEtAl2020Asc()
 ph_mean = [[0] * dataLen]
 ph_sig = [[0] * dataLen]
@@ -85,13 +95,13 @@ cam_phi = [[0] * dataLen]
 cam_mean, cam_sig, cam_tau, cam_phi = campbell.compute(ctx, imts, cam_mean, cam_sig, cam_tau, cam_phi)
 cam_mean = np.exp(cam_mean)
 
-# choa = ChaoEtAl2020Asc()
-# choa_mean = [[0] * dataLen]
-# choa_sig = [[0] * dataLen]
-# choa_tau = [[0] * dataLen]
-# choa_phi = [[0] * dataLen]
-# choa_mean, choa_sig, choa_tau, choa_phi = choa.compute(ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
-# choa_mean = np.exp(choa_mean)
+choa = ChaoEtAl2020Asc()
+choa_mean = [[0] * dataLen]
+choa_sig = [[0] * dataLen]
+choa_tau = [[0] * dataLen]
+choa_phi = [[0] * dataLen]
+choa_mean, choa_sig, choa_tau, choa_phi = choa.compute(ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
+choa_mean = np.exp([choa_mean])
 
 plt.grid(which="both",
         axis="both",
@@ -112,7 +122,7 @@ plt.plot(ctx['rrup'], abr_mean[0], 'b', label="Abrahamson2014")
 plt.plot(ctx['rrup'], cam_mean[0], 'yellow', label="CampbellBozorgnia2014")
 # plt.plot(ctx['rrup'], cam_mean[0] + choa_sig[0], 'r--')
 # plt.plot(ctx['rrup'], cam_mean[0] - choa_sig[0], 'r--')
-# plt.plot(ctx['rrup'], choa_mean[0], 'yellow', label="ChaoEtAl2020Asc")
+plt.plot(ctx['rrup'], choa_mean[0], 'pink', label="ChaoEtAl2020Asc")
 # plt.plot(ctx['rrup'], choa_mean[0] + choa_sig[0], 'r--')
 # plt.plot(ctx['rrup'], choa_mean[0] - choa_sig[0], 'r--')
 plt.xlabel(f'rrup(km)')

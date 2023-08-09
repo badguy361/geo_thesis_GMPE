@@ -33,17 +33,17 @@ class Testprocess_train(unittest.TestCase):
                                   & (data["eq.type"] != "deep crustal")].reset_index() 
 
         df = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
-        result = model.preprocess(df, target, True)
+        result = model.preProcess(df, target, True)
 
         assert after_process_data.equals(result)
 
     def test_split_dataset(self):
         target = "PGA"
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
-        after_process_data = model.preprocess(data, target, True)
+        after_process_data = model.preProcess(data, target, True)
 
         model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-        result_ori = model.split_dataset(after_process_data,
+        result_ori = model.splitDataset(after_process_data,
                                          f'ln{target}(gal)', True,
                                          *model_feture)
 
@@ -61,9 +61,9 @@ class Testprocess_train(unittest.TestCase):
         target = "PGA"
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
         model = dataprocess()
-        after_process_data = model.preprocess(data, target, True)
+        after_process_data = model.preProcess(data, target, True)
         model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-        result_ori = model.split_dataset(after_process_data,
+        result_ori = model.splitDataset(after_process_data,
                                          f'ln{target}(gal)', True,
                                          *model_feture)
         score_model, feature_importances_model, fit_time, final_predict_model, ML_model = model.training(
@@ -86,8 +86,8 @@ class Testprocess_train(unittest.TestCase):
         target = "PGA"
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
         model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-        after_process_ori_data = model.preprocess(data, target, True)
-        original_data = model.split_dataset(after_process_ori_data,
+        after_process_ori_data = model.preProcess(data, target, True)
+        original_data = model.splitDataset(after_process_ori_data,
                                             f'ln{target}(gal)', False,
                                             *model_feture)
         booster = xgb.Booster()

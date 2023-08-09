@@ -20,8 +20,8 @@ import re
 import math
 import scipy
 import numpy as np
-from general import RecordBuilder
-from imt import from_string
+from utils.general import RecordBuilder
+from utils.imt import from_string
 
 SA_LIKE_PREFIXES = ['SA', 'EA', 'FA', 'DR']
 

@@ -26,9 +26,9 @@ Module exports :class:`CampbellBozorgnia2014`
 """
 import numpy as np
 from numpy import exp, radians, cos
-from coeffs_table import CoeffsTable
-import const
-from imt import PGA, SA, PGV
+from utils.coeffs_table import CoeffsTable
+import utils.const as const
+from utils.imt import PGA, SA, PGV
 
 CONSTS = {"c8": 0.0,
           "h4": 1.0,

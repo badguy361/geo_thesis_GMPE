@@ -25,9 +25,9 @@ Module exports :class:`AbrahamsonEtAl2014`
 import copy
 import numpy as np
 from scipy import interpolate
-import const
-from coeffs_table import CoeffsTable
-from imt import PGA, SA, PGV
+import utils.const as const
+from utils.coeffs_table import CoeffsTable
+from utils.imt import PGA, SA, PGV
 from numpy.lib import recfunctions
 import pandas as pd
 import matplotlib.pyplot as plt

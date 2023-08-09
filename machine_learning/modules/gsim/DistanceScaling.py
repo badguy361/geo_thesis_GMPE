@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from numpy.lib import recfunctions
-from imt import PGA, SA, PGV
+from utils.imt import PGA, SA, PGV
+from tqdm import tqdm
 
 from phung_2020 import PhungEtAl2020Asc
 from chang_2023 import Chang2023
@@ -11,16 +12,20 @@ from abrahamson_2014 import AbrahamsonEtAl2014
 from campbell_bozorgnia_2014 import CampbellBozorgnia2014
 from chao_2020 import ChaoEtAl2020Asc
 
-# df = pd.read_csv('test2.csv')
-# df = df.append([df]*731)
-# sta = np.reshape([[i+1]*17 for i in range(732)],(-1))
-# df['sta_id'] = sta
-# df.to_csv("test2.csv",index=False)
+dataLen = 17 # rrup 總點位
+station_id_num = 732 # station_id 總量
 
-dataLen = 17
+ch_mean = [[0] * dataLen] * station_id_num
+ch_sig = [[0] * dataLen] * station_id_num
+ch_tau = [[0] * dataLen] * station_id_num
+ch_phi = [[0] * dataLen] * station_id_num
 
-df = pd.read_csv('test2.csv')
-for i in range(1):
+df = pd.read_csv('data/DSC_condition.csv')
+
+"""
+calculate total station value
+"""
+for i in tqdm(range(station_id_num)):
     ctx = df[df['sta_id']==i+1].to_records()
     ctx = recfunctions.drop_fields(
         ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
@@ -32,20 +37,22 @@ for i in range(1):
     ctx = ctx.view(np.recarray)
     imts = [PGA()]
     chang = Chang2023()
-    ch_mean = [[0] * dataLen]
-    ch_sig = [[0] * dataLen]
-    ch_tau = [[0] * dataLen]
-    ch_phi = [[0] * dataLen]
-    ch_mean, ch_sig, ch_tau, ch_phi = chang.compute(ctx, imts, ch_mean, ch_sig, ch_tau, ch_phi)
-    ch_mean_copy = np.exp(ch_mean.copy())
-    plt.plot(ctx['rrup'], ch_mean_copy[0])
+    ch_mean[i], ch_sig[i], ch_tau[i], ch_phi[i] = chang.compute(ctx, imts, [ch_mean[i]], [ch_sig[i]], [ch_tau[i]], [ch_phi[i]])
+    ch_mean_copy = np.exp(ch_mean[i][0].copy())
+    plt.plot(ctx['rrup'], ch_mean_copy)
 
-    # if i == 0:
-    #     plt.plot(ctx['rrup'], ch_mean_copy[0], label=f"Chang2023")
-    # else:
-    #     plt.plot(ctx['rrup'], ch_mean_copy[0])
+"""
+calculate total station id mean value
+"""
+# total = np.array([0]*dataLen)
+# for j in range(station_id_num):
+#     total = total + np.exp(ch_mean[j][0])
+# total_station_mean = total / station_id_num
+# plt.plot(ctx['rrup'], total_station_mean, 'gray', label="Chang2023 average")
 
-
+"""
+others GMM
+"""
 phung = PhungEtAl2020Asc()
 ph_mean = [[0] * dataLen]
 ph_sig = [[0] * dataLen]

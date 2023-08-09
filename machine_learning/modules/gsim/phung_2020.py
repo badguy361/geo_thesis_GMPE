@@ -22,9 +22,9 @@ Module exports :class:`PhungEtAl2020SInter`
 """
 import math
 import numpy as np
-import const
-from coeffs_table import CoeffsTable
-from imt import PGA, SA, PGV
+import utils.const as const
+from utils.coeffs_table import CoeffsTable
+from utils.imt import PGA, SA, PGV
 from numpy.lib import recfunctions
 import queue
 import pandas as pd

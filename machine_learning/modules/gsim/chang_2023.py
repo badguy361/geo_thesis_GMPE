@@ -18,9 +18,9 @@
 
 import math
 import numpy as np
-import const
-from coeffs_table import CoeffsTable
-from imt import PGA, SA, PGV
+import utils.const as const
+from utils.coeffs_table import CoeffsTable
+from utils.imt import PGA, SA, PGV
 from numpy.lib import recfunctions
 import queue
 import pandas as pd
@@ -69,9 +69,8 @@ class Chang2023():
 
     def compute(self, ctx: np.recarray, imts, mean, sig, tau, phi):
         for m, imt in enumerate(imts):
-            print(ctx.sta_id)
             predict = self.ML_model.predict(xgb.DMatrix(np.column_stack((np.log(ctx.vs30), ctx.mag, np.log(ctx.rrup), ctx.rake, ctx.sta_id))))
-            mean[m] = np.log(np.exp(predict)/980)
+            mean[m] = np.log(np.exp(predict)/980) # unit : ln(g)
             sig[m], tau[m], phi[m] = 0.35,0.12,0.34
         
         return mean, sig, tau, phi

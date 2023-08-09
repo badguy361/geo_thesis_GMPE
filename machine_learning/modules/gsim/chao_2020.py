@@ -22,14 +22,12 @@ Module exports :class:`ChaoEtAl2020SInter`
                :class:`ChaoEtAl2020Asc`
 """
 import math
-
 import numpy as np
 import pandas as pd
-
-from general import CallableDict
-from coeffs_table import CoeffsTable
-import const
-from imt import PGA, SA, PGV, PGD
+from utils.general import CallableDict
+from utils.coeffs_table import CoeffsTable
+import utils.const as const
+from utils.imt import PGA, SA, PGV, PGD
 from numpy.lib import recfunctions
 import threading
 

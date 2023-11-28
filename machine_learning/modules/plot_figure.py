@@ -529,7 +529,10 @@ class plot_fig:
                 (600 - (-50)) / net)  # -50為圖中最小值 600為圖中最大值
             y_net = (round(total_data_df['intra_event_residual'][i], 2) -
                      (-2.5)) / ((2.5 - (-2.5)) / net)  # -2.5為圖中最小值 2.5為圖中最大值
-            zz[math.floor(x_net), math.floor(y_net)] += 1
+            if y_net <= net:
+                zz[math.floor(x_net), math.floor(y_net)] += 1
+            else:
+                zz[math.floor(x_net), net-1] += 1
             i += 1
 
         j = 0
@@ -538,7 +541,10 @@ class plot_fig:
                      (-50)) / ((600 - (-50)) / net)
             y_net = (round(total_data_df['intra_event_residual'][j], 2) -
                      (-2.5)) / ((2.5 - (-2.5)) / net)
-            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            if y_net <= net:
+                color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            else:
+                color_column.append(zz[math.floor(x_net), net-1])
             j += 1
 
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
@@ -600,7 +606,10 @@ class plot_fig:
                 (1400 - 0) / net)
             y_net = (round(total_data_df['intra_event_residual'][i], 2) -
                      (-2.5)) / ((2.5 - (-2.5)) / net)
-            zz[math.floor(x_net), math.floor(y_net)] += 1
+            if x_net < net and y_net < net:
+                zz[math.floor(x_net), math.floor(y_net)] += 1
+            else:
+                zz[net-1, net-1] += 1
             i += 1
 
         j = 0
@@ -609,7 +618,10 @@ class plot_fig:
                 (1400 - 0) / net)
             y_net = (round(total_data_df['intra_event_residual'][j], 2) -
                      (-2.5)) / ((2.5 - (-2.5)) / net)
-            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            if x_net < net and y_net < net:
+                color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            else:
+                color_column.append(zz[net-1, net-1])
             j += 1
 
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
@@ -649,7 +661,10 @@ class plot_fig:
         plt.show()
 
     def measured_predict(self, y_test: "ori_ans",
-                         predict_value: "ori_predicted", score):
+                         predict_value: "ori_predicted",
+                         score, 
+                         lowerbound,
+                         higherbound):
         """
         
         predict value and true value distribution
@@ -661,17 +676,23 @@ class plot_fig:
 
         i = 0
         while i < len(y_test):
-            x_net = (round(y_test[i], 2) + 2) / (10 / net)
+            x_net = (round(y_test[i], 2) - lowerbound) / ((higherbound - lowerbound) / net)
             # +2:因為網格從-2開始打 10:頭減尾8-(-2) 10/net:網格間格距離 x_net:x方向第幾個網格
-            y_net = (round(predict_value[i], 2) + 2) / (10 / net)
-            zz[math.floor(x_net), math.floor(y_net)] += 1
+            y_net = (round(predict_value[i], 2) - lowerbound) / ((higherbound - lowerbound) / net)
+            if x_net < net and y_net < net:
+                zz[math.floor(x_net), math.floor(y_net)] += 1
+            else:
+                zz[net-1, net-1] += 1
             i += 1
 
         j = 0
         while j < len(y_test):
-            x_net = (round(y_test[j], 2) + 2) / (10 / net)
-            y_net = (round(predict_value[j], 2) + 2) / (10 / net)
-            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            x_net = (round(y_test[j], 2) - lowerbound) / ((higherbound - lowerbound) / net)
+            y_net = (round(predict_value[j], 2) - lowerbound) / ((higherbound - lowerbound) / net)
+            if x_net < net and y_net < net:
+                color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            else:
+                color_column.append(zz[net-1, net-1])
             j += 1
 
         colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
@@ -681,17 +702,17 @@ class plot_fig:
 
         plt.grid(linestyle=':')
         plt.scatter(y_test, predict_value, c=color_column, cmap=newcmp)
-        x_line = [-2, 8]
-        y_line = [-2, 8]
+        x_line = [lowerbound, higherbound]
+        y_line = [lowerbound, higherbound]
         plt.plot(x_line, y_line, 'r--', alpha=0.5)
         plt.xlabel(f'Measured ln({self.target})(cm/s^2)')
         plt.ylabel(f'Predict ln({self.target})(cm/s^2)')
-        plt.ylim(-2, 8)
-        plt.xlim(-2, 8)
+        plt.ylim(lowerbound, higherbound)
+        plt.xlim(lowerbound, higherbound)
         plt.title(
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predicted Distribution'
         )
-        plt.text(4.5, 0, f"R2 score = {round(score,2)}")
+        plt.text(higherbound-4, lowerbound+2, f"R2 score = {round(score,2)}")
         plt.colorbar(extend='both', label='number value')
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Measured Predicted Comparison.png',

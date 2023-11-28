@@ -8,7 +8,7 @@ from modules.process_train import dataprocess
 from modules.plot_figure import plot_fig
 
 #? parameters
-target = "PGA"
+target = "PGV"
 Mw = 7
 Rrup = 30
 Vs30 = 360
@@ -21,7 +21,9 @@ station_rank = 265
 #     'model/XGB_Sa30.pkl', 'model/XGB_Sa40.pkl', 'model/XGB_Sa100.pkl'
 # ]
 seed = 18989
-score = 0.88
+score = 0.88 # TODO
+lowerbound = 2
+higherbound = 12
 
 #? data preprocess
 TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_smogn_{target}.csv")
@@ -41,8 +43,7 @@ original_data = model.splitDataset(after_process_ori_data, f'ln{target}(gal)',
 #? model train
 #! result_ori[0](訓練資料)之shape : (29896,5) 為 29896筆 records 加上以下5個columns ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
 # score, feature_importances, fit_time, final_predict, ML_model = model.training(
-#     target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2],
-#     result_ori[3])
+#     target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
 
 #? model predicted
 booster = xgb.Booster()
@@ -53,15 +54,15 @@ originaldata_predicted_result = model.predicted_original(
 
 #? plot figure
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-# plot_something.predicted_distribution(result_ori[1], result_ori[3],
+# plot_something.predicted_distri|bution(result_ori[1], result_ori[3],
 #                                        final_predict, fit_time, score)
-plot_something.residual(original_data[0], original_data[1],
-                        originaldata_predicted_result, after_process_ori_data,
-                        score)
-plot_something.measured_predict(original_data[1], originaldata_predicted_result, score)
+# plot_something.residual(original_data[0], original_data[1],
+#                         originaldata_predicted_result, after_process_ori_data,
+#                         score)
+plot_something.measured_predict(original_data[1], originaldata_predicted_result, score, lowerbound, higherbound)
 # plot_something.distance_scaling(Vs30, Mw, Rrup, fault_type, station_rank,
 #                                 original_data[0], original_data[1], booster) # 可取代
 # plot_something.respond_spetrum(Vs30, Mw, Rrup, fault_type, station_rank,
 #                                False
 #                                , *model_name) #TODO
-plot_something.explainable(original_data[0], model_feture, booster, seed)
+# plot_something.explainable(original_data[0], model_feture, booster, seed)

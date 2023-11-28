@@ -852,7 +852,7 @@ class plot_fig:
         # 強制刷新緩存
         fig.canvas.draw()
 
-    def respond_spetrum(self, Vs30, Mw, Rrup, fault_type, station_rank, local,
+    def respond_spetrum(self, Vs30, Mw, Rrup, rake, station_rank, local,
                         *args: "model"):
         booster_PGA = xgb.Booster()
         booster_PGA.load_model(args[0])
@@ -876,11 +876,13 @@ class plot_fig:
         booster_Sa40.load_model(args[9])
         booster_Sa100 = xgb.Booster()
         booster_Sa100.load_model(args[10])
+        fault_type_list = {90:"REV", -90:"NM", 0:"SS"}
 
+        # * 1. focal.type independent
         if local == True:
             RSCon = xgb.DMatrix(
                 np.array([[np.log(Vs30), Mw,
-                  np.log(Rrup), fault_type, station_rank]]))
+                  np.log(Rrup), rake, station_rank]]))
             Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
             Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
             Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
@@ -890,7 +892,6 @@ class plot_fig:
             Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
             Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
             Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
-            fault_type_list = {90:"REV", -90:"NM", 0:"SS"}
             plt.grid(which="both",
                      axis="both",
                      linestyle="-",
@@ -900,9 +901,8 @@ class plot_fig:
                 Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
                 Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
                 Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
-            ],
-                     label=fault_type_list[fault_type])
-            plt.title(f"M = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
+            ], label=fault_type_list[rake])
+            plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
             plt.xlabel("Period(s)")
             plt.ylabel("PSA(g)")
             plt.ylim(10e-6, 1)
@@ -913,14 +913,15 @@ class plot_fig:
                        [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
             plt.legend()
             plt.savefig(
-                f"response spectrum-local Mw{Mw} Rrup{Rrup} Vs30{Vs30} fault-type{fault_type_list[fault_type]} station{station_rank}.png",
+                f"response spectrum-local Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} fault-type-{fault_type_list[rake]} station-{station_rank}.png",
                 dpi=300)
+            plt.show()
+            
         else:
-            fault_type_list = {90:"REV", -90:"NM", 0:"SS"}
-            for rake in fault_type_list:
+            for _rake in fault_type_list:
                 RSCon = xgb.DMatrix(
                     np.array([[np.log(Vs30), Mw,
-                      np.log(Rrup), rake, station_rank]]))
+                      np.log(Rrup), _rake, station_rank]]))
                 Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
                 Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
                 Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
@@ -934,15 +935,14 @@ class plot_fig:
                     Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
                     Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
                     Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
-                ],
-                         label=fault_type_list[rake])
+                ], label=fault_type_list[_rake])
 
             plt.grid(which="both",
                      axis="both",
                      linestyle="-",
                      linewidth=0.5,
                      alpha=0.5)
-            plt.title(f"M = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
+            plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
             plt.xlabel("Period(s)")
             plt.ylabel("PSA(g)")
             plt.ylim(10e-6, 1)
@@ -953,8 +953,51 @@ class plot_fig:
                        [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
             plt.legend()
             plt.savefig(
-                f"response spectrum-global Mw{Mw} Rrup{Rrup} Vs30{Vs30} station{station_rank}.png",
+                f"response spectrum-global Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} station-{station_rank}.png",
                 dpi=300)
+            plt.show()
+            
+
+        # * 2. Mw independent
+        Mw_list = [4,5,6,7,8]
+        for _Mw in Mw_list:
+            RSCon = xgb.DMatrix(
+                np.array([[np.log(Vs30), _Mw,
+                    np.log(Rrup), rake, station_rank]]))
+            Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
+            Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
+            Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
+            Sa02_predict = np.exp(booster_Sa02.predict(RSCon)) / 980
+            Sa05_predict = np.exp(booster_Sa05.predict(RSCon)) / 980
+            Sa10_predict = np.exp(booster_Sa10.predict(RSCon)) / 980
+            Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
+            Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
+            Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
+            plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
+                Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
+                Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
+                Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
+            ], label=f'Mw:{_Mw}')
+
+        plt.grid(which="both",
+                axis="both",
+                linestyle="-",
+                linewidth=0.5,
+                alpha=0.5)
+        plt.title(f"Fault_type = {fault_type_list[rake]}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
+        plt.xlabel("Period(s)")
+        plt.ylabel("PSA(g)")
+        plt.ylim(10e-6, 1)
+        plt.xlim(0.01, 10.0)
+        plt.yscale("log")
+        plt.xscale("log")
+        plt.xticks([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
+                    [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
+        plt.legend()
+        plt.savefig(
+            f"response spectrum-global Fault_type-{fault_type_list[rake]} Rrup-{Rrup} Vs30-{Vs30} station-{station_rank}.png",
+            dpi=300)
+        plt.show()
 
 
 if __name__ == '__main__':

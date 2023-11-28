@@ -854,32 +854,43 @@ class plot_fig:
 
     def respond_spetrum(self, Vs30, Mw, Rrup, fault_type, station_rank, local,
                         *args: "model"):
-        PGA_model = pickle.load(open(args[0], 'rb'))
-        PGV_model = pickle.load(open(args[1], 'rb'))
-        Sa001_model = pickle.load(open(args[2], 'rb'))
-        Sa005_model = pickle.load(open(args[3], 'rb'))
-        Sa01_model = pickle.load(open(args[4], 'rb'))
-        Sa02_model = pickle.load(open(args[5], 'rb'))
-        Sa05_model = pickle.load(open(args[6], 'rb'))
-        Sa10_model = pickle.load(open(args[7], 'rb'))
-        Sa30_model = pickle.load(open(args[8], 'rb'))
-        Sa40_model = pickle.load(open(args[9], 'rb'))
-        Sa100_model = pickle.load(open(args[10], 'rb'))
+        booster_PGA = xgb.Booster()
+        booster_PGA.load_model(args[0])
+        booster_PGV = xgb.Booster()
+        booster_PGV.load_model(args[1])
+        booster_Sa001 = xgb.Booster()
+        booster_Sa001.load_model(args[2])
+        booster_Sa005 = xgb.Booster()
+        booster_Sa005.load_model(args[3])
+        booster_Sa01 = xgb.Booster()
+        booster_Sa01.load_model(args[4])
+        booster_Sa02 = xgb.Booster()
+        booster_Sa02.load_model(args[5])
+        booster_Sa05 = xgb.Booster()
+        booster_Sa05.load_model(args[6])
+        booster_Sa10 = xgb.Booster()
+        booster_Sa10.load_model(args[7])
+        booster_Sa30 = xgb.Booster()
+        booster_Sa30.load_model(args[8]) 
+        booster_Sa40 = xgb.Booster()
+        booster_Sa40.load_model(args[9])
+        booster_Sa100 = xgb.Booster()
+        booster_Sa100.load_model(args[10])
 
         if local == True:
-            RSCon = np.array(
-                [[np.log(Vs30), Mw,
-                  np.log(Rrup), fault_type, station_rank]])
-            Sa001_predict = np.exp(Sa001_model.predict(RSCon)) / 980
-            Sa005_predict = np.exp(Sa005_model.predict(RSCon)) / 980
-            Sa01_predict = np.exp(Sa01_model.predict(RSCon)) / 980
-            Sa02_predict = np.exp(Sa02_model.predict(RSCon)) / 980
-            Sa05_predict = np.exp(Sa05_model.predict(RSCon)) / 980
-            Sa10_predict = np.exp(Sa10_model.predict(RSCon)) / 980
-            Sa30_predict = np.exp(Sa30_model.predict(RSCon)) / 980
-            Sa40_predict = np.exp(Sa40_model.predict(RSCon)) / 980
-            Sa100_predict = np.exp(Sa100_model.predict(RSCon)) / 980
-            fault_type_list = ["REV", "NM", "SS"]
+            RSCon = xgb.DMatrix(
+                np.array([[np.log(Vs30), Mw,
+                  np.log(Rrup), fault_type, station_rank]]))
+            Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
+            Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
+            Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
+            Sa02_predict = np.exp(booster_Sa02.predict(RSCon)) / 980
+            Sa05_predict = np.exp(booster_Sa05.predict(RSCon)) / 980
+            Sa10_predict = np.exp(booster_Sa10.predict(RSCon)) / 980
+            Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
+            Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
+            Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
+            fault_type_list = {90:"REV", -90:"NM", 0:"SS"}
             plt.grid(which="both",
                      axis="both",
                      linestyle="-",
@@ -890,7 +901,7 @@ class plot_fig:
                 Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
                 Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
             ],
-                     label=fault_type_list[fault_type - 1])
+                     label=fault_type_list[fault_type])
             plt.title(f"M = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
             plt.xlabel("Period(s)")
             plt.ylabel("PSA(g)")
@@ -902,29 +913,29 @@ class plot_fig:
                        [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
             plt.legend()
             plt.savefig(
-                f"response spectrum-local Mw{Mw} Rrup{Rrup} Vs30{Vs30} fault-type{fault_type_list[fault_type-1]} station{station_rank}.png",
+                f"response spectrum-local Mw{Mw} Rrup{Rrup} Vs30{Vs30} fault-type{fault_type_list[fault_type]} station{station_rank}.png",
                 dpi=300)
         else:
-            fault_type_list = ["REV", "NM", "SS"]
-            for i, fault_type in enumerate(fault_type_list):
-                RSCon = np.array(
-                    [[np.log(Vs30), Mw,
-                      np.log(Rrup), i + 1, station_rank]])
-                Sa001_predict = np.exp(Sa001_model.predict(RSCon)) / 980
-                Sa005_predict = np.exp(Sa005_model.predict(RSCon)) / 980
-                Sa01_predict = np.exp(Sa01_model.predict(RSCon)) / 980
-                Sa02_predict = np.exp(Sa02_model.predict(RSCon)) / 980
-                Sa05_predict = np.exp(Sa05_model.predict(RSCon)) / 980
-                Sa10_predict = np.exp(Sa10_model.predict(RSCon)) / 980
-                Sa30_predict = np.exp(Sa30_model.predict(RSCon)) / 980
-                Sa40_predict = np.exp(Sa40_model.predict(RSCon)) / 980
-                Sa100_predict = np.exp(Sa100_model.predict(RSCon)) / 980
+            fault_type_list = {90:"REV", -90:"NM", 0:"SS"}
+            for rake in fault_type_list:
+                RSCon = xgb.DMatrix(
+                    np.array([[np.log(Vs30), Mw,
+                      np.log(Rrup), rake, station_rank]]))
+                Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
+                Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
+                Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
+                Sa02_predict = np.exp(booster_Sa02.predict(RSCon)) / 980
+                Sa05_predict = np.exp(booster_Sa05.predict(RSCon)) / 980
+                Sa10_predict = np.exp(booster_Sa10.predict(RSCon)) / 980
+                Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
+                Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
+                Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
                 plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
                     Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
                     Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
                     Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
                 ],
-                         label=fault_type)
+                         label=fault_type_list[rake])
 
             plt.grid(which="both",
                      axis="both",

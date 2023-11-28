@@ -9,17 +9,17 @@ from modules.plot_figure import plot_fig
 
 #? parameters
 target = "PGV"
-Mw = 7
+Mw = 5
 Rrup = 30
 Vs30 = 360
 fault_type = 90
 station_rank = 265
-# model_name = [
-#     'model/XGB_PGA.pkl', 'model/XGB_PGV.pkl', 'model/XGB_Sa001.pkl',
-#     'model/XGB_Sa005.pkl', 'model/XGB_Sa01.pkl', 'model/XGB_Sa02.pkl',
-#     'model/XGB_Sa03.pkl', 'model/XGB_Sa05.pkl', 'model/XGB_Sa10.pkl',
-#     'model/XGB_Sa30.pkl', 'model/XGB_Sa40.pkl', 'model/XGB_Sa100.pkl'
-# ]
+model_name = [
+    'model/XGB_PGA.json', 'model/XGB_PGV.json', 'model/XGB_Sa001.json',
+    'model/XGB_Sa005.json', 'model/XGB_Sa01.json', 'model/XGB_Sa02.json',
+    'model/XGB_Sa03.json', 'model/XGB_Sa05.json', 'model/XGB_Sa10.json',
+    'model/XGB_Sa30.json', 'model/XGB_Sa40.json', 'model/XGB_Sa100.json'
+]
 seed = 18989
 score = 0.88 # TODO
 lowerbound = 2
@@ -47,10 +47,10 @@ original_data = model.splitDataset(after_process_ori_data, f'ln{target}(gal)',
 
 #? model predicted
 booster = xgb.Booster()
-booster.load_model(f'XGB_{target}.json')
+booster.load_model(f'model/XGB_{target}.json')
 # booster.predict(xgb.DMatrix([(np.log(760), 7, np.log(200), -45, 256)]))
-originaldata_predicted_result = model.predicted_original(
-    booster, original_data)
+# originaldata_predicted_result = model.predicted_original(
+#     booster, original_data)
 
 #? plot figure
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
@@ -59,10 +59,9 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.residual(original_data[0], original_data[1],
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score)
-plot_something.measured_predict(original_data[1], originaldata_predicted_result, score, lowerbound, higherbound)
+# plot_something.measured_predict(original_data[1], originaldata_predicted_result, score, lowerbound, higherbound)
 # plot_something.distance_scaling(Vs30, Mw, Rrup, fault_type, station_rank,
 #                                 original_data[0], original_data[1], booster) # 可取代
-# plot_something.respond_spetrum(Vs30, Mw, Rrup, fault_type, station_rank,
-#                                False
-#                                , *model_name) #TODO
+plot_something.respond_spetrum(Vs30, Mw, Rrup, fault_type, station_rank,
+                               False, *model_name)
 # plot_something.explainable(original_data[0], model_feture, booster, seed)

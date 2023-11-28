@@ -4,3 +4,5 @@ PowerBI
 *.jpg
 *.src*
 *.pkl
+*.pyc
+__pycache__

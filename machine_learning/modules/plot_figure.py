@@ -731,9 +731,10 @@ class plot_fig:
         plt.show()
     
     def distance_scaling(
-            self,  # change Mw Vs30 etc. condition by csv file
+            self,
             DSC_df,
-            station_id,
+            station_id_num: "station總量",
+            plot_all_sta,
             x_total: "ori_feature",
             y_total: "ori_ans",
             model_path):
@@ -743,9 +744,9 @@ class plot_fig:
 
         """
         dataLen = 17  # rrup 總點位
+        total = np.array([0]*dataLen)
 
         # * calculate Chang2023 total station value
-        station_id_num = 1  # station_id 總量
         ch_mean = [[0] * dataLen] * station_id_num
         ch_sig = [[0] * dataLen] * station_id_num
         ch_tau = [[0] * dataLen] * station_id_num
@@ -764,11 +765,19 @@ class plot_fig:
             chang = Chang2023(model_path)
             ch_mean[i], ch_sig[i], ch_tau[i], ch_phi[i] = chang.compute(
                 ctx, imts, [ch_mean[i]], [ch_sig[i]], [ch_tau[i]], [ch_phi[i]])
-            ch_mean_copy = np.exp(ch_mean[i][0].copy())
-            plt.plot(ctx['rrup'], ch_mean_copy, label="Chang2023")
+            if plot_all_sta:
+                ch_mean_copy = np.exp(ch_mean[i][0].copy())
+                plt.plot(ctx['rrup'], ch_mean_copy)
+            else:
+                total = total + np.exp(ch_mean[i][0])
+
+        if not plot_all_sta:
+            total_station_mean = total / station_id_num
+            plt.plot(ctx['rrup'], total_station_mean, label="Chang2023_avg")
+
 
         # * 2.others GMM
-        ctx = DSC_df[DSC_df['sta_id'] == station_id].to_records()
+        ctx = DSC_df[DSC_df['sta_id'] == 1].to_records() # 其餘GMM用不著sta_id
         ctx = recfunctions.drop_fields(
             ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
         ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
@@ -824,7 +833,6 @@ class plot_fig:
         choa_mean = np.exp([choa_mean])
 
         # * 3.plt figure
-        # Rrup range: 0.1,0.5,0.75,1,5,10,20,30,40,50,60,70,80,90,100,150,200
         plt.grid(which="both",
                 axis="both",
                 linestyle="-",
@@ -866,7 +874,7 @@ class plot_fig:
                 [0.1, 0.5, 1, 10, 50, 100, 200, 300])
         plt.legend()
         plt.savefig(
-            f"distance scaling Mw-{ctx['mag'][0]} Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} station-{ctx['sta_id'][0]}.jpg", dpi=300)
+            f"distance scaling Mw-{ctx['mag'][0]} Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} global-{plot_all_sta}.jpg", dpi=300)
         plt.show()
 
 

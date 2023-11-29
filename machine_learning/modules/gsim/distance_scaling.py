@@ -23,7 +23,7 @@ fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
 """
 calculate Chang2023 total station value
 """
-station_id_num = 1  # station_id 總量
+station_id_num = 256  # station_id 總量
 ch_mean = [[0] * dataLen] * station_id_num
 ch_sig = [[0] * dataLen] * station_id_num
 ch_tau = [[0] * dataLen] * station_id_num

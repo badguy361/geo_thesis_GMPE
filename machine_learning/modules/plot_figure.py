@@ -2,14 +2,23 @@ import pandas as pd
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+from matplotlib.colors import LinearSegmentedColormap
 import sys
 import shap
-import pickle
 sys.path.append("..")
+sys.path.append("../modules/gsim")
 from modules.process_train import dataprocess
 import xgboost as xgb
 
+from numpy.lib import recfunctions
+from modules.gsim.utils.imt import PGA, SA, PGV
+from modules.gsim.phung_2020 import PhungEtAl2020Asc
+from modules.gsim.chang_2023 import Chang2023
+from modules.gsim.lin_2009 import Lin2009
+from modules.gsim.abrahamson_2014 import AbrahamsonEtAl2014
+from modules.gsim.campbell_bozorgnia_2014 import CampbellBozorgnia2014
+from modules.gsim.chao_2020 import ChaoEtAl2020Asc
+from tqdm import tqdm
 
 class plot_fig:
     """
@@ -23,6 +32,8 @@ class plot_fig:
         self.abbreviation_name = abbreviation_name
         self.SMOGN_TSMIP = SMOGN_TSMIP
         self.target = target
+        self.fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
+
 
     def predicted_distribution(self, x_test, y_test, predict_value, score):
         """ 
@@ -719,64 +730,145 @@ class plot_fig:
             dpi=300)
         plt.show()
     
-    # 可取代
     def distance_scaling(
             self,  # change Mw Vs30 etc. condition by csv file
-            Vs30,
-            Mw,
-            Rrup,
-            fault_type,
-            station_rank,
+            DSC_df,
+            station_id,
             x_total: "ori_feature",
             y_total: "ori_ans",
-            ML_model):
+            model_path):
         """
         
         distance scaling figure follow condition given by ourself
 
         """
-        DSCon = np.array(
-            [[np.log(Vs30), Mw,
-              np.log(Rrup), fault_type, station_rank]])
-        Result = []
-        for i in np.linspace(0.01, 200, 100):
-            DSCon[0][2] = np.log(round(i, 2))  # 給定距離預測值
-            Result.append(np.exp(ML_model.predict(xgb.DMatrix(DSCon))) / 980)
-        myline = np.linspace(0.01, 200, 100)
-        fault_type_dict = {90:"REV", -90:"NM", 0:"SS"}
-        x_total = np.transpose(x_total, (1, 0))  # 轉換dim
+        dataLen = 17  # rrup 總點位
 
-        fig = plt.figure()
+        # * calculate Chang2023 total station value
+        station_id_num = 1  # station_id 總量
+        ch_mean = [[0] * dataLen] * station_id_num
+        ch_sig = [[0] * dataLen] * station_id_num
+        ch_tau = [[0] * dataLen] * station_id_num
+        ch_phi = [[0] * dataLen] * station_id_num
+        for i in tqdm(range(station_id_num)):
+            ctx = DSC_df[DSC_df['sta_id'] == i+1].to_records()
+            ctx = recfunctions.drop_fields(
+                ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
+            ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
+                            ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
+                            ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
+                            ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
+                            ('sta_id', '<i8'), ('hypo_depth', '<f8'), ('z2pt5', '<f8')])
+            ctx = ctx.view(np.recarray)
+            imts = [PGA()]
+            chang = Chang2023(model_path)
+            ch_mean[i], ch_sig[i], ch_tau[i], ch_phi[i] = chang.compute(
+                ctx, imts, [ch_mean[i]], [ch_sig[i]], [ch_tau[i]], [ch_phi[i]])
+            ch_mean_copy = np.exp(ch_mean[i][0].copy())
+            plt.plot(ctx['rrup'], ch_mean_copy, label="Chang2023")
+
+        # * 2.others GMM
+        ctx = DSC_df[DSC_df['sta_id'] == station_id].to_records()
+        ctx = recfunctions.drop_fields(
+            ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
+        ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
+                        ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
+                        ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
+                        ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
+                        ('sta_id', '<i8'), ('hypo_depth', '<f8'), ('z2pt5', '<f8')])
+        ctx = ctx.view(np.recarray)
+        imts = [PGA()]
+
+        phung = PhungEtAl2020Asc()
+        ph_mean = [[0] * dataLen]
+        ph_sig = [[0] * dataLen]
+        ph_tau = [[0] * dataLen]
+        ph_phi = [[0] * dataLen]
+        ph_mean, ph_sig, ph_tau, ph_phi = phung.compute(
+            ctx, imts, ph_mean, ph_sig, ph_tau, ph_phi)
+        ph_mean = np.exp(ph_mean)
+
+        lin = Lin2009()
+        lin_mean = [[0] * dataLen]
+        lin_sig = [[0] * dataLen]
+        lin_tau = [[0] * dataLen]
+        lin_phi = [[0] * dataLen]
+        lin_mean, lin_sig = lin.compute(ctx, imts, lin_mean, lin_sig, lin_tau, lin_phi)
+        lin_mean = np.exp(lin_mean)
+
+        abrahamson = AbrahamsonEtAl2014()
+        abr_mean = [[0] * dataLen]
+        abr_sig = [[0] * dataLen]
+        abr_tau = [[0] * dataLen]
+        abr_phi = [[0] * dataLen]
+        abr_mean, abr_sig, abr_tau, abr_phi = abrahamson.compute(
+            ctx, imts, abr_mean, abr_sig, abr_tau, abr_phi)
+        abr_mean = np.exp(abr_mean)
+
+        campbell = CampbellBozorgnia2014()
+        cam_mean = [[0] * dataLen]
+        cam_sig = [[0] * dataLen]
+        cam_tau = [[0] * dataLen]
+        cam_phi = [[0] * dataLen]
+        cam_mean, cam_sig, cam_tau, cam_phi = campbell.compute(
+            ctx, imts, cam_mean, cam_sig, cam_tau, cam_phi)
+        cam_mean = np.exp(cam_mean)
+
+        choa = ChaoEtAl2020Asc()
+        choa_mean = [[0] * dataLen]
+        choa_sig = [[0] * dataLen]
+        choa_tau = [[0] * dataLen]
+        choa_phi = [[0] * dataLen]
+        choa_mean, choa_sig, choa_tau, choa_phi = choa.compute(
+            ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
+        choa_mean = np.exp([choa_mean])
+
+        # * 3.plt figure
+        # Rrup range: 0.1,0.5,0.75,1,5,10,20,30,40,50,60,70,80,90,100,150,200
         plt.grid(which="both",
-                 axis="both",
-                 linestyle="-",
-                 linewidth=0.5,
-                 alpha=0.5)
-        plt.plot(myline,
-                 Result,
-                 linewidth='0.8',
-                 color='r',
-                 label=fault_type_dict[fault_type])
-        plt.scatter(np.exp(x_total[2]),
+                axis="both",
+                linestyle="-",
+                linewidth=0.5,
+                alpha=0.5)
+        plt.scatter(np.exp(x_total[:,2]),
                     np.exp(y_total) / 980,
                     marker='o',
                     facecolors='none',
                     color='grey',
                     label='data')
-        plt.xlabel('Rrup(km)')
-        plt.ylabel(f"{self.target}(g)")
+        # plt.plot(ctx['rrup'], ch_mean[0] + ch_sig[0], 'b--')
+        # plt.plot(ctx['rrup'], ch_mean[0] - ch_sig[0], 'b--')
+        plt.plot(ctx['rrup'], ph_mean[0], 'r', linewidth='0.8', label="Phung2020")
+        # plt.plot(ctx['rrup'], ph_mean[0] + ph_sig[0], 'r--')
+        # plt.plot(ctx['rrup'], ph_mean[0] - ph_sig[0], 'r--')
+        plt.plot(ctx['rrup'], lin_mean[0], 'g', linewidth='0.8', label="Lin2009")
+        # plt.plot(ctx['rrup'], lin_mean[0] + lin_sig[0], 'g--')
+        # plt.plot(ctx['rrup'], lin_mean[0] - lin_sig[0], 'g--')
+        plt.plot(ctx['rrup'], abr_mean[0], 'b',
+                linewidth='0.8', label="Abrahamson2014")
+        # plt.plot(ctx['rrup'], abr_mean[0] + abr_sig[0], 'r--')
+        # plt.plot(ctx['rrup'], abr_mean[0] - abr_sig[0], 'r--')
+        plt.plot(ctx['rrup'], cam_mean[0], 'yellow',
+                linewidth='0.8', label="CampbellBozorgnia2014")
+        # plt.plot(ctx['rrup'], cam_mean[0] + choa_sig[0], 'r--')
+        # plt.plot(ctx['rrup'], cam_mean[0] - choa_sig[0], 'r--')
+        plt.plot(ctx['rrup'], choa_mean[0], 'pink',
+                linewidth='0.8', label="ChaoEtAl2020Asc")
+        # plt.plot(ctx['rrup'], choa_mean[0] + choa_sig[0], 'r--')
+        # plt.plot(ctx['rrup'], choa_mean[0] - choa_sig[0], 'r--')
+        plt.xlabel(f'Rrup(km)')
+        plt.ylabel(f'{self.target}(g)')
+        plt.title(f"Mw = {ctx['mag'][0]}, Vs30 = {ctx['vs30'][0]}m/s  Fault = {self.fault_type_dict[ctx['rake'][0]]} station = {ctx['sta_id'][0]}")
         plt.ylim(10e-5, 10)
-        plt.xlim(0, 300)
         plt.yscale("log")
         plt.xscale("log")
-        plt.xticks([0.01, 0.1, 0.5, 1, 10, 50, 100, 200, 300],
-                   [0.01, 0.1, 0.5, 1, 10, 50, 100, 200, 300])
-        plt.title(f"distance scaling [M = {Mw}, Vs30 = {Vs30}m/s]")
+        plt.xticks([0.1, 0.5, 1, 10, 50, 100, 200, 300],
+                [0.1, 0.5, 1, 10, 50, 100, 200, 300])
         plt.legend()
         plt.savefig(
-            f"distance scaling-{self.target} Mw{Mw} Vs30{Vs30} fault-type{fault_type} station{station_rank}.jpg",
-            dpi=300)
+            f"distance scaling Mw-{ctx['mag'][0]} Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} station-{ctx['sta_id'][0]}.jpg", dpi=300)
         plt.show()
+
 
     def explainable(self, x_test: "ori_test_feature", model_feture, ML_model,
                     seed):
@@ -876,7 +968,6 @@ class plot_fig:
         booster_Sa40.load_model(args[9])
         booster_Sa100 = xgb.Booster()
         booster_Sa100.load_model(args[10])
-        fault_type_list = {90:"REV", -90:"NM", 0:"SS"}
 
         # * 1. focal.type independent
         if local == True:
@@ -901,7 +992,7 @@ class plot_fig:
                 Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
                 Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
                 Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
-            ], label=fault_type_list[rake])
+            ], label=self.fault_type_dict[rake])
             plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
             plt.xlabel("Period(s)")
             plt.ylabel("PSA(g)")
@@ -913,12 +1004,12 @@ class plot_fig:
                        [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
             plt.legend()
             plt.savefig(
-                f"response spectrum-local Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} fault-type-{fault_type_list[rake]} station-{station_rank}.png",
+                f"response spectrum-local Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} fault-type-{self.fault_type_dict[rake]} station-{station_rank}.png",
                 dpi=300)
             plt.show()
             
         else:
-            for _rake in fault_type_list:
+            for _rake in self.fault_type_dict:
                 RSCon = xgb.DMatrix(
                     np.array([[np.log(Vs30), Mw,
                       np.log(Rrup), _rake, station_rank]]))
@@ -935,7 +1026,7 @@ class plot_fig:
                     Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
                     Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
                     Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
-                ], label=fault_type_list[_rake])
+                ], label=self.fault_type_dict[_rake])
 
             plt.grid(which="both",
                      axis="both",
@@ -984,7 +1075,7 @@ class plot_fig:
                 linestyle="-",
                 linewidth=0.5,
                 alpha=0.5)
-        plt.title(f"Fault_type = {fault_type_list[rake]}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
+        plt.title(f"Fault_type = {self.fault_type_dict[rake]}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
         plt.xlabel("Period(s)")
         plt.ylabel("PSA(g)")
         plt.ylim(10e-6, 1)
@@ -995,7 +1086,7 @@ class plot_fig:
                     [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
         plt.legend()
         plt.savefig(
-            f"response spectrum-global Fault_type-{fault_type_list[rake]} Rrup-{Rrup} Vs30-{Vs30} station-{station_rank}.png",
+            f"response spectrum-global Fault_type-{self.fault_type_dict[rake]} Rrup-{Rrup} Vs30-{Vs30} station-{station_rank}.png",
             dpi=300)
         plt.show()
 

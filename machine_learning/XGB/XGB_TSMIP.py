@@ -8,7 +8,7 @@ from modules.process_train import dataprocess
 from modules.plot_figure import plot_fig
 
 #? parameters
-target = "Sa100"
+target = "PGA"
 Mw = 7
 Rrup = 30
 Vs30 = 360
@@ -32,6 +32,7 @@ higherbound = 12
 #? data preprocess
 TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_smogn_{target}.csv")
 TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_{target}.csv")
+DSC_df = pd.read_csv(f"../../../distance_scaling_condition.csv")
 model = dataprocess()
 after_process_SMOGN_data = model.preProcess(TSMIP_smogn_df, target, False)
 after_process_ori_data = model.preProcess(TSMIP_df, target, True)
@@ -64,8 +65,8 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score)
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score, lowerbound, higherbound)
-# plot_something.distance_scaling(Vs30, Mw, Rrup, fault_type, station_rank,
-#                                 original_data[0], original_data[1], booster) # 可取代
-plot_something.respond_spetrum(Vs30, Mw, Rrup, rake, station_rank,
-                               False, *model_name)
+plot_something.distance_scaling(DSC_df, station_rank,
+                                original_data[0], original_data[1], "model/XGB_PGA.json")
+# plot_something.respond_spetrum(Vs30, Mw, Rrup, rake, station_rank,
+#                                False, *model_name)
 # plot_something.explainable(original_data[0], model_feture, booster, seed)

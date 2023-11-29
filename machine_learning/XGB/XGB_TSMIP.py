@@ -11,9 +11,9 @@ from modules.plot_figure import plot_fig
 target = "Sa100"
 Mw = 7
 Rrup = 30
-Vs30 = 760
+Vs30 = 360
 rake = 0
-station_rank = 256
+station_rank = 265
 model_name = [
     'model/XGB_PGA.json', 'model/XGB_PGV.json', 'model/XGB_Sa001.json',
     'model/XGB_Sa005.json', 'model/XGB_Sa01.json', 'model/XGB_Sa02.json',
@@ -67,5 +67,5 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.distance_scaling(Vs30, Mw, Rrup, fault_type, station_rank,
 #                                 original_data[0], original_data[1], booster) # 可取代
 plot_something.respond_spetrum(Vs30, Mw, Rrup, rake, station_rank,
-                               True, *model_name)
+                               False, *model_name)
 # plot_something.explainable(original_data[0], model_feture, booster, seed)

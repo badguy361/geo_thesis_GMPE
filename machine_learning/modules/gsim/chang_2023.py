@@ -62,9 +62,9 @@ class Chang2023():
     #: Reference rock conditions as defined at page
     DEFINED_FOR_REFERENCE_VELOCITY = 1180
 
-    def __init__(self):
+    def __init__(self, model_path):
         ML_model = xgb.Booster()
-        ML_model.load_model(f'XGB_PGA.json')
+        ML_model.load_model(model_path)
         self.ML_model = ML_model
 
     def compute(self, ctx: np.recarray, imts, mean, sig, tau, phi):

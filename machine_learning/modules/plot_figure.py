@@ -34,7 +34,6 @@ class plot_fig:
         self.target = target
         self.fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
 
-
     def predicted_distribution(self, x_test, y_test, predict_value, score):
         """ 
         
@@ -773,7 +772,7 @@ class plot_fig:
 
         if not plot_all_sta:
             total_station_mean = total / station_id_num
-            plt.plot(ctx['rrup'], total_station_mean, label="Chang2023_avg")
+            plt.plot(ctx['rrup'], total_station_mean, label="This study avg")
 
 
         # * 2.others GMM
@@ -866,7 +865,7 @@ class plot_fig:
         # plt.plot(ctx['rrup'], choa_mean[0] - choa_sig[0], 'r--')
         plt.xlabel(f'Rrup(km)')
         plt.ylabel(f'{self.target}(g)')
-        plt.title(f"Mw = {ctx['mag'][0]}, Vs30 = {ctx['vs30'][0]}m/s  Fault = {self.fault_type_dict[ctx['rake'][0]]} station = {ctx['sta_id'][0]}")
+        plt.title(f"Mw = {ctx['mag'][0]}, Vs30 = {ctx['vs30'][0]}m/s  Fault = {self.fault_type_dict[ctx['rake'][0]]}")
         plt.ylim(10e-5, 10)
         plt.yscale("log")
         plt.xscale("log")
@@ -876,7 +875,6 @@ class plot_fig:
         plt.savefig(
             f"distance scaling Mw-{ctx['mag'][0]} Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} global-{plot_all_sta}.jpg", dpi=300)
         plt.show()
-
 
     def explainable(self, x_test: "ori_test_feature", model_feture, ML_model,
                     seed):
@@ -1058,7 +1056,7 @@ class plot_fig:
             
 
         # * 2. Mw independent
-        Mw_list = [4,5,6,7,8]
+        Mw_list = [4,5,6,7]
         for _Mw in Mw_list:
             RSCon = xgb.DMatrix(
                 np.array([[np.log(Vs30), _Mw,

@@ -14,7 +14,7 @@ Rrup = 30
 Vs30 = 360
 rake = 0
 station_rank = 265
-station_id_num = 100 # station 總量
+station_id_num = 732 # station 總量
 model_name = [
     'model/XGB_PGA.json', 'model/XGB_PGV.json', 'model/XGB_Sa001.json',
     'model/XGB_Sa005.json', 'model/XGB_Sa01.json', 'model/XGB_Sa02.json',
@@ -33,7 +33,7 @@ seed = 18989
 #? data preprocess
 TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_smogn_{target}.csv")
 TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_{target}.csv")
-TSMIP_filter_df = TSMIP_df.loc[TSMIP_df['MW'] > 7].copy()
+TSMIP_filter_df = TSMIP_df.loc[TSMIP_df['MW'] > 7].copy() # filter 標準
 DSC_df = pd.read_csv(f"../../../distance_scaling_condition.csv") # Rrup range: 0.1,0.5,0.75,1,5,10,20,30,40,50,60,70,80,90,100,150,200
 model = dataprocess()
 after_process_SMOGN_data = model.preProcess(TSMIP_smogn_df, target, False)
@@ -70,8 +70,8 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score)
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score, lowerbound, higherbound)
-plot_something.distance_scaling(DSC_df, station_id_num, False,
-                                original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")
-# plot_something.respond_spetrum(Vs30, Mw, Rrup, rake, station_rank,
-#                                False, *model_name)
+# plot_something.distance_scaling(DSC_df, station_id_num, False,
+#                                 original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")
+plot_something.respond_spetrum(Vs30, Mw, Rrup, rake, station_rank,
+                               False, *model_name)
 # plot_something.explainable(original_data[0], model_feture, booster, seed)

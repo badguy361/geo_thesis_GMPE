@@ -22,8 +22,8 @@ from tqdm import tqdm
 
 class plot_fig:
     """
-
-    A class plot all analysis figure
+    
+    Class method for plotting figure.
     
     """
 
@@ -35,10 +35,15 @@ class plot_fig:
         self.fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
 
     def predicted_distribution(self, x_test, y_test, predict_value, score):
-        """ 
+        """
         
-        train & test data distribution
-        
+        Plot the train & test data distribution.
+
+        Args:
+            x_test ([dataframe]): [original test feature data]
+            y_test ([dataframe]): [original test answer data]
+            predict_value ([seriers]): [prediction value]
+            score ([float]): [R2 score]
         """
 
         # Vs30 and train test predict value relationship
@@ -677,8 +682,14 @@ class plot_fig:
                          higherbound):
         """
         
-        predict value and true value distribution
-        
+        Plot the predict value and true value distribution .
+
+        Args:
+            y_test (ori_ans): [original dataset answer]
+            predict_value (ori_predicted): [prediction value]
+            score ([float]): [R2 score from model]
+            lowerbound ([int]): [net lowerbound]
+            higherbound ([int]): [net higherbound]
         """
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)
@@ -739,8 +750,15 @@ class plot_fig:
             model_path):
         """
         
-        distance scaling figure follow condition given by ourself
+        Compute distance scaling figure follow condition given by ourself.
 
+        Args:
+            DSC_df ([dataframe]): [the condition given by ourself]
+            station_id_num (station): [total station number]
+            plot_all_sta ([bool]): [to decide if we want to plot all station]
+            x_total (ori_feature): [feature]
+            y_total (ori_ans): [value]
+            model_path ([str]): [the place which the model be stored]
         """
         dataLen = 17  # rrup 總點位
         total = np.array([0]*dataLen)
@@ -879,9 +897,14 @@ class plot_fig:
     def explainable(self, x_test: "ori_test_feature", model_feture, ML_model,
                     seed):
         """
-        
-        explain AI model by SHAP index which include global explaination and local explaination.
-        
+
+        This function shows explanation wihch include global explaination and local explaination of the model in the given target .
+
+        Args:
+            x_test (ori_test_feature): [original test feature data]
+            model_feture ([list]): [input parameters]
+            ML_model ([model]): [the model from sklearn or other package]
+            seed ([int]): [random seed number]
         """
         df = pd.DataFrame(x_test, columns=model_feture)
         explainer = shap.Explainer(ML_model)
@@ -950,8 +973,20 @@ class plot_fig:
         # 強制刷新緩存
         fig.canvas.draw()
 
-    def respond_spetrum(self, Vs30, Mw, Rrup, rake, station_rank, local,
+    def respond_spectrum(self, Vs30, Mw, Rrup, rake, station_rank, local,
                         *args: "model"):
+        """
+        
+        This function is called to plot respond spectrum .
+
+        Args:
+            Vs30 ([float]): [Vs30 value]
+            Mw ([int]): [Mw value]
+            Rrup ([float]): [Rrup value]
+            rake ([float]): [rake value]
+            station_rank ([int]): [station number value]
+            local ([bool]): [to decide plot local or global figure]
+        """
         booster_PGA = xgb.Booster()
         booster_PGA.load_model(args[0])
         booster_PGV = xgb.Booster()

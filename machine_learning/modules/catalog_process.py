@@ -116,6 +116,13 @@ def SMOGN_plot():
     return 0
 
 def synthesize(targets):
+    """
+    
+    Synthesize dataset through SMOGN method.
+
+    Args:
+        targets ([list]): [defined the targets which want to synthesize]
+    """
     for target in targets:
         TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_pre_smogn_{target}.csv")
 
@@ -128,7 +135,7 @@ def synthesize(targets):
 
 # a = cut_period(10.0)
 # a.head()
-b = SMOGN_plot()
+_ = SMOGN_plot()
 
 targets = ["Sa03"]
 _ = synthesize(targets)

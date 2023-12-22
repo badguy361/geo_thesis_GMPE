@@ -83,7 +83,7 @@ print("study.best_value", study.best_value)
 
 #? plot figure
 # plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-# plot_something.predicted_distri|bution(result_ori[1], result_ori[3],
+# plot_something.predicted_distribution(result_ori[1], result_ori[3],
 #                                        final_predict, fit_time, score)
 # plot_something.residual(original_data[0], original_data[1],
 #                         originaldata_predicted_result, after_process_ori_data,
@@ -91,6 +91,6 @@ print("study.best_value", study.best_value)
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score, lowerbound, higherbound)
 # plot_something.distance_scaling(DSC_df, station_id_num, False,
 #                                 original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")
-# plot_something.respond_spetrum(Vs30, Mw, Rrup, rake, station_rank,
+# plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_rank,
 #                                False, *model_name)
 # plot_something.explainable(original_data[0], model_feture, booster, seed)

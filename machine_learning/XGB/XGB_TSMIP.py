@@ -61,6 +61,8 @@ original_filter_data = model.splitDataset(after_process_ori_filter_data, f'ln{ta
 # score, feature_importances, fit_time, final_predict, ML_model = model.training(
 #     target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
 
+#? optuna choose parameter
+#! dashboard : optuna-dashboard mysql://root@localhost/XGB_TSMIP
 trainer = optimize_train(result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
 
 def objective_wrapper(trial):
@@ -69,19 +71,8 @@ study = optuna.create_study(study_name=study_name,
                             storage="mysql://root@localhost/XGB_TSMIP",
                             direction="maximize")
 study.optimize(objective_wrapper, n_trials=100)
-
 print("study.best_params", study.best_params)
 print("study.best_value", study.best_value)
-
-# loaded_study = optuna.load_study(study_name=study_name,
-#                                  storage="mysql://root@localhost/XGB_TSMIP")
-# plotly_config = {"staticPlot": True}
-
-# fig = plot_optimization_history(loaded_study)
-# fig.show(config=plotly_config)
-
-# fig = plot_param_importances(loaded_study)
-# fig.show(config=plotly_config)
 
 #? model predicted
 # booster = xgb.Booster()

@@ -1,3 +1,14 @@
+from tqdm import tqdm
+from modules.gsim.chao_2020 import ChaoEtAl2020Asc
+from modules.gsim.campbell_bozorgnia_2014 import CampbellBozorgnia2014
+from modules.gsim.abrahamson_2014 import AbrahamsonEtAl2014
+from modules.gsim.lin_2009 import Lin2009
+from modules.gsim.chang_2023 import Chang2023
+from modules.gsim.phung_2020 import PhungEtAl2020Asc
+from modules.gsim.utils.imt import PGA, SA, PGV
+from numpy.lib import recfunctions
+import xgboost as xgb
+from modules.process_train import dataprocess
 import pandas as pd
 import math
 import numpy as np
@@ -7,18 +18,7 @@ import sys
 import shap
 sys.path.append("..")
 sys.path.append("../modules/gsim")
-from modules.process_train import dataprocess
-import xgboost as xgb
 
-from numpy.lib import recfunctions
-from modules.gsim.utils.imt import PGA, SA, PGV
-from modules.gsim.phung_2020 import PhungEtAl2020Asc
-from modules.gsim.chang_2023 import Chang2023
-from modules.gsim.lin_2009 import Lin2009
-from modules.gsim.abrahamson_2014 import AbrahamsonEtAl2014
-from modules.gsim.campbell_bozorgnia_2014 import CampbellBozorgnia2014
-from modules.gsim.chao_2020 import ChaoEtAl2020Asc
-from tqdm import tqdm
 
 class plot_fig:
     """
@@ -76,7 +76,7 @@ class plot_fig:
                     y_total,
                     marker='o',
                     facecolors='none',
-                    c=color_column, 
+                    c=color_column,
                     cmap=newcmp,
                     s=8,
                     zorder=10)
@@ -118,7 +118,7 @@ class plot_fig:
                     y_total,
                     marker='o',
                     facecolors='none',
-                    c=color_column, 
+                    c=color_column,
                     cmap=newcmp,
                     s=8,
                     zorder=10)
@@ -167,7 +167,7 @@ class plot_fig:
                     y_total,
                     marker='o',
                     facecolors='none',
-                    c=color_column, 
+                    c=color_column,
                     cmap=newcmp,
                     s=8,
                     zorder=10)
@@ -925,13 +925,14 @@ class plot_fig:
                 ctx, imts, [ch_mean[i]], [ch_sig[i]], [ch_tau[i]], [ch_phi[i]])
             if plot_all_sta:
                 ch_mean_copy = np.exp(ch_mean[i][0].copy())
-                plt.plot(ctx['rrup'], ch_mean_copy)
+                plt.plot(ctx['rrup'], ch_mean_copy, 'black', zorder=5)
             else:
                 total = total + np.exp(ch_mean[i][0])
 
         if not plot_all_sta:
             total_station_mean = total / station_id_num
-            plt.plot(ctx['rrup'], total_station_mean, label="This study avg")
+            plt.plot(ctx['rrup'], total_station_mean, 'r',
+                     linewidth='1.6', label="This study avg", zorder=20)
 
         # * 2.others GMM
         ctx = DSC_df[DSC_df['sta_id'] == 1].to_records()  # 其餘GMM用不著sta_id
@@ -1000,28 +1001,29 @@ class plot_fig:
                     np.exp(y_total) / 980,
                     marker='o',
                     facecolors='none',
+                    s=8,
                     color='grey',
                     label='data')
         # plt.plot(ctx['rrup'], ch_mean[0] + ch_sig[0], 'b--')
         # plt.plot(ctx['rrup'], ch_mean[0] - ch_sig[0], 'b--')
-        plt.plot(ctx['rrup'], ph_mean[0], 'r',
-                 linewidth='0.8', label="Phung2020")
+        plt.plot(ctx['rrup'], ph_mean[0], 'orange',
+                 linewidth='0.8', label="Phung2020", zorder=10)
         # plt.plot(ctx['rrup'], ph_mean[0] + ph_sig[0], 'r--')
         # plt.plot(ctx['rrup'], ph_mean[0] - ph_sig[0], 'r--')
         plt.plot(ctx['rrup'], lin_mean[0], 'g',
-                 linewidth='0.8', label="Lin2009")
+                 linewidth='0.8', label="Lin2009", zorder=10)
         # plt.plot(ctx['rrup'], lin_mean[0] + lin_sig[0], 'g--')
         # plt.plot(ctx['rrup'], lin_mean[0] - lin_sig[0], 'g--')
         plt.plot(ctx['rrup'], abr_mean[0], 'b',
-                 linewidth='0.8', label="Abrahamson2014")
+                 linewidth='0.8', label="Abrahamson2014", zorder=10)
         # plt.plot(ctx['rrup'], abr_mean[0] + abr_sig[0], 'r--')
         # plt.plot(ctx['rrup'], abr_mean[0] - abr_sig[0], 'r--')
         plt.plot(ctx['rrup'], cam_mean[0], 'yellow',
-                 linewidth='0.8', label="CampbellBozorgnia2014")
+                 linewidth='0.8', label="CampbellBozorgnia2014", zorder=10)
         # plt.plot(ctx['rrup'], cam_mean[0] + choa_sig[0], 'r--')
         # plt.plot(ctx['rrup'], cam_mean[0] - choa_sig[0], 'r--')
         plt.plot(ctx['rrup'], choa_mean[0], 'pink',
-                 linewidth='0.8', label="ChaoEtAl2020Asc")
+                 linewidth='0.8', label="ChaoEtAl2020Asc", zorder=10)
         # plt.plot(ctx['rrup'], choa_mean[0] + choa_sig[0], 'r--')
         # plt.plot(ctx['rrup'], choa_mean[0] - choa_sig[0], 'r--')
         plt.xlabel(f'Rrup(km)')

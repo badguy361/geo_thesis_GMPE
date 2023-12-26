@@ -82,13 +82,13 @@ originaldata_predicted_result = model.predicted_original(
 
 #? plot figure
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-plot_something.data_distribution(original_data[0], original_data[1])
-plot_something.residual(original_data[0], original_data[1],
-                        originaldata_predicted_result, after_process_ori_data,
-                        score[f"XGB_{target}"])
+# plot_something.data_distribution(original_data[0], original_data[1])
+# plot_something.residual(original_data[0], original_data[1],
+#                         originaldata_predicted_result, after_process_ori_data,
+#                         score[f"XGB_{target}"])
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score[f"XGB_{target}"], lowerbound, higherbound)
-# plot_something.distance_scaling(DSC_df, station_id_num, False,
-#                                 original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")
+plot_something.distance_scaling(DSC_df, station_id_num, False,
+                                original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")
 # plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_rank,
 #                                False, *model_name)
 # plot_something.explainable(original_data[0], model_feture, booster, seed)

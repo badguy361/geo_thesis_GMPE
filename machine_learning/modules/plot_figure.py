@@ -34,70 +34,157 @@ class plot_fig:
         self.target = target
         self.fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
 
-    def predicted_distribution(self, x_test, y_test, predict_value, score):
+    def data_distribution(self, x_total, y_total):
         """
 
         Plot the train & test data distribution.
 
         Args:
-            x_test ([dataframe]): [original test feature data]
-            y_test ([dataframe]): [original test answer data]
-            predict_value ([seriers]): [prediction value]
-            score ([float]): [R2 score]
+            x_total ([dataframe]): [original feature data]
+            y_total ([dataframe]): [original answer data]
         """
 
-        # Vs30 and train test predict value relationship
-        plt.grid(linestyle=':')
-        plt.scatter(x_test[:, 0],
-                    y_test,
+        # Vs30 relationship
+        net = 50
+        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        color_column = []
+
+        i = 0
+        while i < len(x_total):  # 計算每個網格中總點數
+            x_net = (round(np.exp(x_total[:, 0])[i], 2) - 1e2) / (
+                (2 * 1e3 - 1e2) / net)  # 看是落在哪個x網格
+            y_net = (round(y_total[i], 2) - (-1)) / (
+                (8 - (-1)) / net)  # 看是落在哪個y網格
+            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格+=1
+            i += 1
+
+        j = 0
+        while j < len(x_total):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+            x_net = (round(np.exp(x_total[:, 0])[j], 2) - 1e2) / (
+                (2 * 1e3 - 1e2) / net)
+            y_net = (round(y_total[j], 2) - (-1)) / ((8 - (-1)) / net)
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            # color_column:依照資料落在哪個網格給定該資料網格的數值(zz值) 用以畫圖
+            j += 1
+
+        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
+        newcmp = LinearSegmentedColormap.from_list('testCmap',
+                                                   colors=colorlist,
+                                                   N=256)
+        plt.grid(linestyle=':', color='darkgrey', zorder=0)
+        plt.scatter(np.exp(x_total[:, 0]),
+                    y_total,
                     marker='o',
                     facecolors='none',
-                    edgecolors='b',
-                    label='original value')
-        plt.scatter(x_test[:, 0], predict_value, marker='o', facecolors='none', edgecolors='r',
-                    label=f'predicted value (accuracy: %.2f)' % (score))
-        plt.xlabel('Vs30(m/s)')
-        plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
-        plt.title(f'{self.model_name} Predicted Distribution')
-        plt.legend()
+                    c=color_column, 
+                    cmap=newcmp,
+                    s=8,
+                    zorder=10)
+        cbar = plt.colorbar(extend='both', label='number value')
+        cbar.set_label('number value', fontsize=12)
+        plt.xlabel('Vs30(m/s)', fontsize=12)
+        plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
+        plt.title(f'Data Distribution')
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict.jpg',
             dpi=300)
         plt.show()
 
-        # Mw and train test predict value relationship
-        plt.grid(linestyle=':')
-        plt.scatter(x_test[:, 1],
-                    y_test,
+        # Mw relationship
+        net = 50
+        zz = np.array([0] * net * net).reshape(net, net)
+        color_column = []
+
+        i = 0
+        while i < len(x_total):
+            x_net = (round(x_total[:, 1][i], 2) - 3) / ((8 - 3) / net)
+            y_net = (round(y_total[i], 2) - (-1)) / ((8 - (-1)) / net)
+            zz[math.floor(x_net), math.floor(y_net)] += 1
+            i += 1
+
+        j = 0
+        while j < len(x_total):
+            x_net = (round(x_total[:, 1][j], 2) - 3) / ((8 - 3) / net)
+            y_net = (round(y_total[j], 2) - (-1)) / ((8 - (-1)) / net)
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            j += 1
+
+        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
+        newcmp = LinearSegmentedColormap.from_list('testCmap',
+                                                   colors=colorlist,
+                                                   N=256)
+        plt.grid(linestyle=':', color='darkgrey', zorder=0)
+        plt.scatter(x_total[:, 1],
+                    y_total,
                     marker='o',
                     facecolors='none',
-                    edgecolors='b',
-                    label='original value')
-        plt.scatter(x_test[:, 1], predict_value, marker='o', facecolors='none', edgecolors='r',
-                    label=f'predicted value (accuracy: %.2f)' % (score))
-        plt.xlabel('Mw')
-        plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
-        plt.title(f'{self.model_name} Predicted Distribution')
-        plt.legend()
+                    c=color_column, 
+                    cmap=newcmp,
+                    s=8,
+                    zorder=10)
+        cbar = plt.colorbar(extend='both', label='number value')
+        cbar.set_label('number value', fontsize=12)
+        plt.xlabel('Mw', fontsize=12)
+        plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
+        plt.title(f'Data Distribution')
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict.jpg',
             dpi=300)
         plt.show()
 
-        # Rrup and train test predict value relationship
-        plt.grid(linestyle=':')
-        plt.scatter(x_test[:, 2],
-                    y_test,
+        # Rrup relationship
+        net = 50
+        zz = np.array([0] * net * net).reshape(net, net)
+        color_column = []
+
+        i = 0
+        while i < len(x_total):
+            x_net = (round(np.exp(x_total[:, 2])[i], 2) - 5 * 1e0) / (
+                (1e3 - 5 * 1e0) / net)
+            y_net = (round(y_total[i], 2) - (-1)) / ((8 - (-1)) / net)
+            zz[math.floor(x_net), math.floor(y_net)] += 1
+            i += 1
+
+        j = 0
+        while j < len(x_total):
+            x_net = (round(np.exp(x_total[:, 2])[j], 2) - 5 * 1e0) / (
+                (1e3 - 5 * 1e0) / net)
+            y_net = (round(y_total[j], 2) - (-1)) / ((8 - (-1)) / net)
+            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+            j += 1
+
+        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
+        newcmp = LinearSegmentedColormap.from_list('testCmap',
+                                                   colors=colorlist,
+                                                   N=256)
+        plt.grid(which="both",
+                 axis="both",
+                 linestyle="--",
+                 linewidth=0.5,
+                 alpha=0.5,
+                 zorder=0)
+        plt.scatter(np.exp(x_total[:, 2]),
+                    y_total,
                     marker='o',
                     facecolors='none',
-                    edgecolors='b',
-                    label='original value')
-        plt.scatter(x_test[:, 2], predict_value, marker='o', facecolors='none', edgecolors='r',
-                    label=f'predicted value (accuracy: %.2f)' % (score))
-        plt.xlabel('ln(Rrup)(km)')
-        plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
-        plt.title(f'{self.model_name} Predicted Distribution')
-        plt.legend()
+                    c=color_column, 
+                    cmap=newcmp,
+                    s=8,
+                    zorder=10)
+        cbar = plt.colorbar(extend='both', label='number value')
+        cbar.set_label('number value', fontsize=12)
+        plt.xlabel('ln(Rrup)(km)', fontsize=12)
+        plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
+        plt.xscale("log")
+        plt.xlim(1 * 1e0, 1e3)
+        plt.xticks([
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+            200, 300, 400, 500
+        ], [
+            1, '', '', '', '', '', '', '', '', 10, '', '', '', 50, '', '', '',
+            '', 100, 200, 300, '', 500
+        ])
+        plt.title(f'Data Distribution')
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict.jpg',
             dpi=300)
@@ -174,12 +261,13 @@ class plot_fig:
                                                    colors=colorlist,
                                                    N=256)
 
-        plt.grid(linestyle=':', color='darkgrey')
+        plt.grid(linestyle=':', color='darkgrey', zorder=0)
         plt.scatter(np.exp(x_total[:, 0]),
                     residual,
                     s=8,
                     c=color_column,
-                    cmap=newcmp)
+                    cmap=newcmp,
+                    zorder=10)
         cbar = plt.colorbar(extend='both', label='number value')
         cbar.set_label('number value', fontsize=12)
         plt.scatter([121, 199, 398, 794, 1000], [
@@ -188,26 +276,30 @@ class plot_fig:
         ],
             marker='o',
             color='black',
-            label='mean value')
+            label='mean value',
+            zorder=10)
 
         plt.plot([121, 199, 398, 794, 1000], [
             residual_121_mean, residual_199_mean, residual_398_mean,
             residual_794_mean, residual_1000_mean
         ],
             'k--',
-            label='1 std.')
+            label='1 std.',
+            zorder=10)
         plt.plot([121, 199, 398, 794, 1000], [
             residual_121_mean + residual_121_std, residual_199_mean +
             residual_199_std, residual_398_mean + residual_398_std,
             residual_794_mean + residual_794_std,
             residual_1000_mean + residual_1000_std
-        ], 'k--')
+        ], 'k--',
+            zorder=10)
         plt.plot([121, 199, 398, 794, 1000], [
             residual_121_mean - residual_121_std, residual_199_mean -
             residual_199_std, residual_398_mean - residual_398_std,
             residual_794_mean - residual_794_std,
             residual_1000_mean - residual_1000_std
-        ], 'k--')
+        ], 'k--',
+            zorder=10)
         plt.xlim(0, 1400)
         plt.ylim(-3, 3)
         plt.xlabel('Vs30(m/s)', fontsize=12)
@@ -273,9 +365,10 @@ class plot_fig:
                                                    colors=colorlist,
                                                    N=256)
 
-        plt.grid(linestyle=':', color='darkgrey')
+        plt.grid(linestyle=':', color='darkgrey', zorder=0)
         plt.scatter(x_total[:, 1], residual,
-                    s=8, c=color_column, cmap=newcmp)
+                    s=8, c=color_column, cmap=newcmp,
+                    zorder=10)
         cbar = plt.colorbar(extend='both', label='number value')
         cbar.set_label('number value', fontsize=12)
         plt.scatter([3.5, 4.5, 5.5, 6.5], [
@@ -284,24 +377,28 @@ class plot_fig:
         ],
             marker='o',
             color='black',
-            label='mean value')
+            label='mean value',
+            zorder=10)
 
         plt.plot([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean, residual_4_5_mean, residual_5_5_mean,
             residual_6_5_mean
         ],
             'k--',
-            label='1 std.')
+            label='1 std.',
+            zorder=10)
         plt.plot([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean + residual_3_5_std, residual_4_5_mean +
             residual_4_5_std, residual_5_5_mean + residual_5_5_std,
             residual_6_5_mean + residual_6_5_std
-        ], 'k--')
+        ], 'k--',
+            zorder=10)
         plt.plot([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean - residual_3_5_std, residual_4_5_mean -
             residual_4_5_std, residual_5_5_mean - residual_5_5_std,
             residual_6_5_mean - residual_6_5_std
-        ], 'k--')
+        ], 'k--',
+            zorder=10)
         plt.xlim(3, 8)
         plt.ylim(-3, 3)
         plt.xlabel('Mw', fontsize=12)
@@ -369,12 +466,18 @@ class plot_fig:
                                                    colors=colorlist,
                                                    N=256)
 
-        plt.grid(linestyle=':', color='darkgrey')
+        plt.grid(which="both",
+                 axis="both",
+                 linestyle="--",
+                 linewidth=0.5,
+                 alpha=0.5,
+                 zorder=0)
         plt.scatter(np.exp(x_total[:, 2]),
                     residual,
                     s=8,
                     c=color_column,
-                    cmap=newcmp)
+                    cmap=newcmp,
+                    zorder=10)
         cbar = plt.colorbar(extend='both', label='number value')
         cbar.set_label('number value', fontsize=12)
         plt.scatter([10, 31, 100, 316], [
@@ -383,25 +486,36 @@ class plot_fig:
         ],
             marker='o',
             color='black',
-            label='mean value')
+            label='mean value',
+            zorder=10)
 
         plt.plot([10, 31, 100, 316], [
             residual_10_mean, residual_31_mean, residual_100_mean,
             residual_316_mean
         ],
             'k--',
-            label='1 std.')
+            label='1 std.',
+            zorder=10)
         plt.plot([10, 31, 100, 316], [
             residual_10_mean + residual_10_std, residual_31_mean +
             residual_31_std, residual_100_mean + residual_100_std,
             residual_316_mean + residual_316_std
-        ], 'k--')
+        ], 'k--',
+            zorder=10)
         plt.plot([10, 31, 100, 316], [
             residual_10_mean - residual_10_std, residual_31_mean -
             residual_31_std, residual_100_mean - residual_100_std,
             residual_316_mean - residual_316_std
-        ], 'k--')
+        ], 'k--',
+            zorder=10)
         plt.xscale("log")
+        plt.xticks([
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+            200, 300, 400, 500
+        ], [
+            1, '', '', '', '', '', '', '', '', 10, '', '', '', 50, '', '', '',
+            '', 100, 200, 300, '', 500
+        ])
         plt.xlim(1 * 1e0, 1e3)
         plt.ylim(-3, 3)
         plt.xlabel('Rrup(km)', fontsize=12)
@@ -461,13 +575,14 @@ class plot_fig:
                                                   & (residual < 2.2))
 
         x_bar = np.linspace(-4, 4, 41)
-        plt.bar(x_bar, total_num_residual, edgecolor='white', width=0.2)
+        plt.bar(x_bar, total_num_residual, edgecolor='white', width=0.2,
+                zorder=10)
 
         mu = np.mean(residual)
         sigma = np.std(residual)
-        plt.text(2, 2700, f'mean = {round(mu,2)}')
-        plt.text(2, 1700, f'sd = {round(sigma,2)}')
-        plt.grid(linestyle=':', color='darkgrey')
+        plt.text(2, 2700, f'mean = {round(mu,2)}', zorder=10)
+        plt.text(2, 1700, f'sd = {round(sigma,2)}', zorder=10)
+        plt.grid(linestyle=':', color='darkgrey', zorder=0)
         plt.xlabel('Total-Residual', fontsize=12)
         plt.ylabel('Numbers', fontsize=12)
         plt.title(f'{self.abbreviation_name} Total-Residual Distribution')
@@ -501,20 +616,22 @@ class plot_fig:
 
         # * Mw inter-event
         Mw_yticks = [-1.5, -1.0, -0.5, 0, 0.5, 1.0, 1.5]
-        plt.grid(linestyle=':', color='darkgrey')
+        plt.grid(linestyle=':', color='darkgrey', zorder=0)
         plt.scatter(inter_event['Mw'],
                     inter_event['inter_event_residual'],
                     marker='o',
                     s=8,
                     facecolors='None',
-                    edgecolors='black')
+                    edgecolors='black',
+                    zorder=10)
         plt.plot([3, 8], [
             inter_event['inter_event_residual'].mean(),
             inter_event['inter_event_residual'].mean()
         ],
             'b--',
             linewidth=0.5,
-            label="mean value")
+            label="mean value",
+            zorder=10)
         plt.xlim(3, 8)
         plt.ylim(-1.6, 1.6)
         plt.yticks(Mw_yticks)
@@ -579,13 +696,15 @@ class plot_fig:
                  axis="both",
                  linestyle="--",
                  linewidth=0.5,
-                 alpha=0.5)
+                 alpha=0.5,
+                 zorder=0)
         plt.scatter(total_data_df['Rrup'],
                     total_data_df['intra_event_residual'],
                     marker='o',
                     s=8,
                     c=color_column,
-                    cmap=newcmp)
+                    cmap=newcmp,
+                    zorder=10)
         cbar = plt.colorbar(extend='both', label='number value')
         cbar.set_label('number value', fontsize=12)
         plt.plot([-50, 600], [
@@ -594,19 +713,19 @@ class plot_fig:
         ],
             'b--',
             label="mean value",
-            linewidth=0.5)
+            linewidth=0.5,
+            zorder=10)
         plt.xlim(1 * 1e0, 1e3)
-        # plt.xlim(1, 600)
         plt.ylim(-2.5, 2.5)
         plt.legend()
         plt.xscale("log")
-        # plt.xticks([
-        #     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
-        #     200, 300, 400, 500
-        # ], [
-        #     1, '', '', '', '', '', '', '', '', 10, '', '', '', 50, '', '', '',
-        #     '', 100, 200, 300, '', 500
-        # ])
+        plt.xticks([
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+            200, 300, 400, 500
+        ], [
+            1, '', '', '', '', '', '', '', '', 10, '', '', '', 50, '', '', '',
+            '', 100, 200, 300, '', 500
+        ])
         plt.xlabel('Rrup(km)', fontsize=12)
         plt.ylabel(
             f'Intra-event Residual ln({self.target})(cm/s^2)', fontsize=12)
@@ -655,13 +774,14 @@ class plot_fig:
                                                    colors=colorlist,
                                                    N=256)
 
-        plt.grid(linestyle=':', color='darkgrey')
+        plt.grid(linestyle=':', color='darkgrey', zorder=0)
         plt.scatter(total_data_df['Vs30'],
                     total_data_df['intra_event_residual'],
                     marker='o',
                     s=8,
                     c=color_column,
-                    cmap=newcmp)
+                    cmap=newcmp,
+                    zorder=10)
         cbar = plt.colorbar(extend='both', label='number value')
         cbar.set_label('number value', fontsize=12)
         plt.plot([0, 1400], [
@@ -670,7 +790,8 @@ class plot_fig:
         ],
             'b--',
             label="mean value",
-            linewidth=0.5)
+            linewidth=0.5,
+            zorder=10)
         plt.xlim(0, 1400)
         plt.ylim(-2.5, 2.5)
         plt.xticks(Vs30_xticks)
@@ -738,13 +859,14 @@ class plot_fig:
                                                    colors=colorlist,
                                                    N=256)
 
-        plt.grid(linestyle=':')
-        plt.scatter(y_test, predict_value, c=color_column, cmap=newcmp)
+        plt.grid(linestyle=':', zorder=0)
+        plt.scatter(y_test, predict_value, s=8,
+                    c=color_column, cmap=newcmp, zorder=10)
         x_line = [lowerbound, higherbound]
         y_line = [lowerbound, higherbound]
-        plt.plot(x_line, y_line, 'r--', alpha=0.5)
-        plt.xlabel(f'Measured ln({self.target})(cm/s^2)')
-        plt.ylabel(f'Predict ln({self.target})(cm/s^2)')
+        plt.plot(x_line, y_line, 'r--', alpha=0.5, zorder=10)
+        plt.xlabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
+        plt.ylabel(f'Predict ln({self.target})(cm/s^2)', fontsize=12)
         plt.ylim(lowerbound, higherbound)
         plt.xlim(lowerbound, higherbound)
         plt.title(

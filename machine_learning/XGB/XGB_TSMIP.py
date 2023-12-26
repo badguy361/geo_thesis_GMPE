@@ -31,8 +31,8 @@ score = {
     'XGB_Sa01': 0.87 , 'XGB_Sa02': 0.87, 'XGB_Sa03': 0.85, 'XGB_Sa05': 0.86,
     'XGB_Sa10': 0.90, 'XGB_Sa30': 0.93, 'XGB_Sa40': 0.94, 'XGB_Sa100': 0.93
 }
-lowerbound = 2
-higherbound = 12
+lowerbound = -2
+higherbound = 8
 seed = 18989
 study_name = 'XGB_TSMIP_2'
 
@@ -82,12 +82,11 @@ originaldata_predicted_result = model.predicted_original(
 
 #? plot figure
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-# plot_something.predicted_distribution(result_ori[1], result_ori[3],
-#                                        final_predict, fit_time, score)
+plot_something.data_distribution(original_data[0], original_data[1])
 plot_something.residual(original_data[0], original_data[1],
                         originaldata_predicted_result, after_process_ori_data,
                         score[f"XGB_{target}"])
-# plot_something.measured_predict(original_data[1], originaldata_predicted_result, score, lowerbound, higherbound)
+# plot_something.measured_predict(original_data[1], originaldata_predicted_result, score[f"XGB_{target}"], lowerbound, higherbound)
 # plot_something.distance_scaling(DSC_df, station_id_num, False,
 #                                 original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")
 # plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_rank,

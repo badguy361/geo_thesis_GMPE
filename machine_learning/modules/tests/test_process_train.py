@@ -70,7 +70,8 @@ class Testprocess_train(unittest.TestCase):
             target, "XGB", result_ori[0], result_ori[1], result_ori[2],
             result_ori[3])
 
-        XGB_params = {'n_estimators': 1000, 'max_depth': 10, 'n_jobs': -1}
+        XGB_params = {'n_estimators': 893, 'eta': 0.18, 'max_depth': 30, 'gamma': 0.004,
+                          'min_child_weight': 6.9, 'subsample': 0.99, 'lambda': 4.3, 'alpha': 0.24, 'n_jobs': -1}
         XGBModel = XGBRegressor(**XGB_params)
         t0 = time.time()
         grid_result = XGBModel.fit(result_ori[0], result_ori[2])

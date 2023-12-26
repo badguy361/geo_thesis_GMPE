@@ -63,31 +63,30 @@ original_filter_data = model.splitDataset(after_process_ori_filter_data, f'ln{ta
 
 #? optuna choose parameter
 #! dashboard : optuna-dashboard mysql://root@localhost/XGB_TSMIP
-trainer = optimize_train(result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
-
-def objective_wrapper(trial):
-    return trainer.XGB(trial)
-study = optuna.create_study(study_name=study_name,
-                            storage="mysql://root@localhost/XGB_TSMIP",
-                            direction="maximize")
-study.optimize(objective_wrapper, n_trials=100)
-print("study.best_params", study.best_params)
-print("study.best_value", study.best_value)
+# trainer = optimize_train(result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
+# def objective_wrapper(trial):
+#     return trainer.XGB(trial)
+# study = optuna.create_study(study_name=study_name,
+#                             storage="mysql://root@localhost/XGB_TSMIP",
+#                             direction="maximize")
+# study.optimize(objective_wrapper, n_trials=100)
+# print("study.best_params", study.best_params)
+# print("study.best_value", study.best_value)
 
 #? model predicted
-# booster = xgb.Booster()
-# booster.load_model(f'model/XGB_{target}.json')
+booster = xgb.Booster()
+booster.load_model(f'model/XGB_{target}.json')
 # booster.predict(xgb.DMatrix([(np.log(760), 7, np.log(200), -45, 256)]))
-# originaldata_predicted_result = model.predicted_original(
-#     booster, original_data)
+originaldata_predicted_result = model.predicted_original(
+    booster, original_data)
 
 #? plot figure
-# plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
+plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.predicted_distribution(result_ori[1], result_ori[3],
 #                                        final_predict, fit_time, score)
-# plot_something.residual(original_data[0], original_data[1],
-#                         originaldata_predicted_result, after_process_ori_data,
-#                         score)
+plot_something.residual(original_data[0], original_data[1],
+                        originaldata_predicted_result, after_process_ori_data,
+                        score[f"XGB_{target}"])
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score, lowerbound, higherbound)
 # plot_something.distance_scaling(DSC_df, station_id_num, False,
 #                                 original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")

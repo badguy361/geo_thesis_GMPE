@@ -22,9 +22,9 @@ from tqdm import tqdm
 
 class plot_fig:
     """
-    
+
     Class method for plotting figure.
-    
+
     """
 
     def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP, target):
@@ -36,7 +36,7 @@ class plot_fig:
 
     def predicted_distribution(self, x_test, y_test, predict_value, score):
         """
-        
+
         Plot the train & test data distribution.
 
         Args:
@@ -54,8 +54,8 @@ class plot_fig:
                     facecolors='none',
                     edgecolors='b',
                     label='original value')
-        plt.scatter(x_test[:,0], predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label=f'predicted value (accuracy: %.2f)' % (score))
+        plt.scatter(x_test[:, 0], predict_value, marker='o', facecolors='none', edgecolors='r',
+                    label=f'predicted value (accuracy: %.2f)' % (score))
         plt.xlabel('Vs30(m/s)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(f'{self.model_name} Predicted Distribution')
@@ -73,8 +73,8 @@ class plot_fig:
                     facecolors='none',
                     edgecolors='b',
                     label='original value')
-        plt.scatter(x_test[:,1], predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label=f'predicted value (accuracy: %.2f)' % (score))
+        plt.scatter(x_test[:, 1], predict_value, marker='o', facecolors='none', edgecolors='r',
+                    label=f'predicted value (accuracy: %.2f)' % (score))
         plt.xlabel('Mw')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(f'{self.model_name} Predicted Distribution')
@@ -92,8 +92,8 @@ class plot_fig:
                     facecolors='none',
                     edgecolors='b',
                     label='original value')
-        plt.scatter(x_test[:,2], predict_value,marker='o',facecolors='none',edgecolors='r', \
-            label=f'predicted value (accuracy: %.2f)' % (score))
+        plt.scatter(x_test[:, 2], predict_value, marker='o', facecolors='none', edgecolors='r',
+                    label=f'predicted value (accuracy: %.2f)' % (score))
         plt.xlabel('ln(Rrup)(km)')
         plt.ylabel(f'Predicted ln({self.target})(cm/s^2)')
         plt.title(f'{self.model_name} Predicted Distribution')
@@ -107,10 +107,10 @@ class plot_fig:
                  predict_value: "ori_predicted",
                  ori_full_data: "ori_notsplit_data", score):
         """
-        
+
         Total residual and standard deviation and inter & intra event residual.
         Calculate residual by original anser and original predicted value.
-        
+
         """
 
         # * 1. Vs30 Total Residual
@@ -177,23 +177,25 @@ class plot_fig:
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(np.exp(x_total[:, 0]),
                     residual,
+                    s=8,
                     c=color_column,
                     cmap=newcmp)
-        plt.colorbar(extend='both', label='number value')
+        cbar = plt.colorbar(extend='both', label='number value')
+        cbar.set_label('number value', fontsize=12)
         plt.scatter([121, 199, 398, 794, 1000], [
             residual_121_mean, residual_199_mean, residual_398_mean,
             residual_794_mean, residual_1000_mean
         ],
-                    marker='o',
-                    color='black',
-                    label='mean value')
+            marker='o',
+            color='black',
+            label='mean value')
 
         plt.plot([121, 199, 398, 794, 1000], [
             residual_121_mean, residual_199_mean, residual_398_mean,
             residual_794_mean, residual_1000_mean
         ],
-                 'k--',
-                 label='1 std.')
+            'k--',
+            label='1 std.')
         plt.plot([121, 199, 398, 794, 1000], [
             residual_121_mean + residual_121_std, residual_199_mean +
             residual_199_std, residual_398_mean + residual_398_std,
@@ -206,15 +208,14 @@ class plot_fig:
             residual_794_mean - residual_794_std,
             residual_1000_mean - residual_1000_std
         ], 'k--')
-        plt.xscale("log")
-        plt.xlim(1e2, 2 * 1e3)
+        plt.xlim(0, 1400)
         plt.ylim(-3, 3)
-        plt.xlabel('Vs30(m/s)')
-        plt.legend()
-        plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
+        plt.xlabel('Vs30(m/s)', fontsize=12)
+        plt.ylabel(f'Residual ln({self.target})(cm/s^2)', fontsize=12)
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
             % (score, total_std))
+        plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
@@ -273,22 +274,24 @@ class plot_fig:
                                                    N=256)
 
         plt.grid(linestyle=':', color='darkgrey')
-        plt.scatter(x_total[:, 1], residual, c=color_column, cmap=newcmp)
-        plt.colorbar(extend='both', label='number value')
+        plt.scatter(x_total[:, 1], residual,
+                    s=8, c=color_column, cmap=newcmp)
+        cbar = plt.colorbar(extend='both', label='number value')
+        cbar.set_label('number value', fontsize=12)
         plt.scatter([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean, residual_4_5_mean, residual_5_5_mean,
             residual_6_5_mean
         ],
-                    marker='o',
-                    color='black',
-                    label='mean value')
+            marker='o',
+            color='black',
+            label='mean value')
 
         plt.plot([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean, residual_4_5_mean, residual_5_5_mean,
             residual_6_5_mean
         ],
-                 'k--',
-                 label='1 std.')
+            'k--',
+            label='1 std.')
         plt.plot([3.5, 4.5, 5.5, 6.5], [
             residual_3_5_mean + residual_3_5_std, residual_4_5_mean +
             residual_4_5_std, residual_5_5_mean + residual_5_5_std,
@@ -301,12 +304,12 @@ class plot_fig:
         ], 'k--')
         plt.xlim(3, 8)
         plt.ylim(-3, 3)
-        plt.xlabel('Mw')
-        plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
-        plt.legend()
+        plt.xlabel('Mw', fontsize=12)
+        plt.ylabel(f'Residual ln({self.target})(cm/s^2)', fontsize=12)
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
             % (score, total_std))
+        plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
@@ -369,23 +372,25 @@ class plot_fig:
         plt.grid(linestyle=':', color='darkgrey')
         plt.scatter(np.exp(x_total[:, 2]),
                     residual,
+                    s=8,
                     c=color_column,
                     cmap=newcmp)
-        plt.colorbar(extend='both', label='number value')
+        cbar = plt.colorbar(extend='both', label='number value')
+        cbar.set_label('number value', fontsize=12)
         plt.scatter([10, 31, 100, 316], [
             residual_10_mean, residual_31_mean, residual_100_mean,
             residual_316_mean
         ],
-                    marker='o',
-                    color='black',
-                    label='mean value')
+            marker='o',
+            color='black',
+            label='mean value')
 
         plt.plot([10, 31, 100, 316], [
             residual_10_mean, residual_31_mean, residual_100_mean,
             residual_316_mean
         ],
-                 'k--',
-                 label='1 std.')
+            'k--',
+            label='1 std.')
         plt.plot([10, 31, 100, 316], [
             residual_10_mean + residual_10_std, residual_31_mean +
             residual_31_std, residual_100_mean + residual_100_std,
@@ -397,14 +402,14 @@ class plot_fig:
             residual_316_mean - residual_316_std
         ], 'k--')
         plt.xscale("log")
-        plt.xlim(5 * 1e0, 1e3)
+        plt.xlim(1 * 1e0, 1e3)
         plt.ylim(-3, 3)
-        plt.xlabel('Rrup(km)')
-        plt.ylabel(f'Residual ln({self.target})(cm/s^2)')
-        plt.legend()
+        plt.xlabel('Rrup(km)', fontsize=12)
+        plt.ylabel(f'Residual ln({self.target})(cm/s^2)', fontsize=12)
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
             % (score, total_std))
+        plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
@@ -463,8 +468,8 @@ class plot_fig:
         plt.text(2, 2700, f'mean = {round(mu,2)}')
         plt.text(2, 1700, f'sd = {round(sigma,2)}')
         plt.grid(linestyle=':', color='darkgrey')
-        plt.xlabel('Total-Residual')
-        plt.ylabel('Numbers')
+        plt.xlabel('Total-Residual', fontsize=12)
+        plt.ylabel('Numbers', fontsize=12)
         plt.title(f'{self.abbreviation_name} Total-Residual Distribution')
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Total-Residual Distribution.png',
@@ -507,18 +512,21 @@ class plot_fig:
             inter_event['inter_event_residual'].mean(),
             inter_event['inter_event_residual'].mean()
         ],
-                 'b--',
-                 linewidth=0.5)
+            'b--',
+            linewidth=0.5,
+            label="mean value")
         plt.xlim(3, 8)
         plt.ylim(-1.6, 1.6)
         plt.yticks(Mw_yticks)
-        plt.xlabel('Mw')
-        plt.ylabel(f'Inter-event Residual ln({self.target})(cm/s^2)')
+        plt.xlabel('Mw', fontsize=12)
+        plt.ylabel(
+            f'Inter-event Residual ln({self.target})(cm/s^2)', fontsize=12)
         inter_mean = round(inter_event['inter_event_residual'].mean(), 2)
         inter_std = round(inter_event['inter_event_residual'].std(), 2)
         plt.title(
             f'{self.abbreviation_name} Inter-event Residual Mean:{inter_mean} Std:{inter_std}'
         )
+        plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Inter-event Residual.png',
             dpi=300)
@@ -578,27 +586,30 @@ class plot_fig:
                     s=8,
                     c=color_column,
                     cmap=newcmp)
-        plt.colorbar(extend='both', label='number value')
+        cbar = plt.colorbar(extend='both', label='number value')
+        cbar.set_label('number value', fontsize=12)
         plt.plot([-50, 600], [
             total_data_df['intra_event_residual'].mean(),
             total_data_df['intra_event_residual'].mean()
         ],
-                 'b--',
-                 label="mean value",
-                 linewidth=0.5)
-        plt.xlim(1, 600)
+            'b--',
+            label="mean value",
+            linewidth=0.5)
+        plt.xlim(1 * 1e0, 1e3)
+        # plt.xlim(1, 600)
         plt.ylim(-2.5, 2.5)
         plt.legend()
-        plt.xscale("symlog")
-        plt.xticks([
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
-            200, 300, 400, 500
-        ], [
-            1, '', '', '', '', '', '', '', '', 10, '', '', '', 50, '', '', '',
-            '', 100, 200, 300, '', 500
-        ])
-        plt.xlabel('Rrup(km)')
-        plt.ylabel(f'Intra-event Residual ln({self.target})(cm/s^2)')
+        plt.xscale("log")
+        # plt.xticks([
+        #     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
+        #     200, 300, 400, 500
+        # ], [
+        #     1, '', '', '', '', '', '', '', '', 10, '', '', '', 50, '', '', '',
+        #     '', 100, 200, 300, '', 500
+        # ])
+        plt.xlabel('Rrup(km)', fontsize=12)
+        plt.ylabel(
+            f'Intra-event Residual ln({self.target})(cm/s^2)', fontsize=12)
         intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
         intra_std = round(total_data_df['intra_event_residual'].std(), 2)
         plt.title(
@@ -651,20 +662,22 @@ class plot_fig:
                     s=8,
                     c=color_column,
                     cmap=newcmp)
-        plt.colorbar(extend='both', label='number value')
+        cbar = plt.colorbar(extend='both', label='number value')
+        cbar.set_label('number value', fontsize=12)
         plt.plot([0, 1400], [
             total_data_df['intra_event_residual'].mean(),
             total_data_df['intra_event_residual'].mean()
         ],
-                 'b--',
-                 label="mean value",
-                 linewidth=0.5)
+            'b--',
+            label="mean value",
+            linewidth=0.5)
         plt.xlim(0, 1400)
         plt.ylim(-2.5, 2.5)
         plt.xticks(Vs30_xticks)
         plt.legend()
-        plt.xlabel('Vs30(m/s)')
-        plt.ylabel(f'Intra-event Residual ln({self.target})(cm/s^2)')
+        plt.xlabel('Vs30(m/s)', fontsize=12)
+        plt.ylabel(
+            f'Intra-event Residual ln({self.target})(cm/s^2)', fontsize=12)
         intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
         intra_std = round(total_data_df['intra_event_residual'].std(), 2)
         plt.title(
@@ -677,11 +690,11 @@ class plot_fig:
 
     def measured_predict(self, y_test: "ori_ans",
                          predict_value: "ori_predicted",
-                         score, 
+                         score,
                          lowerbound,
                          higherbound):
         """
-        
+
         Plot the predict value and true value distribution .
 
         Args:
@@ -697,9 +710,11 @@ class plot_fig:
 
         i = 0
         while i < len(y_test):
-            x_net = (round(y_test[i], 2) - lowerbound) / ((higherbound - lowerbound) / net)
+            x_net = (round(y_test[i], 2) - lowerbound) / \
+                ((higherbound - lowerbound) / net)
             # +2:因為網格從-2開始打 10:頭減尾8-(-2) 10/net:網格間格距離 x_net:x方向第幾個網格
-            y_net = (round(predict_value[i], 2) - lowerbound) / ((higherbound - lowerbound) / net)
+            y_net = (round(predict_value[i], 2) - lowerbound) / \
+                ((higherbound - lowerbound) / net)
             if x_net < net and y_net < net:
                 zz[math.floor(x_net), math.floor(y_net)] += 1
             else:
@@ -708,8 +723,10 @@ class plot_fig:
 
         j = 0
         while j < len(y_test):
-            x_net = (round(y_test[j], 2) - lowerbound) / ((higherbound - lowerbound) / net)
-            y_net = (round(predict_value[j], 2) - lowerbound) / ((higherbound - lowerbound) / net)
+            x_net = (round(y_test[j], 2) - lowerbound) / \
+                ((higherbound - lowerbound) / net)
+            y_net = (round(predict_value[j], 2) - lowerbound) / \
+                ((higherbound - lowerbound) / net)
             if x_net < net and y_net < net:
                 color_column.append(zz[math.floor(x_net), math.floor(y_net)])
             else:
@@ -734,12 +751,13 @@ class plot_fig:
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predicted Distribution'
         )
         plt.text(higherbound-4, lowerbound+2, f"R2 score = {round(score,2)}")
-        plt.colorbar(extend='both', label='number value')
+        cbar = plt.colorbar(extend='both', label='number value')
+        cbar.set_label('number value', fontsize=12)
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Measured Predicted Comparison.png',
             dpi=300)
         plt.show()
-    
+
     def distance_scaling(
             self,
             DSC_df,
@@ -749,7 +767,7 @@ class plot_fig:
             y_total: "ori_ans",
             model_path):
         """
-        
+
         Compute distance scaling figure follow condition given by ourself.
 
         Args:
@@ -773,10 +791,11 @@ class plot_fig:
             ctx = recfunctions.drop_fields(
                 ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
             ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
-                            ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
-                            ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
-                            ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
-                            ('sta_id', '<i8'), ('hypo_depth', '<f8'), ('z2pt5', '<f8')])
+                              ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
+                              ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
+                              ('ry0', '<f8'), ('width',
+                                               '<f8'), ('vs30measured', 'bool'),
+                              ('sta_id', '<i8'), ('hypo_depth', '<f8'), ('z2pt5', '<f8')])
             ctx = ctx.view(np.recarray)
             imts = [PGA()]
             chang = Chang2023(model_path)
@@ -792,16 +811,15 @@ class plot_fig:
             total_station_mean = total / station_id_num
             plt.plot(ctx['rrup'], total_station_mean, label="This study avg")
 
-
         # * 2.others GMM
-        ctx = DSC_df[DSC_df['sta_id'] == 1].to_records() # 其餘GMM用不著sta_id
+        ctx = DSC_df[DSC_df['sta_id'] == 1].to_records()  # 其餘GMM用不著sta_id
         ctx = recfunctions.drop_fields(
             ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
         ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
-                        ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
-                        ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
-                        ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
-                        ('sta_id', '<i8'), ('hypo_depth', '<f8'), ('z2pt5', '<f8')])
+                          ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
+                          ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
+                          ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
+                          ('sta_id', '<i8'), ('hypo_depth', '<f8'), ('z2pt5', '<f8')])
         ctx = ctx.view(np.recarray)
         imts = [PGA()]
 
@@ -819,7 +837,8 @@ class plot_fig:
         lin_sig = [[0] * dataLen]
         lin_tau = [[0] * dataLen]
         lin_phi = [[0] * dataLen]
-        lin_mean, lin_sig = lin.compute(ctx, imts, lin_mean, lin_sig, lin_tau, lin_phi)
+        lin_mean, lin_sig = lin.compute(
+            ctx, imts, lin_mean, lin_sig, lin_tau, lin_phi)
         lin_mean = np.exp(lin_mean)
 
         abrahamson = AbrahamsonEtAl2014()
@@ -851,11 +870,11 @@ class plot_fig:
 
         # * 3.plt figure
         plt.grid(which="both",
-                axis="both",
-                linestyle="-",
-                linewidth=0.5,
-                alpha=0.5)
-        plt.scatter(np.exp(x_total[:,2]),
+                 axis="both",
+                 linestyle="-",
+                 linewidth=0.5,
+                 alpha=0.5)
+        plt.scatter(np.exp(x_total[:, 2]),
                     np.exp(y_total) / 980,
                     marker='o',
                     facecolors='none',
@@ -863,32 +882,35 @@ class plot_fig:
                     label='data')
         # plt.plot(ctx['rrup'], ch_mean[0] + ch_sig[0], 'b--')
         # plt.plot(ctx['rrup'], ch_mean[0] - ch_sig[0], 'b--')
-        plt.plot(ctx['rrup'], ph_mean[0], 'r', linewidth='0.8', label="Phung2020")
+        plt.plot(ctx['rrup'], ph_mean[0], 'r',
+                 linewidth='0.8', label="Phung2020")
         # plt.plot(ctx['rrup'], ph_mean[0] + ph_sig[0], 'r--')
         # plt.plot(ctx['rrup'], ph_mean[0] - ph_sig[0], 'r--')
-        plt.plot(ctx['rrup'], lin_mean[0], 'g', linewidth='0.8', label="Lin2009")
+        plt.plot(ctx['rrup'], lin_mean[0], 'g',
+                 linewidth='0.8', label="Lin2009")
         # plt.plot(ctx['rrup'], lin_mean[0] + lin_sig[0], 'g--')
         # plt.plot(ctx['rrup'], lin_mean[0] - lin_sig[0], 'g--')
         plt.plot(ctx['rrup'], abr_mean[0], 'b',
-                linewidth='0.8', label="Abrahamson2014")
+                 linewidth='0.8', label="Abrahamson2014")
         # plt.plot(ctx['rrup'], abr_mean[0] + abr_sig[0], 'r--')
         # plt.plot(ctx['rrup'], abr_mean[0] - abr_sig[0], 'r--')
         plt.plot(ctx['rrup'], cam_mean[0], 'yellow',
-                linewidth='0.8', label="CampbellBozorgnia2014")
+                 linewidth='0.8', label="CampbellBozorgnia2014")
         # plt.plot(ctx['rrup'], cam_mean[0] + choa_sig[0], 'r--')
         # plt.plot(ctx['rrup'], cam_mean[0] - choa_sig[0], 'r--')
         plt.plot(ctx['rrup'], choa_mean[0], 'pink',
-                linewidth='0.8', label="ChaoEtAl2020Asc")
+                 linewidth='0.8', label="ChaoEtAl2020Asc")
         # plt.plot(ctx['rrup'], choa_mean[0] + choa_sig[0], 'r--')
         # plt.plot(ctx['rrup'], choa_mean[0] - choa_sig[0], 'r--')
         plt.xlabel(f'Rrup(km)')
         plt.ylabel(f'{self.target}(g)')
-        plt.title(f"Mw = {ctx['mag'][0]}, Vs30 = {ctx['vs30'][0]}m/s  Fault = {self.fault_type_dict[ctx['rake'][0]]}")
+        plt.title(
+            f"Mw = {ctx['mag'][0]}, Vs30 = {ctx['vs30'][0]}m/s  Fault = {self.fault_type_dict[ctx['rake'][0]]}")
         plt.ylim(10e-5, 10)
         plt.yscale("log")
         plt.xscale("log")
         plt.xticks([0.1, 0.5, 1, 10, 50, 100, 200, 300],
-                [0.1, 0.5, 1, 10, 50, 100, 200, 300])
+                   [0.1, 0.5, 1, 10, 50, 100, 200, 300])
         plt.legend()
         plt.savefig(
             f"distance scaling Mw-{ctx['mag'][0]} Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} global-{plot_all_sta}.jpg", dpi=300)
@@ -974,9 +996,9 @@ class plot_fig:
         fig.canvas.draw()
 
     def respond_spectrum(self, Vs30, Mw, Rrup, rake, station_rank, local,
-                        *args: "model"):
+                         *args: "model"):
         """
-        
+
         This function is called to plot respond spectrum .
 
         Args:
@@ -1004,7 +1026,7 @@ class plot_fig:
         booster_Sa10 = xgb.Booster()
         booster_Sa10.load_model(args[7])
         booster_Sa30 = xgb.Booster()
-        booster_Sa30.load_model(args[8]) 
+        booster_Sa30.load_model(args[8])
         booster_Sa40 = xgb.Booster()
         booster_Sa40.load_model(args[9])
         booster_Sa100 = xgb.Booster()
@@ -1014,7 +1036,7 @@ class plot_fig:
         if local == True:
             RSCon = xgb.DMatrix(
                 np.array([[np.log(Vs30), Mw,
-                  np.log(Rrup), rake, station_rank]]))
+                           np.log(Rrup), rake, station_rank]]))
             Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
             Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
             Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
@@ -1048,12 +1070,12 @@ class plot_fig:
                 f"response spectrum-local Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} fault-type-{self.fault_type_dict[rake]} station-{station_rank}.png",
                 dpi=300)
             plt.show()
-            
+
         else:
             for _rake in self.fault_type_dict:
                 RSCon = xgb.DMatrix(
                     np.array([[np.log(Vs30), Mw,
-                      np.log(Rrup), _rake, station_rank]]))
+                               np.log(Rrup), _rake, station_rank]]))
                 Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
                 Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
                 Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
@@ -1088,14 +1110,13 @@ class plot_fig:
                 f"response spectrum-global Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} station-{station_rank}.png",
                 dpi=300)
             plt.show()
-            
 
         # * 2. Mw independent
-        Mw_list = [4,5,6,7]
+        Mw_list = [4, 5, 6, 7]
         for _Mw in Mw_list:
             RSCon = xgb.DMatrix(
                 np.array([[np.log(Vs30), _Mw,
-                    np.log(Rrup), rake, station_rank]]))
+                           np.log(Rrup), rake, station_rank]]))
             Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
             Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
             Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
@@ -1112,11 +1133,12 @@ class plot_fig:
             ], label=f'Mw:{_Mw}')
 
         plt.grid(which="both",
-                axis="both",
-                linestyle="-",
-                linewidth=0.5,
-                alpha=0.5)
-        plt.title(f"Fault_type = {self.fault_type_dict[rake]}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
+                 axis="both",
+                 linestyle="-",
+                 linewidth=0.5,
+                 alpha=0.5)
+        plt.title(
+            f"Fault_type = {self.fault_type_dict[rake]}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
         plt.xlabel("Period(s)")
         plt.ylabel("PSA(g)")
         plt.ylim(10e-6, 1)
@@ -1124,7 +1146,7 @@ class plot_fig:
         plt.yscale("log")
         plt.xscale("log")
         plt.xticks([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
-                    [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
+                   [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
         plt.legend()
         plt.savefig(
             f"response spectrum-global Fault_type-{self.fault_type_dict[rake]} Rrup-{Rrup} Vs30-{Vs30} station-{station_rank}.png",

@@ -37,8 +37,8 @@ seed = 18989
 study_name = 'XGB_TSMIP_2'
 
 #? data preprocess
-TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_smogn_{target}.csv")
-TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_{target}.csv")
+TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv")
+TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv")
 TSMIP_filter_df = TSMIP_df.loc[TSMIP_df['MW'] > 7].copy() # filter 標準
 DSC_df = pd.read_csv(f"../../../distance_scaling_condition.csv") # Rrup range: 0.1,0.5,0.75,1,5,10,20,30,40,50,60,70,80,90,100,150,200
 model = dataprocess()
@@ -66,7 +66,7 @@ original_filter_data = model.splitDataset(after_process_ori_filter_data, f'ln{ta
 trainer = optimize_train(result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
 
 def objective_wrapper(trial):
-    return trainer.XGB(trial, 10000,100,50,1)
+    return trainer.XGB(trial)
 study = optuna.create_study(study_name=study_name,
                             storage="mysql://root@localhost/XGB_TSMIP",
                             direction="maximize")

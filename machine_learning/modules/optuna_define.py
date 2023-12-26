@@ -11,10 +11,10 @@ class optimize_train():
         self.x_test = x_test
         self.y_test = y_test
 
-    def XGB(self, trial, n_upperbound, n_lowerbound, dep_upperbound, dep_lowerbound):
-        xgb_n = trial.suggest_float('n_estimators', n_lowerbound, n_upperbound)
+    def XGB(self, trial):
+        xgb_n = trial.suggest_float('n_estimators', 100, 1000)
         xgb_dep = trial.suggest_float(
-            'max_depth', dep_lowerbound, dep_upperbound)
+            'max_depth', 1, 50)
         xgb_eta = trial.suggest_float('eta', 0, 1)
         xgb_gamma = trial.suggest_float('gamma', 0, 1)
         xgb_min_child_weight = trial.suggest_float('min_child_weight', 0, 10)
@@ -39,9 +39,6 @@ class optimize_train():
         print("cross_val R2 score:", cv_scores)
 
         return score
-
-    def test(self):
-        print("hi")
 
 
 if __name__ == '__main__':

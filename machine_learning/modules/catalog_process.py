@@ -96,7 +96,7 @@ def synthesize(target, column):
     TSMIP_smogn.to_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv", index=False)
 
 
-def SMOGN_plot():
+def SMOGN_plot(target):
     """
 
     Plot the figure to compare before SMOGN and after.
@@ -105,8 +105,7 @@ def SMOGN_plot():
         [figure]: [boxplots for original and SMOGN dataset]
     """
     # Compare synthesized data and original data
-    target = "PGA"
-    TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_{target}.csv")
+    TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv")
     TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_smogn_{target}.csv")
     model = dataprocess()
     after_process_ori_data = model.preProcess(TSMIP_df, target, True)
@@ -179,8 +178,8 @@ for j in range(len(targets)):
     _ = pre_SMOGN(targets[j], columns[j])
 
 for k in range(len(targets)):
-    _ = synthesize(targets[j], columns[j])
+    _ = synthesize(targets[k], columns[k])
 
-# _ = synthesize(target)
+#! manual change columns name to taget name (ex: T1.0S -> Sa10)
 
 # _ = SMOGN_plot()

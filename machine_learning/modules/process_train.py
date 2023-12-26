@@ -10,17 +10,18 @@ from sklearn.svm import SVR
 from sklearn.model_selection import cross_val_score
 import xgboost as xgb
 
+
 class dataprocess:
 
     """
-    
-    A class process the dataset
-    
-    """
-    def preProcess(self, data, target, eqtype):
 
+    A class process the dataset
+
+    """
+
+    def preProcess(self, data, target, eqtype):
         """
-        
+
         preprocess flatfile dataset
 
         """
@@ -42,15 +43,14 @@ class dataprocess:
             after_process_data = data[
                 (data["eq.type"] != "subduction interface")
                 & (data["eq.type"] != "subduction intraslab")
-                & (data["eq.type"] != "deep crustal")].reset_index() 
+                & (data["eq.type"] != "deep crustal")].reset_index()
         else:
             after_process_data = data
         return after_process_data
 
     def splitDataset(self, after_process_data, target, split, *args):
-
         """
-        
+
         Split or not dataset, and change some data structure 
 
         """
@@ -77,11 +77,10 @@ class dataprocess:
             return [x.values, y.values]
 
     def training(self, target, model_name, x_train, x_test, y_train, y_test):
-
         """
-        
+
         train our model by our input train and test dataset.
-        
+
         """
         assert model_name in [
             "SVR", "RF", "XGB", "GBDT", "DNN", "Ada"
@@ -170,7 +169,8 @@ class dataprocess:
             model = AdaBoostModel
 
         elif model_name == "XGB":
-            XGB_params = {'n_estimators': 1000, 'max_depth': 10, 'n_jobs': -1}
+            XGB_params = {'n_estimators': 893, 'eta': 0.18, 'max_depth': 30, 'gamma': 0.004,
+                          'min_child_weight': 6.9, 'subsample': 0.99, 'lambda': 4.3, 'alpha': 0.24, 'n_jobs': -1}
             XGBModel = XGBRegressor(**XGB_params)
             t0 = time.time()
             grid_result = XGBModel.fit(x_train, y_train)
@@ -222,7 +222,7 @@ class dataprocess:
 
     def predicted_original(self, model, ori_dataset):
         """
-        
+
         predicted original data which still not split.
 
         """

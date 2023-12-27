@@ -1,12 +1,3 @@
-from tqdm import tqdm
-from modules.gsim.chao_2020 import ChaoEtAl2020Asc
-from modules.gsim.campbell_bozorgnia_2014 import CampbellBozorgnia2014
-from modules.gsim.abrahamson_2014 import AbrahamsonEtAl2014
-from modules.gsim.lin_2009 import Lin2009
-from modules.gsim.chang_2023 import Chang2023
-from modules.gsim.phung_2020 import PhungEtAl2020Asc
-from modules.gsim.utils.imt import PGA, SA, PGV
-from numpy.lib import recfunctions
 import xgboost as xgb
 from modules.process_train import dataprocess
 import pandas as pd
@@ -18,7 +9,15 @@ import sys
 import shap
 sys.path.append("..")
 sys.path.append("../modules/gsim")
-
+from tqdm import tqdm
+from modules.gsim.chao_2020 import ChaoEtAl2020Asc
+from modules.gsim.campbell_bozorgnia_2014 import CampbellBozorgnia2014
+from modules.gsim.abrahamson_2014 import AbrahamsonEtAl2014
+from modules.gsim.lin_2009 import Lin2009
+from modules.gsim.chang_2023 import Chang2023
+from modules.gsim.phung_2020 import PhungEtAl2020Asc
+from modules.gsim.utils.imt import PGA, SA, PGV
+from numpy.lib import recfunctions
 
 class plot_fig:
     """
@@ -925,7 +924,7 @@ class plot_fig:
                 ctx, imts, [ch_mean[i]], [ch_sig[i]], [ch_tau[i]], [ch_phi[i]])
             if plot_all_sta:
                 ch_mean_copy = np.exp(ch_mean[i][0].copy())
-                plt.plot(ctx['rrup'], ch_mean_copy, 'black', zorder=5)
+                plt.plot(ctx['rrup'], ch_mean_copy, 'lightgrey', linewidth='0.4', zorder=5)
             else:
                 total = total + np.exp(ch_mean[i][0])
 
@@ -1007,23 +1006,23 @@ class plot_fig:
         # plt.plot(ctx['rrup'], ch_mean[0] + ch_sig[0], 'b--')
         # plt.plot(ctx['rrup'], ch_mean[0] - ch_sig[0], 'b--')
         plt.plot(ctx['rrup'], ph_mean[0], 'orange',
-                 linewidth='0.8', label="Phung2020", zorder=10)
+                 linewidth='1', label="Phung2020", zorder=10)
         # plt.plot(ctx['rrup'], ph_mean[0] + ph_sig[0], 'r--')
         # plt.plot(ctx['rrup'], ph_mean[0] - ph_sig[0], 'r--')
         plt.plot(ctx['rrup'], lin_mean[0], 'g',
-                 linewidth='0.8', label="Lin2009", zorder=10)
+                 linewidth='1', label="Lin2009", zorder=10)
         # plt.plot(ctx['rrup'], lin_mean[0] + lin_sig[0], 'g--')
         # plt.plot(ctx['rrup'], lin_mean[0] - lin_sig[0], 'g--')
         plt.plot(ctx['rrup'], abr_mean[0], 'b',
-                 linewidth='0.8', label="Abrahamson2014", zorder=10)
+                 linewidth='1', label="Abrahamson2014", zorder=10)
         # plt.plot(ctx['rrup'], abr_mean[0] + abr_sig[0], 'r--')
         # plt.plot(ctx['rrup'], abr_mean[0] - abr_sig[0], 'r--')
         plt.plot(ctx['rrup'], cam_mean[0], 'yellow',
-                 linewidth='0.8', label="CampbellBozorgnia2014", zorder=10)
+                 linewidth='1', label="CampbellBozorgnia2014", zorder=10)
         # plt.plot(ctx['rrup'], cam_mean[0] + choa_sig[0], 'r--')
         # plt.plot(ctx['rrup'], cam_mean[0] - choa_sig[0], 'r--')
         plt.plot(ctx['rrup'], choa_mean[0], 'pink',
-                 linewidth='0.8', label="ChaoEtAl2020Asc", zorder=10)
+                 linewidth='1', label="ChaoEtAl2020Asc", zorder=10)
         # plt.plot(ctx['rrup'], choa_mean[0] + choa_sig[0], 'r--')
         # plt.plot(ctx['rrup'], choa_mean[0] - choa_sig[0], 'r--')
         plt.xlabel(f'Rrup(km)')
@@ -1040,19 +1039,19 @@ class plot_fig:
             f"distance scaling Mw-{ctx['mag'][0]} Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} global-{plot_all_sta}.jpg", dpi=300)
         plt.show()
 
-    def explainable(self, x_test: "ori_test_feature", model_feture, ML_model,
+    def explainable(self, x_total: "ori_total_feature", model_feture, ML_model,
                     seed):
         """
 
         This function shows explanation wihch include global explaination and local explaination of the model in the given target .
 
         Args:
-            x_test (ori_test_feature): [original test feature data]
+            x_total (ori_total_feature): [original feature data]
             model_feture ([list]): [input parameters]
             ML_model ([model]): [the model from sklearn or other package]
             seed ([int]): [random seed number]
         """
-        df = pd.DataFrame(x_test, columns=model_feture)
+        df = pd.DataFrame(x_total, columns=model_feture)
         explainer = shap.Explainer(ML_model)
         shap_values = explainer(df)
 
@@ -1080,7 +1079,7 @@ class plot_fig:
                            show=False)
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig(f"shap_scatter_MW_lnRrup_{self.target}.jpg",
+        plt.savefig(f"shap_scatter_Mw_lnRrup_{self.target}.jpg",
                     bbox_inches='tight',
                     dpi=300)
 
@@ -1090,7 +1089,7 @@ class plot_fig:
                            show=False)
         plt.rcParams['figure.facecolor'] = 'white'
         plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig(f"shap_scatter_lnRrup_MW_{self.target}.jpg",
+        plt.savefig(f"shap_scatter_lnRrup_Mw_{self.target}.jpg",
                     bbox_inches='tight',
                     dpi=300)
 

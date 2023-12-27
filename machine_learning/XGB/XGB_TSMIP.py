@@ -33,7 +33,10 @@ score = {
 }
 lowerbound = -2
 higherbound = 8
-seed = 18989
+seed = 3063
+#! 以此找seed : 
+# filter = TSMIP_df[TSMIP_df['eq.type'] == "shallow crustal"].reset_index()
+# filter[filter["EQ_ID"] == "1999_0920_1747_16"]
 study_name = 'XGB_TSMIP_2'
 
 #? data preprocess
@@ -87,8 +90,8 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score[f"XGB_{target}"])
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score[f"XGB_{target}"], lowerbound, higherbound)
-plot_something.distance_scaling(DSC_df, station_id_num, False,
-                                original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")
+# plot_something.distance_scaling(DSC_df, station_id_num, True,
+#                                 original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")
 # plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_rank,
 #                                False, *model_name)
-# plot_something.explainable(original_data[0], model_feture, booster, seed)
+plot_something.explainable(original_data[0], model_feture, booster, seed)

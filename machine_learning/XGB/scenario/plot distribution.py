@@ -7,8 +7,8 @@ from pykrige import OrdinaryKriging
 
 name = 'Chang2023'
 
-df = pd.read_csv('../../../TSMIP_FF.csv')
-df_int = pd.read_csv(f'scenario/scenario_result/Chang2023/chichi_interpolate_{name}.csv')
+df = pd.read_csv('../../../../TSMIP_FF.csv')
+df_int = pd.read_csv(f'scenario_result/Chang2023/chichi_interpolate_{name}.csv')
 
 chichi_df = df[df["MW"] == 7.65] # choose chichi eq
 fault_data = [
@@ -87,20 +87,20 @@ fig.show()
 
 
 # before interpolate
-# PGA = chichi_df["PGA"]
-# x = chichi_df["STA_Lon_X"]
-# y = chichi_df["STA_Lat_Y"]
+PGA = chichi_df["PGA"]
+x = chichi_df["STA_Lon_X"]
+y = chichi_df["STA_Lat_Y"]
 
-# fig = pygmt.Figure()
-## region = [119.5, 122.5, 21.5, 25.5]
-# fig.basemap(region=region,
-#             projection="M12c",
-#             frame=["af", f"WSne+tchichi earthquake Hazard Distribution"])
-# fig.coast(land="gray", water="gray", shorelines="1p,black")
-# pygmt.makecpt(cmap="turbo", series=(0, 1.5, 0.1))
-# fig.plot(x=fault_data[::2], y=fault_data[1::2], pen="thick,red")
-# fig.plot(x=x, y=y, style="c0.2c", cmap=True, color=PGA)
-# fig.plot(x=hyp_long, y=hyp_lat, style='kstar4/0.3c', color="red")
-# fig.colorbar(frame=["x+lPGA(g)"])
-# fig.savefig('chichi earthquake Hazard Distribution.png', dpi=300)
-# fig.show()
+fig = pygmt.Figure()
+region = [119.5, 122.5, 21.5, 25.5]
+fig.basemap(region=region,
+            projection="M12c",
+            frame=["af", f"WSne+tchichi earthquake Hazard Distribution"])
+fig.coast(land="gray", water="gray", shorelines="1p,black")
+pygmt.makecpt(cmap="turbo", series=(0, 1.5, 0.1))
+fig.plot(x=fault_data[::2], y=fault_data[1::2], pen="thick,red")
+fig.plot(x=x, y=y, style="c0.2c", cmap=True, color=PGA)
+fig.plot(x=hyp_long, y=hyp_lat, style='kstar4/0.3c', color="red")
+fig.colorbar(frame=["x+lPGA(g)"])
+fig.savefig('chichi earthquake Hazard Distribution.png', dpi=300)
+fig.show()

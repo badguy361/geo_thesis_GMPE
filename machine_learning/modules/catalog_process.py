@@ -15,28 +15,44 @@ def get_sta_rank():
     """
     TSMIP_df = pd.read_csv(f"../../../TSMIP_FF.csv")
     point = [119.5635611, 21.90093889]  # 最左下角為基準
-    STA_dist = (((TSMIP_df["STA_Lat_Y"] - point[1]) * 110)**2 +
-                ((TSMIP_df["STA_Lon_X"] - point[0]) * 101)**2)**(1 / 2)
-    TSMIP_df["STA_DIST"] = STA_dist
-    TSMIP_df["STA_rank"] = TSMIP_df["STA_DIST"].rank(method='dense')
 
-    for i in range(1, 38):
-        plt.figure(figsize=(20, 6))
-        plt.bar(
-            list(dict(Counter(TSMIP_df["STA_ID"])).keys())[
-                20 * (i - 1):20 * i],
-            list(dict(Counter(TSMIP_df["STA_ID"])).values())[20 * (i - 1):20 * i])
-        plt.title(f'STA Distribution ID_{20*(i-1)}-{20*i}')
-        plt.savefig(f"STA_ID_distribution_{20*(i-1)}-{20*i}.jpg", dpi=300)
-    # len(TSMIP_df["STA_ID"].unique())
+    #? 算距離
+    # STA_dist = (((TSMIP_df["STA_Lat_Y"] - point[1]) * 110)**2 +
+    #             ((TSMIP_df["STA_Lon_X"] - point[0]) * 101)**2)**(1 / 2)
+    # TSMIP_df["STA_DIST"] = STA_dist
+    # TSMIP_df["STA_rank"] = TSMIP_df["STA_DIST"].rank(method='dense')
+
+    #? 測站數分布
+    # for i in range(1, 38):
+    #     plt.figure(figsize=(20, 6))
+    #     plt.bar(
+    #         list(dict(Counter(TSMIP_df["STA_ID"])).keys())[
+    #             20 * (i - 1):20 * i],
+    #         list(dict(Counter(TSMIP_df["STA_ID"])).values())[20 * (i - 1):20 * i])
+    #     plt.title(f'STA Distribution ID_{20*(i-1)}-{20*i}')
+    #     plt.savefig(f"STA_ID_distribution_{20*(i-1)}-{20*i}.jpg", dpi=300)
+    # # len(TSMIP_df["STA_ID"].unique())
+    
+    #? 測站空間分布
+    plt.grid(which="both",
+                 axis="both",
+                 linestyle="-",
+                 linewidth=0.5,
+                 alpha=0.5,
+                 zorder=0)
     plt.scatter(TSMIP_df["STA_Lon_X"],
                 TSMIP_df["STA_Lat_Y"],
                 c=TSMIP_df["STA_rank"],
-                cmap='bwr')
-    plt.colorbar(extend='both', label='number value')
+                cmap='bwr',
+                s=8,
+                zorder=10)
+    cbar = plt.colorbar(extend='both', label='number value')
+    cbar.set_label('number value', fontsize=12)
     plt.plot(point[0], point[1], "*", color='black')
-    plt.title('TSMIP Station located')
-    plt.savefig("../XGB/STA_ID.jpg", dpi=300)
+    plt.xlabel('longitude', fontsize=12)
+    plt.ylabel('latitude', fontsize=12)
+    plt.title('TSMIP Station id located')
+    plt.savefig("../XGB/station_id_distribution.jpg", dpi=300)
     plt.show()
 
 
@@ -159,27 +175,32 @@ def SMOGN_plot(target):
     plt.savefig('TSMIP-SMOGN boxplots.png', dpi=300)
     return 0
 
-targets = ["PGA", "PGV", "Sa001", "Sa005", "Sa01", "Sa02", "Sa03", "Sa04",
-           "Sa05", "Sa06", "Sa07", "Sa08", "Sa09", "Sa10", "Sa15", "Sa20",
-           "Sa25", "Sa30", "Sa35", "Sa40", "Sa50", "Sa60", "Sa70", "Sa80",
-           "Sa90", "Sa100"]
-columns = ["PGA", "PGV", "T0.010S", "T0.050S", "T0.100S", "T0.200S", "T0.300S", "T0.400S",
-           "T0.500S", "T0.600S", "T0.700S", "T0.800S", "T0.900S", "T1.000S", "T1.500S", "T2.000S",
-           "T2.500S", "T3.000S", "T3.500S", "T4.000S", "T5.000S", "T6.000S", "T7.000S", "T8.000S",
-           "T9.000S", "T10.000S"]
-periods = [0, 0, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4,
-           0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0,
-           2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0,9.0, 10.0]
+if __name__=='__main__':
+    #? station id
+    _ = get_sta_rank()
 
-# for i in range(len(targets)):
-#     _ = cut_period(targets[i], periods[i], columns[i])
+    #? SMOGN
+    targets = ["PGA", "PGV", "Sa001", "Sa005", "Sa01", "Sa02", "Sa03", "Sa04",
+            "Sa05", "Sa06", "Sa07", "Sa08", "Sa09", "Sa10", "Sa15", "Sa20",
+            "Sa25", "Sa30", "Sa35", "Sa40", "Sa50", "Sa60", "Sa70", "Sa80",
+            "Sa90", "Sa100"]
+    columns = ["PGA", "PGV", "T0.010S", "T0.050S", "T0.100S", "T0.200S", "T0.300S", "T0.400S",
+            "T0.500S", "T0.600S", "T0.700S", "T0.800S", "T0.900S", "T1.000S", "T1.500S", "T2.000S",
+            "T2.500S", "T3.000S", "T3.500S", "T4.000S", "T5.000S", "T6.000S", "T7.000S", "T8.000S",
+            "T9.000S", "T10.000S"]
+    periods = [0, 0, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4,
+            0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0,
+            2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0,9.0, 10.0]
 
-for j in range(len(targets)):
-    _ = pre_SMOGN(targets[j], columns[j])
+    # for i in range(len(targets)):
+    #     _ = cut_period(targets[i], periods[i], columns[i])
 
-for k in range(len(targets)):
-    _ = synthesize(targets[k], columns[k])
+    # for j in range(len(targets)):
+    #     _ = pre_SMOGN(targets[j], columns[j])
 
-#! manual change columns name to taget name (ex: T1.0S -> Sa10)
+    # for k in range(len(targets)):
+    #     _ = synthesize(targets[k], columns[k])
 
-# _ = SMOGN_plot()
+    #! manual change columns name to taget name (ex: T1.0S -> Sa10)
+
+    # _ = SMOGN_plot()

@@ -172,7 +172,7 @@ class plot_fig:
                     zorder=10)
         cbar = plt.colorbar(extend='both', label='number value')
         cbar.set_label('number value', fontsize=12)
-        plt.xlabel('ln(Rrup)(km)', fontsize=12)
+        plt.xlabel('Rrup(km)', fontsize=12)
         plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
         plt.xscale("log")
         plt.xlim(1 * 1e0, 1e3)
@@ -1180,8 +1180,8 @@ class plot_fig:
                 Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
             ], label=self.fault_type_dict[rake])
             plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
-            plt.xlabel("Period(s)")
-            plt.ylabel("PSA(g)")
+            plt.xlabel("Period(s)",fontsize=12)
+            plt.ylabel("PSA(g)",fontsize=12)
             plt.ylim(10e-6, 1)
             plt.xlim(0.01, 10.0)
             plt.yscale("log")
@@ -1220,8 +1220,8 @@ class plot_fig:
                      linewidth=0.5,
                      alpha=0.5)
             plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
-            plt.xlabel("Period(s)")
-            plt.ylabel("PSA(g)")
+            plt.xlabel("Period(s)",fontsize=12)
+            plt.ylabel("PSA(g)",fontsize=12)
             plt.ylim(10e-6, 1)
             plt.xlim(0.01, 10.0)
             plt.yscale("log")
@@ -1235,7 +1235,7 @@ class plot_fig:
             plt.show()
 
         # * 2. Mw independent
-        Mw_list = [4, 5, 6, 7]
+        Mw_list = [6, 7, 7.5,8]
         for _Mw in Mw_list:
             RSCon = xgb.DMatrix(
                 np.array([[np.log(Vs30), _Mw,
@@ -1262,8 +1262,8 @@ class plot_fig:
                  alpha=0.5)
         plt.title(
             f"Fault_type = {self.fault_type_dict[rake]}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
-        plt.xlabel("Period(s)")
-        plt.ylabel("PSA(g)")
+        plt.xlabel("Period(s)",fontsize=12)
+        plt.ylabel("PSA(g)",fontsize=12)
         plt.ylim(10e-6, 1)
         plt.xlim(0.01, 10.0)
         plt.yscale("log")

@@ -15,9 +15,9 @@ from optuna.visualization import plot_param_importances
 #? parameters
 target = "PGA"
 Mw = 7
-Rrup = 30
+Rrup = 50
 Vs30 = 360
-rake = 0
+rake = 90
 station_rank = 265
 station_id_num = 732 # station 總量
 model_name = [
@@ -34,7 +34,7 @@ score = {
 lowerbound = -2
 higherbound = 8
 seed = 3063
-#! 以此找seed : 
+#! 以此規則找seed : 
 # filter = TSMIP_df[TSMIP_df['eq.type'] == "shallow crustal"].reset_index()
 # filter[filter["EQ_ID"] == "1999_0920_1747_16"]
 study_name = 'XGB_TSMIP_2'
@@ -61,8 +61,8 @@ original_filter_data = model.splitDataset(after_process_ori_filter_data, f'ln{ta
 
 #? model train
 #! result_ori[0](訓練資料)之shape : (29896,5) 為 29896筆 records 加上以下5個columns ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-# score, feature_importances, fit_time, final_predict, ML_model = model.training(
-#     target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
+score, feature_importances, fit_time, final_predict, ML_model = model.training(
+    target, "XGB", result_ori[0], result_ori[1], result_ori[2], result_ori[3])
 
 #? optuna choose parameter
 #! dashboard : optuna-dashboard mysql://root@localhost/XGB_TSMIP
@@ -78,8 +78,12 @@ original_filter_data = model.splitDataset(after_process_ori_filter_data, f'ln{ta
 
 #? model predicted
 booster = xgb.Booster()
-booster.load_model(f'model/XGB_{target}.json')
-# booster.predict(xgb.DMatrix([(np.log(760), 7, np.log(200), -45, 256)]))
+booster.load_model(f'XGB_{target}.json')
+#! 檢測模型
+# for i in [6,6.2,6.3,6.4,6.6,6.7,6.9,7.0,7.1,7.2,7.4,7.5,7.7,7.9,8.0]:
+#     ans = booster.predict(xgb.DMatrix([(np.log(760), i, np.log(300), -90, 700)]))
+#     plt.scatter(i,ans)
+# plt.show()
 originaldata_predicted_result = model.predicted_original(
     booster, original_data)
 
@@ -94,4 +98,4 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 #                                 original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")
 # plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_rank,
 #                                False, *model_name)
-plot_something.explainable(original_data[0], model_feture, booster, seed)
+# plot_something.explainable(original_data[0], model_feture, booster, seed)

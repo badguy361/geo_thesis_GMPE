@@ -6,3 +6,4 @@ PowerBI
 *.pkl
 *.pyc
 __pycache__
+*.ai

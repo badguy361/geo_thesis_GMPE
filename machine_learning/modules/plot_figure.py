@@ -85,7 +85,7 @@ class plot_fig:
         plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
         plt.title(f'Data Distribution')
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Predict.jpg',
+            f'../{self.abbreviation_name}/Vs30-dataset-distribution.jpg',
             dpi=300)
         plt.show()
 
@@ -127,7 +127,7 @@ class plot_fig:
         plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
         plt.title(f'Data Distribution')
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Mw-{self.abbreviation_name} Predict.jpg',
+            f'../{self.abbreviation_name}/Mw-dataset-distribution.jpg',
             dpi=300)
         plt.show()
 
@@ -185,7 +185,7 @@ class plot_fig:
         ])
         plt.title(f'Data Distribution')
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Predict.jpg',
+            f'../{self.abbreviation_name}/Rrup-dataset-distribution.jpg',
             dpi=300)
         plt.show()
 

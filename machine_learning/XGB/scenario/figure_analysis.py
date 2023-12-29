@@ -5,7 +5,7 @@ import pygmt
 from scipy.interpolate import griddata
 from pykrige import OrdinaryKriging
 
-name = 'Chang2023'
+name = 'Lin2009'
 # df = pd.read_csv('../../../../TSMIP_FF.csv')
 # chichi_df = df[df["MW"] == 7.65]  # choose chichi eq
 # chichi_df.to_csv("chichi_ori.csv",index=False,columns=["STA_Lon_X","STA_Lat_Y","PGA"])
@@ -108,7 +108,7 @@ def hazard_distribution(name, df, interpolate, fault_data, hyp_lat, hyp_lon):
         fig.savefig(f'scenario_result/{name}/chichi earthquake Hazard Distribution {name}.png', dpi=300)
     fig.show()
 
-_ = hazard_distribution(name, df_ori_dict[name], False, fault_data, hyp_lat, hyp_lon)
+_ = hazard_distribution(name, df_dict[name], True, fault_data, hyp_lat, hyp_lon)
 
 def residual_distribution(name, df_dict, fault_data, hyp_lat, hyp_lon):
     PGA_residual = df_dict[name]["PGA"] - df_dict["true"]["PGA"]
@@ -171,6 +171,6 @@ def residual_statistic(name, PGA_residual):
         dpi=300)
     plt.show()
 
-# PGA_residual = residual_distribution(
-#     name, df_dict, fault_data, hyp_lat, hyp_lon)
-# _ = residual_statistic(name, PGA_residual)
+PGA_residual = residual_distribution(
+    name, df_dict, fault_data, hyp_lat, hyp_lon)
+_ = residual_statistic(name, PGA_residual)

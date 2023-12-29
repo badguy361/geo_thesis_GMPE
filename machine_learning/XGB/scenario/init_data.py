@@ -18,5 +18,5 @@ def merge_scenario_result(name):
 
 # grd to xyz
 def grd_to_csv(name):
-    grd2xyz = pygmt.grd2xyz(grid=f'scenario_result/{name}/chichi_interpolate_{name}.grd',output_type='pandas')
+    grd2xyz = pygmt.grd2xyz(grid=f'scenario_result/{name}/dataset/chichi_interpolate_{name}.grd',output_type='pandas')
     grd2xyz.to_csv(f'scenario_result/{name}/chichi_interpolate_{name}.csv',header=['STA_Lon_X','STA_Lat_Y','PGA'],index=False)

@@ -7,8 +7,8 @@ name = 'true'
 
 #! 1. get result csv
 def merge_scenario_result(name):
-    df_site = pd.read_csv(f"scenario_result/{name}/sitemesh.csv", skiprows=[0])
-    df_gmf = pd.read_csv(f"scenario_result/{name}/gmf-data.csv", skiprows=[0])
+    df_site = pd.read_csv(f"scenario_result/{name}/dataset/sitemesh.csv", skiprows=[0])
+    df_gmf = pd.read_csv(f"scenario_result/{name}/dataset/gmf-data.csv", skiprows=[0])
     df_total = df_gmf.merge(df_site, how='left', on='site_id')
     df_total = df_total.groupby("site_id").median()
     df_total.to_csv(f"scenario_result/{name}/chichi_scenario_record_{name}.csv",index=False)

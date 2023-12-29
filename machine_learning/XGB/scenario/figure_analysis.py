@@ -5,14 +5,29 @@ import pygmt
 from scipy.interpolate import griddata
 from pykrige import OrdinaryKriging
 
-name = 'true'
-
-df = pd.read_csv('../../../../TSMIP_FF.csv')
-chichi_df = df[df["MW"] == 7.65]  # choose chichi eq
+name = 'Chang2023'
+# df = pd.read_csv('../../../../TSMIP_FF.csv')
+# chichi_df = df[df["MW"] == 7.65]  # choose chichi eq
 # chichi_df.to_csv("chichi_ori.csv",index=False,columns=["STA_Lon_X","STA_Lat_Y","PGA"])
 
-df_int = pd.read_csv(
-    f'scenario_result/{name}/chichi_interpolate_{name}.csv')
+df_ori_true =  pd.read_csv("scenario_result/true/chichi_ori.csv")
+df_ori_chang = pd.read_csv("scenario_result/Chang2023/chichi_scenario_record_Chang2023.csv")
+df_ori_lin = pd.read_csv("scenario_result/Lin2009/chichi_scenario_record_Lin2009.csv")
+df_ori_dict = {
+    "true": df_ori_true,
+    "Lin2009": df_ori_lin,
+    "Chang2023": df_ori_chang
+}
+
+df_chang = pd.read_csv(
+    'scenario_result/Chang2023/chichi_interpolate_Chang2023.csv')
+df_lin = pd.read_csv(f'scenario_result/Lin2009/chichi_interpolate_Lin2009.csv')
+df_true = pd.read_csv(f'scenario_result/true/chichi_interpolate_true.csv')
+df_dict = {
+    "true": df_true,
+    "Lin2009": df_lin,
+    "Chang2023": df_chang
+}
 
 fault_data = [
     120.6436, 23.6404, 120.6480, 23.6424, 120.6511, 23.6459, 120.6543, 23.6493,
@@ -88,10 +103,74 @@ def hazard_distribution(name, df, interpolate, fault_data, hyp_lat, hyp_lon):
     fig.colorbar(frame=["x+lPGA(g)"])
     if (interpolate):
         fig.savefig(
-            f'chichi earthquake Hazard Distribution interpolate {name}.png', dpi=300)
+            f'scenario_result/{name}/chichi earthquake Hazard Distribution interpolate {name}.png', dpi=300)
     else:
-        fig.savefig('chichi earthquake Hazard Distribution.png', dpi=300)
+        fig.savefig(f'scenario_result/{name}/chichi earthquake Hazard Distribution {name}.png', dpi=300)
     fig.show()
 
+_ = hazard_distribution(name, df_ori_dict[name], False, fault_data, hyp_lat, hyp_lon)
 
-_ = hazard_distribution(name, df_int, True, fault_data, hyp_lat, hyp_lon)
+def residual_distribution(name, df_dict, fault_data, hyp_lat, hyp_lon):
+    PGA_residual = df_dict[name]["PGA"] - df_dict["true"]["PGA"]
+    lon = df_dict[name]["STA_Lon_X"]
+    lat = df_dict[name]["STA_Lat_Y"]
+
+    fig = pygmt.Figure()
+    region = [119.5, 122.5, 21.5, 25.5]
+    fig.basemap(region=region,
+                projection="M12c",
+                frame=["af", f"WSne+tchichi earthquake Hazard Residual {name}"])
+    pygmt.makecpt(cmap="turbo", series=(-0.5, 0.5, 0.1))
+    fig.coast(land="gray", water="gray")
+    fig.plot(x=lon, y=lat, style="c0.2c", cmap=True, color=PGA_residual)
+    fig.plot(x=hyp_lon, y=hyp_lat, style='kstar4/0.3c', color="red")
+    fig.plot(x=fault_data[::2], y=fault_data[1::2], pen="thick,red")
+    fig.coast(shorelines="1p,black")
+    fig.colorbar(frame=["x+lPGA(g)"])
+    fig.savefig(
+        f'scenario_result/{name}/chichi earthquake Hazard Distribution interpolate residual {name}.png', dpi=300)
+    fig.show()
+
+    return PGA_residual
+
+def residual_statistic(name, PGA_residual):
+    total_num_residual = [0] * 10
+    total_num_residual[0] = np.count_nonzero((PGA_residual >= -0.5)
+                                             & (PGA_residual < -0.4))
+    total_num_residual[1] = np.count_nonzero((PGA_residual >= -0.4)
+                                             & (PGA_residual < -0.3))
+    total_num_residual[2] = np.count_nonzero((PGA_residual >= -0.3)
+                                             & (PGA_residual < -0.2))
+    total_num_residual[3] = np.count_nonzero((PGA_residual >= -0.2)
+                                             & (PGA_residual < -0.1))
+    total_num_residual[4] = np.count_nonzero((PGA_residual >= -0.1)
+                                             & (PGA_residual < 0))
+    total_num_residual[5] = np.count_nonzero((PGA_residual >= 0)
+                                             & (PGA_residual < 0.1))
+    total_num_residual[6] = np.count_nonzero((PGA_residual >= 0.1)
+                                             & (PGA_residual < 0.2))
+    total_num_residual[7] = np.count_nonzero((PGA_residual >= 0.2)
+                                             & (PGA_residual < 0.3))
+    total_num_residual[8] = np.count_nonzero((PGA_residual >= 0.3)
+                                             & (PGA_residual < 0.4))
+    total_num_residual[9] = np.count_nonzero((PGA_residual >= 0.4)
+                                             & (PGA_residual <= 0.5))
+
+    x_bar = np.linspace(-0.5, 0.5, 10)
+    plt.bar(x_bar, total_num_residual, edgecolor='white', width=0.1, zorder=10)
+    mu = np.mean(PGA_residual)
+    sigma = np.std(PGA_residual)
+    plt.text(-0.5, 1500, f'mean = {round(mu,2)}')
+    plt.text(-0.5, 1000, f'sd = {round(sigma,2)}')
+    plt.grid(linestyle=':', color='darkgrey', zorder=0)
+    plt.xlabel('Total-Residual', fontsize=12)
+    plt.ylabel('Numbers', fontsize=12)
+    plt.title(f'{name} Total-Residual Distribution')
+    plt.savefig(
+        f'scenario_result/{name}/{name} Total-Residual Distribution.png',
+        dpi=300)
+    plt.show()
+
+# PGA_residual = residual_distribution(
+#     name, df_dict, fault_data, hyp_lat, hyp_lon)
+# _ = residual_statistic(name, PGA_residual)

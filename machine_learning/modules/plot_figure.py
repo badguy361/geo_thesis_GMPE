@@ -65,24 +65,21 @@ class plot_fig:
 
         # Depth Mw relationship
 
-        # plt.grid(linestyle=':', color='darkgrey', zorder=0)
-        # plt.scatter(x_total[:, 1],
-        #             y_total,
-        #             marker='o',
-        #             facecolors='none',
-        #             c=color_column,
-        #             cmap=newcmp,
-        #             s=8,
-        #             zorder=10)
-        # cbar = plt.colorbar(extend='both', label='number value')
-        # cbar.set_label('number value', fontsize=12)
-        # plt.xlabel('Moment Magnitude, Mw', fontsize=12)
-        # plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
-        # plt.title(f'Data Distribution')
-        # plt.savefig(
-        #     f'../{self.abbreviation_name}/Mw-dataset-distribution.jpg',
-        #     dpi=300)
-        # plt.show()
+        plt.grid(linestyle=':', color='darkgrey', zorder=0)
+        plt.scatter(x_total[:, -1],
+                    x_total[:, 1],
+                    marker='o',
+                    facecolors='none',
+                    c="gray",
+                    s=8,
+                    zorder=10)
+        plt.xlabel('Hypocenter Depth(km)', fontsize=12)
+        plt.ylabel(f'Moment Magnitude, Mw', fontsize=12)
+        plt.title(f'Data Distribution')
+        plt.savefig(
+            f'../{self.abbreviation_name}/Depth Mw-dataset-distribution.jpg',
+            dpi=300)
+        plt.show()
 
         # Rrup Mw relationship
         unique_color = set(x_total[:, 3])

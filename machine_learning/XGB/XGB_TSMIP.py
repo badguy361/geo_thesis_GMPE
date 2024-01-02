@@ -14,12 +14,12 @@ from optuna.visualization import plot_param_importances
 
 #? parameters
 target = "PGA"
-Mw = 7
+Mw = 7.65
 Rrup = 50
 Vs30 = 360
 rake = 90
-station_rank = 265
-station_id_num = 732 # station 總量
+station_id = 265
+station_id_num = 2 # station 總量
 model_name = [
     'model/XGB_PGA.json', 'model/XGB_PGV.json', 'model/XGB_Sa001.json',
     'model/XGB_Sa005.json', 'model/XGB_Sa01.json', 'model/XGB_Sa02.json',
@@ -42,12 +42,21 @@ study_name = 'XGB_TSMIP_2'
 #? data preprocess
 TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv")
 TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv")
-TSMIP_filter_df = TSMIP_df.loc[TSMIP_df['MW'] > 7].copy() # filter 標準
+TSMIP_filter_df = TSMIP_df.loc[TSMIP_df['MW'] == 7.65].copy() # filter 標準
 DSC_df = pd.read_csv(f"../../../distance_scaling_condition.csv") # Rrup range: 0.1,0.5,0.75,1,5,10,20,30,40,50,60,70,80,90,100,150,200
+TSMIP_Mw4_df = TSMIP_df.loc[(TSMIP_df['MW'] >= 4) & (TSMIP_df['MW'] < 5)].copy()
+TSMIP_Mw5_df = TSMIP_df.loc[(TSMIP_df['MW'] >= 5) & (TSMIP_df['MW'] < 6)].copy()
+TSMIP_Mw6_df = TSMIP_df.loc[(TSMIP_df['MW'] >= 6) & (TSMIP_df['MW'] < 7)].copy()
+TSMIP_Mw7_df = TSMIP_df.loc[(TSMIP_df['MW'] >= 7) & (TSMIP_df['MW'] < 8)].copy()
+
 model = dataprocess()
 after_process_SMOGN_data = model.preProcess(TSMIP_smogn_df, target, False)
 after_process_ori_data = model.preProcess(TSMIP_df, target, True)
 after_process_ori_filter_data = model.preProcess(TSMIP_filter_df, target, True)
+after_process_ori_Mw4_data = model.preProcess(TSMIP_Mw4_df, target, True)
+after_process_ori_Mw5_data = model.preProcess(TSMIP_Mw5_df, target, True)
+after_process_ori_Mw6_data = model.preProcess(TSMIP_Mw6_df, target, True)
+after_process_ori_Mw7_data = model.preProcess(TSMIP_Mw7_df, target, True)
 
 model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
 result_SMOGN = model.splitDataset(after_process_SMOGN_data,
@@ -58,6 +67,15 @@ original_data = model.splitDataset(after_process_ori_data, f'ln{target}(gal)',
                                     False, *model_feture)
 original_filter_data = model.splitDataset(after_process_ori_filter_data, f'ln{target}(gal)',
                                     False, *model_feture)
+original_Mw4_data = model.splitDataset(after_process_ori_Mw4_data, f'ln{target}(gal)',
+                                    False, *model_feture)
+original_Mw5_data = model.splitDataset(after_process_ori_Mw5_data, f'ln{target}(gal)',
+                                    False, *model_feture)
+original_Mw6_data = model.splitDataset(after_process_ori_Mw6_data, f'ln{target}(gal)',
+                                    False, *model_feture)
+original_Mw7_data = model.splitDataset(after_process_ori_Mw7_data, f'ln{target}(gal)',
+                                    False, *model_feture)
+total_Mw_data = [original_filter_data, original_Mw4_data, original_Mw5_data, original_Mw6_data, original_Mw7_data]
 
 #? model train
 #! result_ori[0](訓練資料)之shape : (29896,5) 為 29896筆 records 加上以下5個columns ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
@@ -89,13 +107,13 @@ originaldata_predicted_result = model.predicted_original(
 
 #? plot figure
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-plot_something.data_distribution(original_data[0], original_data[1])
+# plot_something.data_distribution(original_data[0], original_data[1])
 # plot_something.residual(original_data[0], original_data[1],
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score[f"XGB_{target}"])
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score[f"XGB_{target}"], lowerbound, higherbound)
-# plot_something.distance_scaling(DSC_df, station_id_num, True,
-#                                 original_filter_data[0], original_filter_data[1], "model/XGB_PGA.json")
-# plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_rank,
-#                                False, *model_name)
+plot_something.distance_scaling(DSC_df, station_id_num, True, station_id,
+                                total_Mw_data, f"model/XGB_{target}.json")
+# plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id,
+#                                True, *model_name)
 # plot_something.explainable(original_data[0], model_feture, booster, seed)

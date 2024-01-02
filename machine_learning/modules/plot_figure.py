@@ -135,9 +135,7 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def residual(self, x_total: "ori_feature", y_total: "ori_ans",
-                 predict_value: "ori_predicted",
-                 ori_full_data: "ori_notsplit_data", score):
+    def residual(self, x_total, y_total, predict_value, ori_full_data, score):
         """
 
         Total residual and standard deviation and inter & intra event residual.
@@ -754,8 +752,8 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def measured_predict(self, y_test: "ori_ans",
-                         predict_value: "ori_predicted",
+    def measured_predict(self, y_test,
+                         predict_value,
                          score,
                          lowerbound,
                          higherbound):
@@ -830,8 +828,8 @@ class plot_fig:
             DSC_df,
             station_id_num: "station總量",
             plot_all_sta,
-            x_total: "ori_feature",
-            y_total: "ori_ans",
+            station_id,
+            total_data,
             model_path):
         """
 
@@ -845,14 +843,17 @@ class plot_fig:
             y_total (ori_ans): [value]
             model_path ([str]): [the place which the model be stored]
         """
+
+        #* comparsion ohter GMMs
+
         dataLen = 17  # rrup 總點位
         total = np.array([0]*dataLen)
-
-        # * calculate Chang2023 total station value
         ch_mean = [[0] * dataLen] * station_id_num
         ch_sig = [[0] * dataLen] * station_id_num
         ch_tau = [[0] * dataLen] * station_id_num
         ch_phi = [[0] * dataLen] * station_id_num
+
+        #calculate Chang2023 total station value
         for i in tqdm(range(station_id_num)):
             ctx = DSC_df[DSC_df['sta_id'] == i+1].to_records()
             ctx = recfunctions.drop_fields(
@@ -871,16 +872,15 @@ class plot_fig:
             if plot_all_sta:
                 ch_mean_copy = np.exp(ch_mean[i][0].copy())
                 plt.plot(ctx['rrup'], ch_mean_copy,
-                         'lightgrey', linewidth='0.4', zorder=5)
+                         'r', linewidth='0.4', zorder=5)
             else:
                 total = total + np.exp(ch_mean[i][0])
-
         if not plot_all_sta:
             total_station_mean = total / station_id_num
             plt.plot(ctx['rrup'], total_station_mean, 'r',
                      linewidth='1.6', label="This study avg", zorder=20)
 
-        # * 2.others GMM
+        #others GMM
         ctx = DSC_df[DSC_df['sta_id'] == 1].to_records()  # 其餘GMM用不著sta_id
         ctx = recfunctions.drop_fields(
             ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
@@ -891,7 +891,6 @@ class plot_fig:
                           ('sta_id', '<i8'), ('hypo_depth', '<f8'), ('z2pt5', '<f8')])
         ctx = ctx.view(np.recarray)
         imts = [PGA()]
-
         phung = PhungEtAl2020Asc()
         ph_mean = [[0] * dataLen]
         ph_sig = [[0] * dataLen]
@@ -900,7 +899,6 @@ class plot_fig:
         ph_mean, ph_sig, ph_tau, ph_phi = phung.compute(
             ctx, imts, ph_mean, ph_sig, ph_tau, ph_phi)
         ph_mean = np.exp(ph_mean)
-
         lin = Lin2009()
         lin_mean = [[0] * dataLen]
         lin_sig = [[0] * dataLen]
@@ -909,7 +907,6 @@ class plot_fig:
         lin_mean, lin_sig = lin.compute(
             ctx, imts, lin_mean, lin_sig, lin_tau, lin_phi)
         lin_mean = np.exp(lin_mean)
-
         abrahamson = AbrahamsonEtAl2014()
         abr_mean = [[0] * dataLen]
         abr_sig = [[0] * dataLen]
@@ -918,7 +915,6 @@ class plot_fig:
         abr_mean, abr_sig, abr_tau, abr_phi = abrahamson.compute(
             ctx, imts, abr_mean, abr_sig, abr_tau, abr_phi)
         abr_mean = np.exp(abr_mean)
-
         campbell = CampbellBozorgnia2014()
         cam_mean = [[0] * dataLen]
         cam_sig = [[0] * dataLen]
@@ -927,7 +923,6 @@ class plot_fig:
         cam_mean, cam_sig, cam_tau, cam_phi = campbell.compute(
             ctx, imts, cam_mean, cam_sig, cam_tau, cam_phi)
         cam_mean = np.exp(cam_mean)
-
         choa = ChaoEtAl2020Asc()
         choa_mean = [[0] * dataLen]
         choa_sig = [[0] * dataLen]
@@ -937,19 +932,19 @@ class plot_fig:
             ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
         choa_mean = np.exp([choa_mean])
 
-        # * 3.plt figure
         plt.grid(which="both",
                  axis="both",
                  linestyle="-",
                  linewidth=0.5,
                  alpha=0.5)
-        plt.scatter(np.exp(x_total[:, 2]),
-                    np.exp(y_total) / 980,
+        plt.scatter(np.exp(total_data[0][0][:, 2]),
+                    np.exp(total_data[0][1]) / 980,
                     marker='o',
                     facecolors='none',
-                    s=8,
+                    s=2,
                     color='grey',
-                    label='data')
+                    label='data',
+                    zorder=20)
         # plt.plot(ctx['rrup'], ch_mean[0] + ch_sig[0], 'b--')
         # plt.plot(ctx['rrup'], ch_mean[0] - ch_sig[0], 'b--')
         plt.plot(ctx['rrup'], ph_mean[0], 'orange',
@@ -976,7 +971,7 @@ class plot_fig:
         plt.ylabel(f'{self.target}(g)')
         plt.title(
             f"Mw = {ctx['mag'][0]}, Vs30 = {ctx['vs30'][0]}m/s  Fault = {self.fault_type_dict[ctx['rake'][0]]}")
-        plt.ylim(10e-5, 10)
+        plt.ylim(10e-4, 5)
         plt.yscale("log")
         plt.xscale("log")
         plt.xticks([0.1, 0.5, 1, 10, 50, 100, 200, 300],
@@ -986,8 +981,49 @@ class plot_fig:
             f"distance scaling Mw-{ctx['mag'][0]} Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} global-{plot_all_sta}.jpg", dpi=300)
         plt.show()
 
-    def explainable(self, x_total: "ori_total_feature", model_feture, ML_model,
-                    seed):
+        #* comparsion different Mw
+        booster_PGA = xgb.Booster()
+        booster_PGA.load_model(model_path)
+
+        Mw_list = [4,5,6,7]
+        color = ["lightblue","lightsalmon","lightgreen","lightcoral"]
+        for i, Mw in enumerate(Mw_list):
+            PGA_predict = []
+            for rrup in [0.1, 0.5, 1, 10, 50, 100, 200, 300]:
+                RSCon = xgb.DMatrix(
+                    np.array([[np.log(360), Mw,
+                           np.log(rrup), 90, station_id]]))
+                PGA_predict.append(np.exp(booster_PGA.predict(RSCon)) / 980)
+            plt.scatter(np.exp(total_data[i+1][0][:, 2]),
+                np.exp(total_data[i+1][1]) / 980,
+                marker='o',
+                facecolors='none',
+                s=2,
+                c=color[i],
+                zorder=5)
+            plt.plot([0.1, 0.5, 1, 10, 50, 100, 200, 300], PGA_predict,
+                    linewidth='1.2', zorder=20, label=f"Mw:{Mw_list[i]}")
+
+        plt.grid(which="both",
+                 axis="both",
+                 linestyle="-",
+                 linewidth=0.5,
+                 alpha=0.5)
+        plt.xlabel(f'Rrup(km)')
+        plt.ylabel(f'{self.target}(g)')
+        plt.title(
+            f"Vs30 = {ctx['vs30'][0]}m/s  Fault = {self.fault_type_dict[ctx['rake'][0]]}")
+        plt.ylim(10e-4, 5)
+        plt.yscale("log")
+        plt.xscale("log")
+        plt.xticks([0.1, 0.5, 1, 10, 50, 100, 200, 300],
+                   [0.1, 0.5, 1, 10, 50, 100, 200, 300])
+        plt.legend(loc="lower left")
+        plt.savefig(
+            f"distance scaling Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} station_id-{station_id}.jpg", dpi=300)
+        plt.show()
+
+    def explainable(self, x_total, model_feture, ML_model, seed):
         """
 
         This function shows explanation wihch include global explaination and local explaination of the model in the given target .
@@ -1065,18 +1101,19 @@ class plot_fig:
         # 強制刷新緩存
         fig.canvas.draw()
 
-    def respond_spectrum(self, Vs30, Mw, Rrup, rake, station_rank, local,
-                         *args: "model"):
+    def respond_spectrum(self, Vs30, Mw, Rrup, rake, station_id, 
+                        local, *args: "model"):
         """
 
         This function is called to plot respond spectrum .
 
         Args:
+            total_data ([list]): [total filter by Mw dataset]
             Vs30 ([float]): [Vs30 value]
             Mw ([int]): [Mw value]
             Rrup ([float]): [Rrup value]
             rake ([float]): [rake value]
-            station_rank ([int]): [station number value]
+            station_id ([int]): [station number value]
             local ([bool]): [to decide plot local or global figure]
         """
         booster_PGA = xgb.Booster()
@@ -1106,7 +1143,7 @@ class plot_fig:
         if local == True:
             RSCon = xgb.DMatrix(
                 np.array([[np.log(Vs30), Mw,
-                           np.log(Rrup), rake, station_rank]]))
+                           np.log(Rrup), rake, station_id]]))
             Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
             Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
             Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
@@ -1137,7 +1174,7 @@ class plot_fig:
                        [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
             plt.legend()
             plt.savefig(
-                f"response spectrum-local Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} fault-type-{self.fault_type_dict[rake]} station-{station_rank}.png",
+                f"response spectrum-local Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} fault-type-{self.fault_type_dict[rake]} station-{station_id}.png",
                 dpi=300)
             plt.show()
 
@@ -1145,7 +1182,7 @@ class plot_fig:
             for _rake in self.fault_type_dict:
                 RSCon = xgb.DMatrix(
                     np.array([[np.log(Vs30), Mw,
-                               np.log(Rrup), _rake, station_rank]]))
+                               np.log(Rrup), _rake, station_id]]))
                 Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
                 Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
                 Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
@@ -1177,16 +1214,16 @@ class plot_fig:
                        [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
             plt.legend()
             plt.savefig(
-                f"response spectrum-global Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} station-{station_rank}.png",
+                f"response spectrum-global Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} station-{station_id}.png",
                 dpi=300)
             plt.show()
 
         # * 2. Mw independent
-        Mw_list = [6, 7, 7.5, 8]
+        Mw_list = [4,5,6,7]
         for _Mw in Mw_list:
             RSCon = xgb.DMatrix(
                 np.array([[np.log(Vs30), _Mw,
-                           np.log(Rrup), rake, station_rank]]))
+                           np.log(Rrup), rake, station_id]]))
             Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
             Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
             Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
@@ -1217,9 +1254,9 @@ class plot_fig:
         plt.xscale("log")
         plt.xticks([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
                    [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
-        plt.legend()
+        plt.legend(loc="lower left")
         plt.savefig(
-            f"response spectrum-global Fault_type-{self.fault_type_dict[rake]} Rrup-{Rrup} Vs30-{Vs30} station-{station_rank}.png",
+            f"response spectrum-global Fault_type-{self.fault_type_dict[rake]} Rrup-{Rrup} Vs30-{Vs30} station-{station_id}.png",
             dpi=300)
         plt.show()
 

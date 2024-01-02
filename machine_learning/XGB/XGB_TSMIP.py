@@ -18,7 +18,7 @@ Mw = 7.65
 Rrup = 50
 Vs30 = 360
 rake = 90
-station_id = 265
+station_id = 50
 station_id_num = 732 # station 總量
 model_name = [
     'model/XGB_PGA.json', 'model/XGB_PGV.json', 'model/XGB_Sa001.json',
@@ -112,8 +112,8 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score[f"XGB_{target}"])
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score[f"XGB_{target}"], lowerbound, higherbound)
-plot_something.distance_scaling(DSC_df, Vs30, rake, station_id_num, False, 
-                                station_id, total_Mw_data, f"model/XGB_{target}.json")
-# plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id,
-#                                True, *model_name)
+# plot_something.distance_scaling(DSC_df, Vs30, rake, station_id_num, False, 
+#                                 station_id, total_Mw_data, f"model/XGB_{target}.json")
+plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id, station_id_num,
+                               True, True, *model_name)
 # plot_something.explainable(original_data[0], model_feture, booster, seed)

@@ -1014,7 +1014,7 @@ class plot_fig:
                     single_sta_predict = []
                     for rrup in [0.1, 0.5, 1, 10, 50, 100, 200, 300]:
                         RSCon = xgb.DMatrix(
-                            np.array([[np.log(360), Mw,
+                            np.array([[np.log(Vs30), Mw,
                                 np.log(rrup), 90, sta]]))
                         single_sta_predict.append(np.exp(booster_PGA.predict(RSCon)) / 980)
                     total_sta_predict.append(single_sta_predict)
@@ -1125,8 +1125,8 @@ class plot_fig:
         # 強制刷新緩存
         fig.canvas.draw()
 
-    def respond_spectrum(self, Vs30, Mw, Rrup, rake, station_id, 
-                        local, *args: "model"):
+    def respond_spectrum(self, Vs30, Mw, Rrup, rake, station_id, station_id_num,
+                        plot_all_rake, plot_all_sta, *args: "model"):
         """
 
         This function is called to plot respond spectrum .
@@ -1138,7 +1138,9 @@ class plot_fig:
             Rrup ([float]): [Rrup value]
             rake ([float]): [rake value]
             station_id ([int]): [station number value]
-            local ([bool]): [to decide plot local or global figure]
+            station_id_num ([int]): [all station number]
+            plot_all_rake ([bool]): [to decide if plot all rake figure]
+            plot_all_sta ([bool]): [to decide if plot all station figure]
         """
         booster_PGA = xgb.Booster()
         booster_PGA.load_model(args[0])
@@ -1164,7 +1166,7 @@ class plot_fig:
         booster_Sa100.load_model(args[10])
 
         # * 1. focal.type independent
-        if local == True:
+        if plot_all_rake == True:
             RSCon = xgb.DMatrix(
                 np.array([[np.log(Vs30), Mw,
                            np.log(Rrup), rake, station_id]]))
@@ -1244,24 +1246,58 @@ class plot_fig:
 
         # * 2. Mw independent
         Mw_list = [4,5,6,7]
-        for _Mw in Mw_list:
-            RSCon = xgb.DMatrix(
-                np.array([[np.log(Vs30), _Mw,
-                           np.log(Rrup), rake, station_id]]))
-            Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
-            Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
-            Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
-            Sa02_predict = np.exp(booster_Sa02.predict(RSCon)) / 980
-            Sa05_predict = np.exp(booster_Sa05.predict(RSCon)) / 980
-            Sa10_predict = np.exp(booster_Sa10.predict(RSCon)) / 980
-            Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
-            Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
-            Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
-            plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
-                Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
-                Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
-                Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
-            ], label=f'Mw:{_Mw}')
+        if plot_all_sta:
+            for i, _Mw in enumerate(Mw_list):
+                total_sta_predict = []
+                for sta in tqdm(range(station_id_num)): # 預測所有station取平均
+                    single_sta_predict = []
+                    RSCon = xgb.DMatrix(
+                        np.array([[np.log(Vs30), _Mw,
+                                np.log(Rrup), rake, sta]]))
+                    Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
+                    Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
+                    Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
+                    Sa02_predict = np.exp(booster_Sa02.predict(RSCon)) / 980
+                    Sa05_predict = np.exp(booster_Sa05.predict(RSCon)) / 980
+                    Sa10_predict = np.exp(booster_Sa10.predict(RSCon)) / 980
+                    Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
+                    Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
+                    Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
+                    single_sta_predict.append(Sa001_predict)
+                    single_sta_predict.append(Sa005_predict)
+                    single_sta_predict.append(Sa01_predict)
+                    single_sta_predict.append(Sa02_predict)
+                    single_sta_predict.append(Sa05_predict)
+                    single_sta_predict.append(Sa10_predict)
+                    single_sta_predict.append(Sa30_predict)
+                    single_sta_predict.append(Sa40_predict)
+                    single_sta_predict.append(Sa100_predict)
+
+                total_sta_predict.append(single_sta_predict)
+                plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
+                         np.array(total_sta_predict).mean(axis=0),
+                         linewidth='1.2', zorder=20, label=f'Mw:{_Mw}')
+            
+        else:
+            for i, _Mw in enumerate(Mw_list):
+                RSCon = xgb.DMatrix(
+                    np.array([[np.log(Vs30), _Mw,
+                            np.log(Rrup), rake, station_id]]))
+                Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
+                Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
+                Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
+                Sa02_predict = np.exp(booster_Sa02.predict(RSCon)) / 980
+                Sa05_predict = np.exp(booster_Sa05.predict(RSCon)) / 980
+                Sa10_predict = np.exp(booster_Sa10.predict(RSCon)) / 980
+                Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
+                Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
+                Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
+                plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
+                    Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
+                    Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
+                    Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
+                ], label=f'Mw:{_Mw}')
+
 
         plt.grid(which="both",
                  axis="both",
@@ -1280,7 +1316,7 @@ class plot_fig:
                    [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
         plt.legend(loc="lower left")
         plt.savefig(
-            f"response spectrum-global Fault_type-{self.fault_type_dict[rake]} Rrup-{Rrup} Vs30-{Vs30} station-{station_id}.png",
+            f"response spectrum-global plot_all_sta-{plot_all_sta} Fault_type-{self.fault_type_dict[rake]} Rrup-{Rrup} Vs30-{Vs30} station-{station_id}.png",
             dpi=300)
         plt.show()
 

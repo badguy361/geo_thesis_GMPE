@@ -177,29 +177,31 @@ def SMOGN_plot(target):
 
 if __name__=='__main__':
     #? station id
-    _ = get_sta_rank()
+    # _ = get_sta_rank()
 
     #? SMOGN
-    targets = ["PGA", "PGV", "Sa001", "Sa005", "Sa01", "Sa02", "Sa03", "Sa04",
-            "Sa05", "Sa06", "Sa07", "Sa08", "Sa09", "Sa10", "Sa15", "Sa20",
-            "Sa25", "Sa30", "Sa35", "Sa40", "Sa50", "Sa60", "Sa70", "Sa80",
-            "Sa90", "Sa100"]
-    columns = ["PGA", "PGV", "T0.010S", "T0.050S", "T0.100S", "T0.200S", "T0.300S", "T0.400S",
-            "T0.500S", "T0.600S", "T0.700S", "T0.800S", "T0.900S", "T1.000S", "T1.500S", "T2.000S",
-            "T2.500S", "T3.000S", "T3.500S", "T4.000S", "T5.000S", "T6.000S", "T7.000S", "T8.000S",
-            "T9.000S", "T10.000S"]
-    periods = [0, 0, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4,
-            0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0,
-            2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0,9.0, 10.0]
+    targets = ["PGA", "PGV", "Sa001", "Sa002", "Sa003", "Sa004", "Sa005",
+                "Sa0075", "Sa01", "Sa012", "Sa015", "Sa017", "Sa02",
+                "Sa025", "Sa03", "Sa04", "Sa05", "Sa07", "Sa075", "Sa10",
+                "Sa15", "Sa20", "Sa30", "Sa40", "Sa50", "Sa75", "Sa100"]
+    columns = ["PGA", "PGV", "T0.010S", "T0.020S", "T0.030S", "T0.040S",
+                "T0.050S", "T0.075S", "T0.100S", "T0.120S", "T0.150S",
+                "T0.170S", "T0.200S", "T0.250S", "T0.300S", "T0.400S",
+                "T0.500S", "T0.700S", "T0.750S", "T1.000S", "T1.500S",
+                "T2.000S", "T3.000S", "T4.000S", "T5.000S", "T7.500S",
+                "T10.000S",]
+    periods = [0, 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
+            0.2, 0.25, 0.3, 0.4, 0.5, 0.7, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
+            7.5, 10.0]
 
-    # for i in range(len(targets)):
-    #     _ = cut_period(targets[i], periods[i], columns[i])
+    for i in range(len(targets)):
+        _ = cut_period(targets[i], periods[i], columns[i])
 
-    # for j in range(len(targets)):
-    #     _ = pre_SMOGN(targets[j], columns[j])
+    for j in range(len(targets)):
+        _ = pre_SMOGN(targets[j], columns[j])
 
-    # for k in range(len(targets)):
-    #     _ = synthesize(targets[k], columns[k])
+    for k in range(len(targets)):
+        _ = synthesize(targets[k], columns[k])
 
     #! manual change columns name to taget name (ex: T1.0S -> Sa10)
 

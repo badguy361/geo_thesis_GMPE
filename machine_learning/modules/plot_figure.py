@@ -45,75 +45,54 @@ class plot_fig:
             y_total ([dataframe]): [original answer data]
         """
 
-        # Vs30 Mw relationship
-        net = 50
-        zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
-        color_column = []
+        # # Vs30 Mw relationship
+        # net = 50
+        # zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
+        # color_column = []
 
-        i = 0
-        while i < len(x_total):  # 計算每個網格中總點數
-            x_net = (round(np.exp(x_total[:, 0])[i], 2) - 1e2) / (
-                (2 * 1e3 - 1e2) / net)  # 看是落在哪個x網格
-            y_net = (round(y_total[i], 2) - (-1)) / (
-                (8 - (-1)) / net)  # 看是落在哪個y網格
-            zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格+=1
-            i += 1
+        # i = 0
+        # while i < len(x_total):  # 計算每個網格中總點數
+        #     x_net = (round(np.exp(x_total[:, 0])[i], 2) - 1e2) / (
+        #         (2 * 1e3 - 1e2) / net)  # 看是落在哪個x網格
+        #     y_net = (round(y_total[i], 2) - (-1)) / (
+        #         (8 - (-1)) / net)  # 看是落在哪個y網格
+        #     zz[math.floor(x_net), math.floor(y_net)] += 1  # 第x,y個網格+=1
+        #     i += 1
 
-        j = 0
-        while j < len(x_total):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
-            x_net = (round(np.exp(x_total[:, 0])[j], 2) - 1e2) / (
-                (2 * 1e3 - 1e2) / net)
-            y_net = (round(y_total[j], 2) - (-1)) / ((8 - (-1)) / net)
-            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
-            # color_column:依照資料落在哪個網格給定該資料網格的數值(zz值) 用以畫圖
-            j += 1
+        # j = 0
+        # while j < len(x_total):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
+        #     x_net = (round(np.exp(x_total[:, 0])[j], 2) - 1e2) / (
+        #         (2 * 1e3 - 1e2) / net)
+        #     y_net = (round(y_total[j], 2) - (-1)) / ((8 - (-1)) / net)
+        #     color_column.append(zz[math.floor(x_net), math.floor(y_net)])
+        #     # color_column:依照資料落在哪個網格給定該資料網格的數值(zz值) 用以畫圖
+        #     j += 1
 
-        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
-        newcmp = LinearSegmentedColormap.from_list('testCmap',
-                                                   colors=colorlist,
-                                                   N=256)
-        plt.grid(linestyle=':', color='darkgrey', zorder=0)
-        plt.scatter(np.exp(x_total[:, 0]),
-                    y_total,
-                    marker='o',
-                    facecolors='none',
-                    c=color_column,
-                    cmap=newcmp,
-                    s=8,
-                    zorder=10)
-        cbar = plt.colorbar(extend='both', label='number value')
-        cbar.set_label('number value', fontsize=12)
-        plt.xlabel('Vs30(m/s)', fontsize=12)
-        plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
-        plt.title(f'Data Distribution')
-        plt.savefig(
-            f'../{self.abbreviation_name}/Vs30-dataset-distribution.jpg',
-            dpi=300)
-        plt.show()
+        # colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
+        # newcmp = LinearSegmentedColormap.from_list('testCmap',
+        #                                            colors=colorlist,
+        #                                            N=256)
+        # plt.grid(linestyle=':', color='darkgrey', zorder=0)
+        # plt.scatter(np.exp(x_total[:, 0]),
+        #             y_total,
+        #             marker='o',
+        #             facecolors='none',
+        #             c=color_column,
+        #             cmap=newcmp,
+        #             s=8,
+        #             zorder=10)
+        # cbar = plt.colorbar(extend='both', label='number value')
+        # cbar.set_label('number value', fontsize=12)
+        # plt.xlabel('Vs30(m/s)', fontsize=12)
+        # plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
+        # plt.title(f'Data Distribution')
+        # plt.savefig(
+        #     f'../{self.abbreviation_name}/Vs30-dataset-distribution.jpg',
+        #     dpi=300)
+        # plt.show()
 
         # Depth Mw relationship
-        net = 50
-        zz = np.array([0] * net * net).reshape(net, net)
-        color_column = []
 
-        i = 0
-        while i < len(x_total):
-            x_net = (round(x_total[:, 1][i], 2) - 3) / ((8 - 3) / net)
-            y_net = (round(y_total[i], 2) - (-1)) / ((8 - (-1)) / net)
-            zz[math.floor(x_net), math.floor(y_net)] += 1
-            i += 1
-
-        j = 0
-        while j < len(x_total):
-            x_net = (round(x_total[:, 1][j], 2) - 3) / ((8 - 3) / net)
-            y_net = (round(y_total[j], 2) - (-1)) / ((8 - (-1)) / net)
-            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
-            j += 1
-
-        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
-        newcmp = LinearSegmentedColormap.from_list('testCmap',
-                                                   colors=colorlist,
-                                                   N=256)
         plt.grid(linestyle=':', color='darkgrey', zorder=0)
         plt.scatter(x_total[:, 1],
                     y_total,
@@ -134,50 +113,25 @@ class plot_fig:
         plt.show()
 
         # Rrup Mw relationship
-        net = 50
-        zz = np.array([0] * net * net).reshape(net, net)
-        color_column = []
+        unique_markers = set(x_total[:, 3])
+        color_map = {-90.0: ["r","NM"], 0.0: ["g","SS"], 90.0: ["b","REV"]}
 
-        i = 0
-        while i < len(x_total):
-            x_net = (round(np.exp(x_total[:, 2])[i], 2) - 5 * 1e0) / (
-                (1e3 - 5 * 1e0) / net)
-            y_net = (round(y_total[i], 2) - (-1)) / ((8 - (-1)) / net)
-            zz[math.floor(x_net), math.floor(y_net)] += 1
-            i += 1
-
-        j = 0
-        while j < len(x_total):
-            x_net = (round(np.exp(x_total[:, 2])[j], 2) - 5 * 1e0) / (
-                (1e3 - 5 * 1e0) / net)
-            y_net = (round(y_total[j], 2) - (-1)) / ((8 - (-1)) / net)
-            color_column.append(zz[math.floor(x_net), math.floor(y_net)])
-            j += 1
-
-        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
-        newcmp = LinearSegmentedColormap.from_list('testCmap',
-                                                   colors=colorlist,
-                                                   N=256)
         plt.grid(which="both",
                  axis="both",
                  linestyle="--",
                  linewidth=0.5,
                  alpha=0.5,
                  zorder=0)
-        plt.scatter(np.exp(x_total[:, 2]),
-                    y_total,
-                    marker='o',
-                    facecolors='none',
-                    c=color_column,
-                    cmap=newcmp,
-                    s=8,
-                    zorder=10)
-        cbar = plt.colorbar(extend='both', label='number value')
-        cbar.set_label('number value', fontsize=12)
+        for marker in unique_markers:
+            indices = x_total[:, 3] == marker
+            plt.scatter(np.exp(x_total[indices, 2]), x_total[indices, 1],
+                        facecolors='none', c=color_map[marker][0],
+                        s=8, zorder=10, label=color_map[marker][1])
+        plt.legend(loc = "lower left")
         plt.xlabel('Rupture Distance, Rrup(km)', fontsize=12)
-        plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
+        plt.ylabel(f'Moment Magnitude, Mw', fontsize=12)
         plt.xscale("log")
-        plt.xlim(1 * 1e0, 1e3)
+        plt.xlim(1 * 1e0, 7* 1e2)
         plt.xticks([
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
             200, 300, 400, 500
@@ -187,7 +141,7 @@ class plot_fig:
         ])
         plt.title(f'Data Distribution')
         plt.savefig(
-            f'../{self.abbreviation_name}/Rrup-dataset-distribution.jpg',
+            f'../{self.abbreviation_name}/Rrup-Mw dataset-distribution.jpg',
             dpi=300)
         plt.show()
 

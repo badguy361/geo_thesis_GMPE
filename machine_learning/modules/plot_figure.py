@@ -1010,7 +1010,7 @@ class plot_fig:
         else:
             for i, Mw in enumerate(Mw_list):
                 total_sta_predict = []
-                for sta in tqdm(range(station_id_num)):
+                for sta in tqdm(range(station_id_num)): # 預測所有station取平均
                     single_sta_predict = []
                     for rrup in [0.1, 0.5, 1, 10, 50, 100, 200, 300]:
                         RSCon = xgb.DMatrix(

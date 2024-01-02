@@ -1,23 +1,25 @@
+import sys
+sys.path.append("..")
+sys.path.append("../modules/gsim")
+from numpy.lib import recfunctions
+from modules.gsim.utils.imt import PGA, SA, PGV
+from modules.gsim.phung_2020 import PhungEtAl2020Asc
+from modules.gsim.chang_2023 import Chang2023
+from modules.gsim.lin_2009 import Lin2009
+from modules.gsim.abrahamson_2014 import AbrahamsonEtAl2014
+from modules.gsim.campbell_bozorgnia_2014 import CampbellBozorgnia2014
+from modules.gsim.chao_2020 import ChaoEtAl2020Asc
+from tqdm import tqdm
 import xgboost as xgb
 from modules.process_train import dataprocess
 import pandas as pd
 import math
 import numpy as np
+from collections import Counter
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-import sys
 import shap
-sys.path.append("..")
-sys.path.append("../modules/gsim")
-from tqdm import tqdm
-from modules.gsim.chao_2020 import ChaoEtAl2020Asc
-from modules.gsim.campbell_bozorgnia_2014 import CampbellBozorgnia2014
-from modules.gsim.abrahamson_2014 import AbrahamsonEtAl2014
-from modules.gsim.lin_2009 import Lin2009
-from modules.gsim.chang_2023 import Chang2023
-from modules.gsim.phung_2020 import PhungEtAl2020Asc
-from modules.gsim.utils.imt import PGA, SA, PGV
-from numpy.lib import recfunctions
+
 
 class plot_fig:
     """
@@ -43,7 +45,7 @@ class plot_fig:
             y_total ([dataframe]): [original answer data]
         """
 
-        # Vs30 relationship
+        # Vs30 Mw relationship
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
         color_column = []
@@ -89,7 +91,7 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-        # Mw relationship
+        # Depth Mw relationship
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)
         color_column = []
@@ -123,7 +125,7 @@ class plot_fig:
                     zorder=10)
         cbar = plt.colorbar(extend='both', label='number value')
         cbar.set_label('number value', fontsize=12)
-        plt.xlabel('Mw', fontsize=12)
+        plt.xlabel('Moment Magnitude, Mw', fontsize=12)
         plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
         plt.title(f'Data Distribution')
         plt.savefig(
@@ -131,7 +133,7 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-        # Rrup relationship
+        # Rrup Mw relationship
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)
         color_column = []
@@ -172,7 +174,7 @@ class plot_fig:
                     zorder=10)
         cbar = plt.colorbar(extend='both', label='number value')
         cbar.set_label('number value', fontsize=12)
-        plt.xlabel('Rrup(km)', fontsize=12)
+        plt.xlabel('Rupture Distance, Rrup(km)', fontsize=12)
         plt.ylabel(f'Measured ln({self.target})(cm/s^2)', fontsize=12)
         plt.xscale("log")
         plt.xlim(1 * 1e0, 1e3)
@@ -186,6 +188,24 @@ class plot_fig:
         plt.title(f'Data Distribution')
         plt.savefig(
             f'../{self.abbreviation_name}/Rrup-dataset-distribution.jpg',
+            dpi=300)
+        plt.show()
+
+        # fault type number relationship
+
+        counter = Counter(x_total[:, 3])
+        reverse = counter[90.0]
+        normal = counter[-90.0]
+        strike_slip = counter[0.0]
+
+        plt.bar(["NN", "RE", "SS"], [normal, reverse, strike_slip], 
+                width=0.5, zorder=10)
+        plt.grid(linestyle=':', color='darkgrey', zorder=0)
+        plt.xlabel('Fault type', fontsize=12)
+        plt.ylabel(f'Numbers', fontsize=12)
+        plt.title(f'Data Distribution')
+        plt.savefig(
+            f'../{self.abbreviation_name}/Fault_type-dataset-distribution.jpg',
             dpi=300)
         plt.show()
 
@@ -924,7 +944,8 @@ class plot_fig:
                 ctx, imts, [ch_mean[i]], [ch_sig[i]], [ch_tau[i]], [ch_phi[i]])
             if plot_all_sta:
                 ch_mean_copy = np.exp(ch_mean[i][0].copy())
-                plt.plot(ctx['rrup'], ch_mean_copy, 'lightgrey', linewidth='0.4', zorder=5)
+                plt.plot(ctx['rrup'], ch_mean_copy,
+                         'lightgrey', linewidth='0.4', zorder=5)
             else:
                 total = total + np.exp(ch_mean[i][0])
 
@@ -1180,8 +1201,8 @@ class plot_fig:
                 Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
             ], label=self.fault_type_dict[rake])
             plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
-            plt.xlabel("Period(s)",fontsize=12)
-            plt.ylabel("PSA(g)",fontsize=12)
+            plt.xlabel("Period(s)", fontsize=12)
+            plt.ylabel("PSA(g)", fontsize=12)
             plt.ylim(10e-6, 1)
             plt.xlim(0.01, 10.0)
             plt.yscale("log")
@@ -1220,8 +1241,8 @@ class plot_fig:
                      linewidth=0.5,
                      alpha=0.5)
             plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
-            plt.xlabel("Period(s)",fontsize=12)
-            plt.ylabel("PSA(g)",fontsize=12)
+            plt.xlabel("Period(s)", fontsize=12)
+            plt.ylabel("PSA(g)", fontsize=12)
             plt.ylim(10e-6, 1)
             plt.xlim(0.01, 10.0)
             plt.yscale("log")
@@ -1235,7 +1256,7 @@ class plot_fig:
             plt.show()
 
         # * 2. Mw independent
-        Mw_list = [6, 7, 7.5,8]
+        Mw_list = [6, 7, 7.5, 8]
         for _Mw in Mw_list:
             RSCon = xgb.DMatrix(
                 np.array([[np.log(Vs30), _Mw,
@@ -1262,8 +1283,8 @@ class plot_fig:
                  alpha=0.5)
         plt.title(
             f"Fault_type = {self.fault_type_dict[rake]}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
-        plt.xlabel("Period(s)",fontsize=12)
-        plt.ylabel("PSA(g)",fontsize=12)
+        plt.xlabel("Period(s)", fontsize=12)
+        plt.ylabel("PSA(g)", fontsize=12)
         plt.ylim(10e-6, 1)
         plt.xlim(0.01, 10.0)
         plt.yscale("log")

@@ -61,8 +61,8 @@ original_filter_data = model.splitDataset(after_process_ori_filter_data, f'ln{ta
 
 #? model train
 #! result_ori[0](訓練資料)之shape : (29896,5) 為 29896筆 records 加上以下5個columns ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-score, feature_importances, fit_time, final_predict, ML_model = model.training(
-    target, "XGB", result_ori[0], result_ori[1], result_ori[2], result_ori[3])
+# score, feature_importances, fit_time, final_predict, ML_model = model.training(
+#     target, "XGB", result_ori[0], result_ori[1], result_ori[2], result_ori[3])
 
 #? optuna choose parameter
 #! dashboard : optuna-dashboard mysql://root@localhost/XGB_TSMIP
@@ -78,7 +78,7 @@ score, feature_importances, fit_time, final_predict, ML_model = model.training(
 
 #? model predicted
 booster = xgb.Booster()
-booster.load_model(f'XGB_{target}.json')
+booster.load_model(f'model/XGB_{target}.json')
 #! 檢測模型
 # for i in [6,6.2,6.3,6.4,6.6,6.7,6.9,7.0,7.1,7.2,7.4,7.5,7.7,7.9,8.0]:
 #     ans = booster.predict(xgb.DMatrix([(np.log(760), i, np.log(300), -90, 700)]))
@@ -89,7 +89,7 @@ originaldata_predicted_result = model.predicted_original(
 
 #? plot figure
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-# plot_something.data_distribution(original_data[0], original_data[1])
+plot_something.data_distribution(original_data[0], original_data[1])
 # plot_something.residual(original_data[0], original_data[1],
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score[f"XGB_{target}"])

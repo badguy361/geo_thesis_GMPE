@@ -59,8 +59,8 @@ after_process_ori_Mw6_data = model.preProcess(TSMIP_Mw6_df, target, True)
 after_process_ori_Mw7_data = model.preProcess(TSMIP_Mw7_df, target, True)
 
 model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-# result_SMOGN = model.splitDataset(after_process_SMOGN_data,
-#                                    f'ln{target}(gal)', True, *model_feture)
+result_SMOGN = model.splitDataset(after_process_SMOGN_data,
+                                   f'ln{target}(gal)', True, *model_feture)
 result_ori = model.splitDataset(after_process_ori_data, f'ln{target}(gal)',
                                  True, *model_feture)
 original_data = model.splitDataset(after_process_ori_data, f'ln{target}(gal)',

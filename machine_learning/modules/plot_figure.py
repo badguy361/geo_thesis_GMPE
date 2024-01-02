@@ -44,6 +44,8 @@ class plot_fig:
             x_total ([dataframe]): [original feature data]
             y_total ([dataframe]): [original answer data]
         """
+        unique_color = set(x_total[:, 3])
+        color_map = {-90.0: ["r","NM"], 0.0: ["g","SS"], 90.0: ["b","REV"]}
 
         # # Vs30 Mw relationship
 
@@ -66,15 +68,14 @@ class plot_fig:
         # Depth Mw relationship
 
         plt.grid(linestyle=':', color='darkgrey', zorder=0)
-        plt.scatter(x_total[:, -1],
-                    x_total[:, 1],
-                    marker='o',
-                    facecolors='none',
-                    c="gray",
-                    s=8,
-                    zorder=10)
+        for color in unique_color:
+            indices = x_total[:, 3] == color
+            plt.scatter(x_total[indices, -1], x_total[indices, 1],
+                        facecolors='none', c=color_map[color][0],
+                        s=8, zorder=10, label=color_map[color][1])
         plt.xlabel('Hypocenter Depth(km)', fontsize=12)
         plt.ylabel(f'Moment Magnitude, Mw', fontsize=12)
+        plt.legend(loc="lower left")
         plt.title(f'Data Distribution')
         plt.savefig(
             f'../{self.abbreviation_name}/Depth Mw-dataset-distribution.jpg',
@@ -82,9 +83,6 @@ class plot_fig:
         plt.show()
 
         # Rrup Mw relationship
-        unique_color = set(x_total[:, 3])
-        color_map = {-90.0: ["r","NM"], 0.0: ["g","SS"], 90.0: ["b","REV"]}
-
         plt.grid(which="both",
                  axis="both",
                  linestyle="--",

@@ -1042,7 +1042,7 @@ class plot_fig:
             f"distance scaling Vs30-{Vs30} fault-type-{self.fault_type_dict[rake]} global-{plot_all_sta} station_id-{station_id}.jpg", dpi=300)
         plt.show()
 
-    def explainable(self, all_df, x_total, model_feture, ML_model, seed, index_start, index_end):
+    def explainable(self, all_df, x_total, model_feture, ML_model, index_start, index_end):
         """
 
         This function shows explanation wihch include global explaination and local explaination of the model in the given target .
@@ -1052,93 +1052,98 @@ class plot_fig:
             x_total (ori_total_feature): [original feature data]
             model_feture ([list]): [input parameters]
             ML_model ([model]): [the model from sklearn or other package]
-            seed ([int]): [random seed number]
+            index_start ([int]): [start record index]
+            index_end ([int]): [end record index]
         """
         df = pd.DataFrame(x_total, columns=model_feture)
         explainer = shap.Explainer(ML_model)
         shap_values = explainer(df)
 
-        # #! Global Explainable
-        # summary
-        fig = plt.figure()
-        shap.summary_plot(shap_values, df, show=True)
-        # plt.savefig(f"summary_plot_{self.target}.jpg",
-        #             bbox_inches='tight',
-        #             dpi=300)
-
-        # # bar plot
-        # fig = plt.figure()
-        # shap.plots.bar(shap_values, show=False)
-        # plt.rcParams['figure.facecolor'] = 'white'
-        # plt.rcParams['axes.facecolor'] = 'white'
-        # plt.savefig(f"shap_bar_{self.target}.jpg",
-        #             bbox_inches='tight',
-        #             dpi=300)
-
-        # # scatter plot
-        # fig = plt.figure()
-        # shap.plots.scatter(shap_values[:, "MW"],
-        #                    color=shap_values[:, "lnRrup"],
-        #                    show=False)
-        # plt.rcParams['figure.facecolor'] = 'white'
-        # plt.rcParams['axes.facecolor'] = 'white'
-        # plt.savefig(f"shap_scatter_Mw_lnRrup_{self.target}.jpg",
-        #             bbox_inches='tight',
-        #             dpi=300)
-
-        # fig = plt.figure()
-        # shap.plots.scatter(shap_values[:, "lnRrup"],
-        #                    color=shap_values[:, "MW"],
-        #                    show=False)
-        # plt.rcParams['figure.facecolor'] = 'white'
-        # plt.rcParams['axes.facecolor'] = 'white'
-        # plt.savefig(f"shap_scatter_lnRrup_Mw_{self.target}.jpg",
-        #             bbox_inches='tight',
-        #             dpi=300)
-
-        # #! Local Explainable
-        # # waterfall
-        # fig = plt.figure()
-        # shap.plots.waterfall(shap_values[seed],
-        #                      show=False)  # 單筆資料解釋:第seed筆資料解釋
-        # plt.rcParams['figure.facecolor'] = 'white'
-        # plt.rcParams['axes.facecolor'] = 'white'
-        # plt.savefig(f"shap_waterfall_{seed}_{self.target}.jpg",
-        #             bbox_inches='tight',
-        #             dpi=300)
-
-        # # force plot
-        # shap.initjs()
-        # shap.force_plot(explainer.expected_value,
-        #                 shap_values.values[seed, :],
-        #                 df.iloc[seed, :],
-        #                 show=False,
-        #                 matplotlib=True)
-        # plt.savefig(f"force_plot_{seed}_{self.target}.jpg",
-        #             bbox_inches='tight',
-        #             dpi=300)
-
-        # # 強制刷新緩存
-        # fig.canvas.draw()
-
+        # station id and shap value
+        # plt.scatter(all_df['STA_Lon_X'][index_start], all_df['STA_Lat_Y'][index_start], \
+        #         s=8, c='black', zorder=20)
         plt.scatter(all_df["STA_Lon_X"],
-                all_df["STA_Lat_Y"],
-                c=np.sum(shap_values.values[index_start:index_end],axis=1) \
-                    + shap_values.base_values[index_start],
-                cmap='cool',
-                s=8,
-                zorder=10)
-        cbar = plt.colorbar(extend='both', label='number value')
-        cbar.set_label('number value', fontsize=12)
+                    all_df["STA_Lat_Y"],
+                    c=np.sum(shap_values.values[index_start:index_end],axis=1) \
+                        + shap_values.base_values[index_start],
+                    cmap='cool',
+                    s=8,
+                    zorder=10)
+        plt.text(all_df['STA_Lon_X'][index_start], all_df['STA_Lat_Y'][index_start], \
+                f"{all_df['STA_ID'][index_start]}_{all_df['STA_rank'][index_start]}", \
+                zorder=20)
+        cbar = plt.colorbar(extend='both', label='SHAP value')
+        cbar.set_label('SHAP value', fontsize=12)
         plt.xlim(119.4,122.3)
         plt.ylim(21.8,25.5)
         plt.xlabel('longitude', fontsize=12)
         plt.ylabel('latitude', fontsize=12)
-        plt.title('TSMIP Station id located')
-        plt.show()
+        plt.title('TSMIP station id vs SHAP value')
+        plt.savefig(f"station_id and eq-{index_start} {self.target}.jpg",
+            bbox_inches='tight',
+            dpi=300)
 
+        #! Global Explainable
+        # summary
+        fig = plt.figure()
+        shap.summary_plot(shap_values, df, show=False)
+        plt.savefig(f"summary_plot_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
 
-        return shap_values
+        # bar plot
+        fig = plt.figure()
+        shap.plots.bar(shap_values, show=False)
+        plt.rcParams['figure.facecolor'] = 'white'
+        plt.rcParams['axes.facecolor'] = 'white'
+        plt.savefig(f"shap_bar_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
+
+        # scatter plot
+        fig = plt.figure()
+        shap.plots.scatter(shap_values[:, "MW"],
+                           color=shap_values[:, "lnRrup"],
+                           show=False)
+        plt.rcParams['figure.facecolor'] = 'white'
+        plt.rcParams['axes.facecolor'] = 'white'
+        plt.savefig(f"shap_scatter_Mw_lnRrup_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
+
+        fig = plt.figure()
+        shap.plots.scatter(shap_values[:, "lnRrup"],
+                           color=shap_values[:, "MW"],
+                           show=False)
+        plt.rcParams['figure.facecolor'] = 'white'
+        plt.rcParams['axes.facecolor'] = 'white'
+        plt.savefig(f"shap_scatter_lnRrup_Mw_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
+
+        #! Local Explainable
+        # waterfall
+        fig = plt.figure()
+        shap.plots.waterfall(shap_values[index_start],
+                             show=False)
+        plt.rcParams['figure.facecolor'] = 'white'
+        plt.rcParams['axes.facecolor'] = 'white'
+        plt.savefig(f"shap_waterfall_{index_start}_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
+
+        # force plot
+        shap.initjs()
+        shap.force_plot(explainer.expected_value,
+                        shap_values.values[index_start, :],
+                        df.iloc[index_start, :],
+                        show=False,
+                        matplotlib=True)
+        plt.savefig(f"force_plot_{index_start}_{self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
+
+        fig.canvas.draw()
 
     def respond_spectrum(self, Vs30, Mw, Rrup, rake, station_id, station_id_num,
                         plot_all_rake, plot_all_sta, *args: "model"):
@@ -1345,14 +1350,13 @@ if __name__ == '__main__':
     rake = 90
     station_id = 50
     station_id_num = 732 # station 總量
-    seed = 12974
 
     #? data preprocess
     TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv")
     TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")
 
     filter = TSMIP_all_df[TSMIP_all_df['eq.type'] == "shallow crustal"].reset_index()
-    station_order = filter[filter["EQ_ID"] == "1999_0920_1747_16"][["STA_Lon_X","STA_Lat_Y","STA_rank"]]
+    station_order = filter[filter["EQ_ID"] == "1999_0920_1747_16"][["STA_Lon_X","STA_Lat_Y","STA_rank","STA_ID"]]
     index_start = station_order.index[0]
     index_end = station_order.index[-1]+1
     # 1999_0920_1747_16 -> 3061~3460
@@ -1372,5 +1376,5 @@ if __name__ == '__main__':
 
     #? plot figure
     plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-    shap_values=plot_something.explainable(station_order, original_data[0], model_feture,
-                                            booster, seed, index_start, index_end)
+    plot_something.explainable(station_order, original_data[0], model_feture,
+                                booster, index_start, index_end)

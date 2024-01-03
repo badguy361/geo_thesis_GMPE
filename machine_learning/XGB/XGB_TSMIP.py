@@ -33,10 +33,6 @@ score = {
 }
 lowerbound = -2
 higherbound = 8
-seed = 3063
-#! 以此規則找seed : 
-# filter = TSMIP_df[TSMIP_df['eq.type'] == "shallow crustal"].reset_index()
-# filter[filter["EQ_ID"] == "1999_0920_1747_16"]
 study_name = 'XGB_TSMIP_2'
 
 #? data preprocess
@@ -77,6 +73,12 @@ original_Mw7_data = model.splitDataset(after_process_ori_Mw7_data, f'ln{target}(
                                     False, *model_feture)
 total_Mw_data = [original_filter_data, original_Mw4_data, original_Mw5_data, original_Mw6_data, original_Mw7_data]
 
+TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")
+filter = TSMIP_all_df[TSMIP_all_df['eq.type'] == "shallow crustal"].reset_index()
+station_order = filter[filter["EQ_ID"] == "1999_0920_1747_16"][["STA_Lon_X","STA_Lat_Y","STA_rank","STA_ID"]]
+index_start = station_order.index[0]
+index_end = station_order.index[-1]+1
+
 #? model train
 #! result_ori[0](訓練資料)之shape : (29896,5) 為 29896筆 records 加上以下5個columns ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
 # score, feature_importances, fit_time, final_predict, ML_model = model.training(
@@ -116,4 +118,5 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 #                                 station_id, total_Mw_data, f"model/XGB_{target}.json")
 # plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id, station_id_num,
 #                                True, True, *model_name)
-plot_something.explainable(original_data[0], model_feture, booster, seed)
+plot_something.explainable(station_order, original_data[0], model_feture,
+                            booster, index_start, index_end)

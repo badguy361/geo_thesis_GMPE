@@ -203,6 +203,10 @@ if __name__=='__main__':
     for k in range(len(targets)):
         _ = synthesize(targets[k], columns[k])
 
-    #! manual change columns name to taget name (ex: T1.0S -> Sa10)
+    #? change columns name to target name (ex: T1.0S -> Sa10)
+    for index, m in enumerate(targets):
+        TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{m}.csv")
+        TSMIP_df = TSMIP_df.rename(columns={columns[index]: targets[index]})
+        TSMIP_df.to_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{m}.csv", index=False)
 
     # _ = SMOGN_plot()

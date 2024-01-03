@@ -1062,6 +1062,9 @@ class plot_fig:
         # station id and shap value
         # plt.scatter(all_df['STA_Lon_X'][index_start], all_df['STA_Lat_Y'][index_start], \
         #         s=8, c='black', zorder=20)
+        # plt.text(all_df['STA_Lon_X'][index_start], all_df['STA_Lat_Y'][index_start], \
+        #         f"{all_df['STA_ID'][index_start]}_{all_df['STA_rank'][index_start]}", \
+        #         zorder=20)
         plt.scatter(all_df["STA_Lon_X"],
                     all_df["STA_Lat_Y"],
                     c=np.sum(shap_values.values[index_start:index_end],axis=1) \
@@ -1069,9 +1072,6 @@ class plot_fig:
                     cmap='cool',
                     s=8,
                     zorder=10)
-        plt.text(all_df['STA_Lon_X'][index_start], all_df['STA_Lat_Y'][index_start], \
-                f"{all_df['STA_ID'][index_start]}_{all_df['STA_rank'][index_start]}", \
-                zorder=20)
         cbar = plt.colorbar(extend='both', label='SHAP value')
         cbar.set_label('SHAP value', fontsize=12)
         plt.xlim(119.4,122.3)

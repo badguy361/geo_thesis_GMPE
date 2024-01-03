@@ -107,7 +107,7 @@ originaldata_predicted_result = model.predicted_original(
 
 #? plot figure
 plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-plot_something.data_distribution(original_data[0], original_data[1])
+# plot_something.data_distribution(original_data[0], original_data[1])
 # plot_something.residual(original_data[0], original_data[1],
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         score[f"XGB_{target}"])
@@ -116,4 +116,4 @@ plot_something.data_distribution(original_data[0], original_data[1])
 #                                 station_id, total_Mw_data, f"model/XGB_{target}.json")
 # plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id, station_id_num,
 #                                True, True, *model_name)
-# plot_something.explainable(original_data[0], model_feture, booster, seed)
+plot_something.explainable(original_data[0], model_feture, booster, seed)

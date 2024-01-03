@@ -1042,12 +1042,13 @@ class plot_fig:
             f"distance scaling Vs30-{Vs30} fault-type-{self.fault_type_dict[rake]} global-{plot_all_sta} station_id-{station_id}.jpg", dpi=300)
         plt.show()
 
-    def explainable(self, x_total, model_feture, ML_model, seed):
+    def explainable(self, all_df, x_total, model_feture, ML_model, seed, index_start, index_end):
         """
 
         This function shows explanation wihch include global explaination and local explaination of the model in the given target .
 
         Args:
+            all_df (all dataset): [all dataset]
             x_total (ori_total_feature): [original feature data]
             model_feture ([list]): [input parameters]
             ML_model ([model]): [the model from sklearn or other package]
@@ -1057,68 +1058,87 @@ class plot_fig:
         explainer = shap.Explainer(ML_model)
         shap_values = explainer(df)
 
-        #! Global Explainable
+        # #! Global Explainable
         # summary
         fig = plt.figure()
-        shap.summary_plot(shap_values, df, show=False)
-        plt.savefig(f"summary_plot_{self.target}.jpg",
-                    bbox_inches='tight',
-                    dpi=300)
+        shap.summary_plot(shap_values, df, show=True)
+        # plt.savefig(f"summary_plot_{self.target}.jpg",
+        #             bbox_inches='tight',
+        #             dpi=300)
 
-        # bar plot
-        fig = plt.figure()
-        shap.plots.bar(shap_values, show=False)
-        plt.rcParams['figure.facecolor'] = 'white'
-        plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig(f"shap_bar_{self.target}.jpg",
-                    bbox_inches='tight',
-                    dpi=300)
+        # # bar plot
+        # fig = plt.figure()
+        # shap.plots.bar(shap_values, show=False)
+        # plt.rcParams['figure.facecolor'] = 'white'
+        # plt.rcParams['axes.facecolor'] = 'white'
+        # plt.savefig(f"shap_bar_{self.target}.jpg",
+        #             bbox_inches='tight',
+        #             dpi=300)
 
-        # scatter plot
-        fig = plt.figure()
-        shap.plots.scatter(shap_values[:, "MW"],
-                           color=shap_values[:, "lnRrup"],
-                           show=False)
-        plt.rcParams['figure.facecolor'] = 'white'
-        plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig(f"shap_scatter_Mw_lnRrup_{self.target}.jpg",
-                    bbox_inches='tight',
-                    dpi=300)
+        # # scatter plot
+        # fig = plt.figure()
+        # shap.plots.scatter(shap_values[:, "MW"],
+        #                    color=shap_values[:, "lnRrup"],
+        #                    show=False)
+        # plt.rcParams['figure.facecolor'] = 'white'
+        # plt.rcParams['axes.facecolor'] = 'white'
+        # plt.savefig(f"shap_scatter_Mw_lnRrup_{self.target}.jpg",
+        #             bbox_inches='tight',
+        #             dpi=300)
 
-        fig = plt.figure()
-        shap.plots.scatter(shap_values[:, "lnRrup"],
-                           color=shap_values[:, "MW"],
-                           show=False)
-        plt.rcParams['figure.facecolor'] = 'white'
-        plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig(f"shap_scatter_lnRrup_Mw_{self.target}.jpg",
-                    bbox_inches='tight',
-                    dpi=300)
+        # fig = plt.figure()
+        # shap.plots.scatter(shap_values[:, "lnRrup"],
+        #                    color=shap_values[:, "MW"],
+        #                    show=False)
+        # plt.rcParams['figure.facecolor'] = 'white'
+        # plt.rcParams['axes.facecolor'] = 'white'
+        # plt.savefig(f"shap_scatter_lnRrup_Mw_{self.target}.jpg",
+        #             bbox_inches='tight',
+        #             dpi=300)
 
-        #! Local Explainable
-        # waterfall
-        fig = plt.figure()
-        shap.plots.waterfall(shap_values[seed],
-                             show=False)  # 單筆資料解釋:第seed筆資料解釋
-        plt.rcParams['figure.facecolor'] = 'white'
-        plt.rcParams['axes.facecolor'] = 'white'
-        plt.savefig(f"shap_waterfall_{seed}_{self.target}.jpg",
-                    bbox_inches='tight',
-                    dpi=300)
+        # #! Local Explainable
+        # # waterfall
+        # fig = plt.figure()
+        # shap.plots.waterfall(shap_values[seed],
+        #                      show=False)  # 單筆資料解釋:第seed筆資料解釋
+        # plt.rcParams['figure.facecolor'] = 'white'
+        # plt.rcParams['axes.facecolor'] = 'white'
+        # plt.savefig(f"shap_waterfall_{seed}_{self.target}.jpg",
+        #             bbox_inches='tight',
+        #             dpi=300)
 
-        # force plot
-        shap.initjs()
-        shap.force_plot(explainer.expected_value,
-                        shap_values.values[seed, :],
-                        df.iloc[seed, :],
-                        show=False,
-                        matplotlib=True)
-        plt.savefig(f"force_plot_{seed}_{self.target}.jpg",
-                    bbox_inches='tight',
-                    dpi=300)
+        # # force plot
+        # shap.initjs()
+        # shap.force_plot(explainer.expected_value,
+        #                 shap_values.values[seed, :],
+        #                 df.iloc[seed, :],
+        #                 show=False,
+        #                 matplotlib=True)
+        # plt.savefig(f"force_plot_{seed}_{self.target}.jpg",
+        #             bbox_inches='tight',
+        #             dpi=300)
 
-        # 強制刷新緩存
-        fig.canvas.draw()
+        # # 強制刷新緩存
+        # fig.canvas.draw()
+
+        plt.scatter(all_df["STA_Lon_X"],
+                all_df["STA_Lat_Y"],
+                c=np.sum(shap_values.values[index_start:index_end],axis=1) \
+                    + shap_values.base_values[index_start],
+                cmap='cool',
+                s=8,
+                zorder=10)
+        cbar = plt.colorbar(extend='both', label='number value')
+        cbar.set_label('number value', fontsize=12)
+        plt.xlim(119.4,122.3)
+        plt.ylim(21.8,25.5)
+        plt.xlabel('longitude', fontsize=12)
+        plt.ylabel('latitude', fontsize=12)
+        plt.title('TSMIP Station id located')
+        plt.show()
+
+
+        return shap_values
 
     def respond_spectrum(self, Vs30, Mw, Rrup, rake, station_id, station_id_num,
                         plot_all_rake, plot_all_sta, *args: "model"):
@@ -1317,30 +1337,40 @@ class plot_fig:
 
 
 if __name__ == '__main__':
-    TSMIP_smogn_df = pd.read_csv("../../../TSMIP_smogn_sta.csv")
-    TSMIP_df = pd.read_csv("../../../TSMIP_FF_copy.csv")
+    
+    target = "PGA"
+    Mw = 7.65
+    Rrup = 50
+    Vs30 = 360
+    rake = 90
+    station_id = 50
+    station_id_num = 732 # station 總量
+    seed = 12974
+
+    #? data preprocess
+    TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv")
+    TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")
+
+    filter = TSMIP_all_df[TSMIP_all_df['eq.type'] == "shallow crustal"].reset_index()
+    station_order = filter[filter["EQ_ID"] == "1999_0920_1747_16"][["STA_Lon_X","STA_Lat_Y","STA_rank"]]
+    index_start = station_order.index[0]
+    index_end = station_order.index[-1]+1
+    # 1999_0920_1747_16 -> 3061~3460
+    # 2009_0817_0005_46 -> 16931~17245
+    # 2010_0304_0816_16 -> 18824~19064
+
     model = dataprocess()
-    after_process_data = model.preprocess(TSMIP_smogn_df)
-    result_list = model.split_dataset(TSMIP_smogn_df, 'lnPGA(gal)', True,
-                                      'lnVs30', 'MW', 'lnRrup', 'fault.type',
-                                      'STA_Lon_X', 'STA_Lat_Y')
-    score, feature_importances, fit_time, final_predict = model.training(
-        "XGB", result_list[0], result_list[1], result_list[2], result_list[3])
+    after_process_ori_data = model.preProcess(TSMIP_df, target, True)
 
-    plot_something = plot_fig("XGBooster", "XGB", "TSMIP")
-    plot_something.train_test_distribution(result_list[1], result_list[3],
-                                           final_predict, fit_time, score)
-    plot_something.residual(result_list[1], result_list[3], final_predict,
-                            score)
-    plot_something.measured_predict(result_list[3], final_predict, score)
-    c = result_list[1].transpose(1, 0)
-    plot_something.distance_scaling(c[2], final_predict, score)
+    model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
+    original_data = model.splitDataset(after_process_ori_data, f'ln{target}(gal)',
+                                        False, *model_feture)
+    
+    #? model predicted
+    booster = xgb.Booster()
+    booster.load_model(f'../XGB/model/XGB_{target}.json')
 
-    # 線性的distance_scaling
-    # c = result_list[1].transpose(1, 0)
-    # concat_data = np.concatenate((np.array([c[2]]), np.array([final_predict])),
-    #                              axis=0).transpose(1, 0)
-    # concat_data_df = pd.DataFrame(concat_data, columns=['dist', 'predict'])
-    # concat_data_df = concat_data_df.sort_values(by=['dist'])
-    # concat_data = np.array(concat_data_df).transpose(1, 0)
-    # plot_something.distance_scaling(concat_data[0], concat_data[1], score)
+    #? plot figure
+    plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
+    shap_values=plot_something.explainable(station_order, original_data[0], model_feture,
+                                            booster, seed, index_start, index_end)

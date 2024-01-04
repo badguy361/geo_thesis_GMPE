@@ -82,16 +82,16 @@ original_Mw7_data = model.splitDataset(after_process_ori_Mw7_data, f'ln{target}(
                                     False, *model_feture)
 total_Mw_data = [original_filter_data, original_Mw4_data, original_Mw5_data, original_Mw6_data, original_Mw7_data]
 
-TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")
-filter = TSMIP_all_df[TSMIP_all_df['eq.type'] == "shallow crustal"].reset_index()
-station_order = filter[filter["EQ_ID"] == "1999_0920_1747_16"][["STA_Lon_X","STA_Lat_Y","STA_rank","STA_ID"]]
-index_start = station_order.index[0]
-index_end = station_order.index[-1]+1
+# TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")
+# filter = TSMIP_all_df[TSMIP_all_df['eq.type'] == "shallow crustal"].reset_index()
+# station_order = filter[filter["EQ_ID"] == "1999_0920_1747_16"][["STA_Lon_X","STA_Lat_Y","STA_rank","STA_ID"]]
+# index_start = station_order.index[0]
+# index_end = station_order.index[-1]+1
 
 #? model train
 #! result_ori[0](訓練資料)之shape : (29896,5) 為 29896筆 records 加上以下5個columns ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-score, feature_importances, fit_time, final_predict, ML_model = model.training(
-    target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
+# score, feature_importances, fit_time, final_predict, ML_model = model.training(
+#     target, "XGB", result_SMOGN[0], result_ori[1], result_SMOGN[2], result_ori[3])
 
 #? optuna choose parameter
 #! dashboard : optuna-dashboard mysql://root@localhost/XGB_TSMIP
@@ -125,7 +125,7 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score[f"XGB_{target}"], lowerbound, higherbound)
 # plot_something.distance_scaling(DSC_df, Vs30, rake, station_id_num, False, 
 #                                 station_id, total_Mw_data, f"model/XGB_{target}.json")
-# plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id, station_id_num,
-#                                True, True, *model_name)
-plot_something.explainable(station_order, original_data[0], model_feture,
-                            booster, index_start, index_end)
+plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id, station_id_num,
+                               True, True, *model_name)
+# plot_something.explainable(station_order, original_data[0], model_feture,
+#                             booster, index_start, index_end)

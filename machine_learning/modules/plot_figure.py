@@ -45,7 +45,7 @@ class plot_fig:
             y_total ([dataframe]): [original answer data]
         """
         unique_color = set(x_total[:, 3])
-        color_map = {-90.0: ["r","NM"], 0.0: ["g","SS"], 90.0: ["b","REV"]}
+        color_map = {-90.0: ["r", "NM"], 0.0: ["g", "SS"], 90.0: ["b", "REV"]}
 
         # # Vs30 Mw relationship
 
@@ -98,7 +98,7 @@ class plot_fig:
         plt.xlabel('Rupture Distance, Rrup(km)', fontsize=12)
         plt.ylabel(f'Moment Magnitude, Mw', fontsize=12)
         plt.xscale("log")
-        plt.xlim(1 * 1e0, 7* 1e2)
+        plt.xlim(1 * 1e0, 7 * 1e2)
         plt.xticks([
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
             200, 300, 400, 500
@@ -119,7 +119,7 @@ class plot_fig:
         normal = counter[-90.0]
         strike_slip = counter[0.0]
 
-        plt.bar(["NN", "RE", "SS"], [normal, reverse, strike_slip], 
+        plt.bar(["NN", "RE", "SS"], [normal, reverse, strike_slip],
                 width=0.5, zorder=10)
         plt.grid(linestyle=':', color='darkgrey', zorder=0)
         plt.xlabel('Fault type', fontsize=12)
@@ -841,7 +841,7 @@ class plot_fig:
             model_path ([str]): [the place which the model be stored]
         """
 
-        #* comparsion ohter GMMs
+        # * comparsion ohter GMMs
 
         # dataLen = 17  # rrup 總點位
         # total = np.array([0]*dataLen)
@@ -978,12 +978,12 @@ class plot_fig:
         #     f"distance scaling Mw-{ctx['mag'][0]} Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} global-{plot_all_sta}.jpg", dpi=300)
         # plt.show()
 
-        #* comparsion different Mw
+        # * comparsion different Mw
         booster_PGA = xgb.Booster()
         booster_PGA.load_model(model_path)
 
-        Mw_list = [4,5,6,7]
-        color = ["lightblue","lightsalmon","lightgreen","lightcoral"]
+        Mw_list = [4, 5, 6, 7]
+        color = ["lightblue", "lightsalmon", "lightgreen", "lightcoral"]
 
         if plot_all_sta:
             for i, Mw in enumerate(Mw_list):
@@ -991,37 +991,39 @@ class plot_fig:
                 for rrup in [0.1, 0.5, 1, 10, 50, 100, 200, 300]:
                     RSCon = xgb.DMatrix(
                         np.array([[np.log(Vs30), Mw,
-                            np.log(rrup), rake, station_id]]))
-                    single_sta_predict.append(np.exp(booster_PGA.predict(RSCon)) / 980)
+                                   np.log(rrup), rake, station_id]]))
+                    single_sta_predict.append(
+                        np.exp(booster_PGA.predict(RSCon)) / 980)
                 plt.scatter(np.exp(total_data[i+1][0][:, 2]),
-                    np.exp(total_data[i+1][1]) / 980,
-                    marker='o',
-                    facecolors='none',
-                    s=2,
-                    c=color[i],
-                    zorder=5)
+                            np.exp(total_data[i+1][1]) / 980,
+                            marker='o',
+                            facecolors='none',
+                            s=2,
+                            c=color[i],
+                            zorder=5)
                 plt.plot([0.1, 0.5, 1, 10, 50, 100, 200, 300], single_sta_predict,
-                        linewidth='1.2', zorder=20, label=f"Mw:{Mw_list[i]}")
+                         linewidth='1.2', zorder=20, label=f"Mw:{Mw_list[i]}")
         else:
             for i, Mw in enumerate(Mw_list):
                 total_sta_predict = []
-                for sta in tqdm(range(station_id_num)): # 預測所有station取平均
+                for sta in tqdm(range(station_id_num)):  # 預測所有station取平均
                     single_sta_predict = []
                     for rrup in [0.1, 0.5, 1, 10, 50, 100, 200, 300]:
                         RSCon = xgb.DMatrix(
                             np.array([[np.log(Vs30), Mw,
-                                np.log(rrup), 90, sta]]))
-                        single_sta_predict.append(np.exp(booster_PGA.predict(RSCon)) / 980)
+                                       np.log(rrup), 90, sta]]))
+                        single_sta_predict.append(
+                            np.exp(booster_PGA.predict(RSCon)) / 980)
                     total_sta_predict.append(single_sta_predict)
                 plt.scatter(np.exp(total_data[i+1][0][:, 2]),
-                    np.exp(total_data[i+1][1]) / 980,
-                    marker='o',
-                    facecolors='none',
-                    s=2,
-                    c=color[i],
-                    zorder=5)
+                            np.exp(total_data[i+1][1]) / 980,
+                            marker='o',
+                            facecolors='none',
+                            s=2,
+                            c=color[i],
+                            zorder=5)
                 plt.plot([0.1, 0.5, 1, 10, 50, 100, 200, 300], np.array(total_sta_predict).mean(axis=0),
-                        linewidth='1.2', zorder=20, label=f"Mw:{Mw_list[i]}")
+                         linewidth='1.2', zorder=20, label=f"Mw:{Mw_list[i]}")
 
         plt.grid(which="both",
                  axis="both",
@@ -1059,29 +1061,29 @@ class plot_fig:
         explainer = shap.Explainer(ML_model)
         shap_values = explainer(df)
 
-        # station id and shap value
+        #! station id and shap value
         # plt.scatter(all_df['STA_Lon_X'][index_start], all_df['STA_Lat_Y'][index_start], \
-        #         s=8, c='black', zorder=20)
+        #         s=8, c='black', zorder=20) # 測站位置
         # plt.text(all_df['STA_Lon_X'][index_start], all_df['STA_Lat_Y'][index_start], \
         #         f"{all_df['STA_ID'][index_start]}_{all_df['STA_rank'][index_start]}", \
         #         zorder=20)
         plt.scatter(all_df["STA_Lon_X"],
                     all_df["STA_Lat_Y"],
-                    c=np.sum(shap_values.values[index_start:index_end],axis=1) \
-                        + shap_values.base_values[index_start],
+                    c=np.sum(shap_values.values[index_start:index_end], axis=1)
+                    + shap_values.base_values[index_start],
                     cmap='cool',
                     s=8,
                     zorder=10)
         cbar = plt.colorbar(extend='both', label='SHAP value')
         cbar.set_label('SHAP value', fontsize=12)
-        plt.xlim(119.4,122.3)
-        plt.ylim(21.8,25.5)
+        plt.xlim(119.4, 122.3)
+        plt.ylim(21.8, 25.5)
         plt.xlabel('longitude', fontsize=12)
         plt.ylabel('latitude', fontsize=12)
         plt.title('TSMIP station id vs SHAP value')
         plt.savefig(f"station_id and eq-{index_start} {self.target}.jpg",
-            bbox_inches='tight',
-            dpi=300)
+                    bbox_inches='tight',
+                    dpi=300)
 
         #! Global Explainable
         # summary
@@ -1146,7 +1148,7 @@ class plot_fig:
         fig.canvas.draw()
 
     def respond_spectrum(self, Vs30, Mw, Rrup, rake, station_id, station_id_num,
-                        plot_all_rake, plot_all_sta, *args: "model"):
+                         plot_all_rake, plot_all_sta, *args: "model"):
         """
 
         This function is called to plot respond spectrum .
@@ -1168,47 +1170,77 @@ class plot_fig:
         booster_PGV.load_model(args[1])
         booster_Sa001 = xgb.Booster()
         booster_Sa001.load_model(args[2])
+        booster_Sa002 = xgb.Booster()
+        booster_Sa002.load_model(args[3])
+        booster_Sa003 = xgb.Booster()
+        booster_Sa003.load_model(args[4])
+        booster_Sa004 = xgb.Booster()
+        booster_Sa004.load_model(args[5])
         booster_Sa005 = xgb.Booster()
-        booster_Sa005.load_model(args[3])
+        booster_Sa005.load_model(args[6])
+        booster_Sa0075 = xgb.Booster()
+        booster_Sa0075.load_model(args[7])
         booster_Sa01 = xgb.Booster()
-        booster_Sa01.load_model(args[4])
+        booster_Sa01.load_model(args[8])
+        booster_Sa012 = xgb.Booster()
+        booster_Sa012.load_model(args[9])
+        booster_Sa015 = xgb.Booster()
+        booster_Sa015.load_model(args[10])
+        booster_Sa017 = xgb.Booster()
+        booster_Sa017.load_model(args[11])
         booster_Sa02 = xgb.Booster()
-        booster_Sa02.load_model(args[5])
+        booster_Sa02.load_model(args[12])
+        booster_Sa025 = xgb.Booster()
+        booster_Sa025.load_model(args[13])
+        booster_Sa03 = xgb.Booster()
+        booster_Sa03.load_model(args[14])
+        booster_Sa04 = xgb.Booster()
+        booster_Sa04.load_model(args[15])
         booster_Sa05 = xgb.Booster()
-        booster_Sa05.load_model(args[6])
+        booster_Sa05.load_model(args[16])
+        booster_Sa075 = xgb.Booster()
+        booster_Sa075.load_model(args[17])
         booster_Sa10 = xgb.Booster()
-        booster_Sa10.load_model(args[7])
+        booster_Sa10.load_model(args[18])
+        booster_Sa15 = xgb.Booster()
+        booster_Sa15.load_model(args[19])
+        booster_Sa20 = xgb.Booster()
+        booster_Sa20.load_model(args[20])
         booster_Sa30 = xgb.Booster()
-        booster_Sa30.load_model(args[8])
+        booster_Sa30.load_model(args[21])
         booster_Sa40 = xgb.Booster()
-        booster_Sa40.load_model(args[9])
+        booster_Sa40.load_model(args[22])
+        booster_Sa50 = xgb.Booster()
+        booster_Sa50.load_model(args[23])
+        booster_Sa75 = xgb.Booster()
+        booster_Sa75.load_model(args[24])
         booster_Sa100 = xgb.Booster()
-        booster_Sa100.load_model(args[10])
-
+        booster_Sa100.load_model(args[25])
+        booster = [booster_Sa001, booster_Sa002, booster_Sa003, booster_Sa004,
+                   booster_Sa005, booster_Sa0075, booster_Sa01, booster_Sa012, booster_Sa015, booster_Sa017,
+                   booster_Sa02, booster_Sa025, booster_Sa03, booster_Sa04, booster_Sa05, booster_Sa075,
+                   booster_Sa10, booster_Sa15, booster_Sa20, booster_Sa30, booster_Sa40, booster_Sa50, booster_Sa75,
+                   booster_Sa100]
+        period_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
+                       0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
+                       7.5, 10.0]
+        
         # * 1. focal.type independent
         if plot_all_rake == True:
+            single_sta_predict = []
             RSCon = xgb.DMatrix(
                 np.array([[np.log(Vs30), Mw,
                            np.log(Rrup), rake, station_id]]))
-            Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
-            Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
-            Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
-            Sa02_predict = np.exp(booster_Sa02.predict(RSCon)) / 980
-            Sa05_predict = np.exp(booster_Sa05.predict(RSCon)) / 980
-            Sa10_predict = np.exp(booster_Sa10.predict(RSCon)) / 980
-            Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
-            Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
-            Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
+            for _model in booster:
+                predict_value = np.exp(_model.predict(RSCon)) / 980
+                single_sta_predict.append(predict_value)
             plt.grid(which="both",
                      axis="both",
                      linestyle="-",
                      linewidth=0.5,
                      alpha=0.5)
-            plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
-                Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
-                Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
-                Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
-            ], label=self.fault_type_dict[rake])
+            plt.plot(period_list,
+                     single_sta_predict, label=self.fault_type_dict[rake])
             plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
             plt.xlabel("Period(s)", fontsize=12)
             plt.ylabel("PSA(g)", fontsize=12)
@@ -1226,23 +1258,15 @@ class plot_fig:
 
         else:
             for _rake in self.fault_type_dict:
+                single_sta_predict = []
                 RSCon = xgb.DMatrix(
                     np.array([[np.log(Vs30), Mw,
                                np.log(Rrup), _rake, station_id]]))
-                Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
-                Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
-                Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
-                Sa02_predict = np.exp(booster_Sa02.predict(RSCon)) / 980
-                Sa05_predict = np.exp(booster_Sa05.predict(RSCon)) / 980
-                Sa10_predict = np.exp(booster_Sa10.predict(RSCon)) / 980
-                Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
-                Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
-                Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
-                plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
-                    Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
-                    Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
-                    Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
-                ], label=self.fault_type_dict[_rake])
+                for _model in booster:
+                    predict_value = np.exp(_model.predict(RSCon)) / 980
+                    single_sta_predict.append(predict_value)
+                plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
+                         single_sta_predict, label=self.fault_type_dict[_rake])
 
             plt.grid(which="both",
                      axis="both",
@@ -1265,59 +1289,33 @@ class plot_fig:
             plt.show()
 
         # * 2. Mw independent
-        Mw_list = [4,5,6,7]
+        Mw_list = [4, 5, 6, 7]
         if plot_all_sta:
             for i, _Mw in enumerate(Mw_list):
                 total_sta_predict = []
-                for sta in tqdm(range(station_id_num)): # 預測所有station取平均
+                for sta in tqdm(range(station_id_num)):  # 預測所有station取平均
                     single_sta_predict = []
-                    RSCon = xgb.DMatrix(
-                        np.array([[np.log(Vs30), _Mw,
-                                np.log(Rrup), rake, sta]]))
-                    Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
-                    Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
-                    Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
-                    Sa02_predict = np.exp(booster_Sa02.predict(RSCon)) / 980
-                    Sa05_predict = np.exp(booster_Sa05.predict(RSCon)) / 980
-                    Sa10_predict = np.exp(booster_Sa10.predict(RSCon)) / 980
-                    Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
-                    Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
-                    Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
-                    single_sta_predict.append(Sa001_predict)
-                    single_sta_predict.append(Sa005_predict)
-                    single_sta_predict.append(Sa01_predict)
-                    single_sta_predict.append(Sa02_predict)
-                    single_sta_predict.append(Sa05_predict)
-                    single_sta_predict.append(Sa10_predict)
-                    single_sta_predict.append(Sa30_predict)
-                    single_sta_predict.append(Sa40_predict)
-                    single_sta_predict.append(Sa100_predict)
+                    RSCon = xgb.DMatrix(np.array([[np.log(Vs30), _Mw,
+                                                   np.log(Rrup), rake, sta]]))
+                    for _model in booster:
+                        predict_value = np.exp(_model.predict(RSCon)) / 980
+                        single_sta_predict.append(predict_value)
 
                 total_sta_predict.append(single_sta_predict)
-                plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
+                plt.plot(period_list,
                          np.array(total_sta_predict).mean(axis=0),
                          linewidth='1.2', zorder=20, label=f'Mw:{_Mw}')
-            
+
         else:
             for i, _Mw in enumerate(Mw_list):
-                RSCon = xgb.DMatrix(
-                    np.array([[np.log(Vs30), _Mw,
-                            np.log(Rrup), rake, station_id]]))
-                Sa001_predict = np.exp(booster_Sa001.predict(RSCon)) / 980
-                Sa005_predict = np.exp(booster_Sa005.predict(RSCon)) / 980
-                Sa01_predict = np.exp(booster_Sa01.predict(RSCon)) / 980
-                Sa02_predict = np.exp(booster_Sa02.predict(RSCon)) / 980
-                Sa05_predict = np.exp(booster_Sa05.predict(RSCon)) / 980
-                Sa10_predict = np.exp(booster_Sa10.predict(RSCon)) / 980
-                Sa30_predict = np.exp(booster_Sa30.predict(RSCon)) / 980
-                Sa40_predict = np.exp(booster_Sa40.predict(RSCon)) / 980
-                Sa100_predict = np.exp(booster_Sa100.predict(RSCon)) / 980
-                plt.plot([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0], [
-                    Sa001_predict[0], Sa005_predict[0], Sa01_predict[0],
-                    Sa02_predict[0], Sa05_predict[0], Sa10_predict[0],
-                    Sa30_predict[0], Sa40_predict[0], Sa100_predict[0]
-                ], label=f'Mw:{_Mw}')
-
+                single_sta_predict = []
+                RSCon = xgb.DMatrix(np.array([[np.log(Vs30), _Mw,
+                                               np.log(Rrup), rake, station_id]]))
+                for _model in booster:
+                    predict_value = np.exp(_model.predict(RSCon)) / 980
+                    single_sta_predict.append(predict_value)
+                plt.plot(period_list,
+                         single_sta_predict, label=f'Mw:{_Mw}')
 
         plt.grid(which="both",
                  axis="both",
@@ -1342,21 +1340,23 @@ class plot_fig:
 
 
 if __name__ == '__main__':
-    
+
     target = "PGA"
     Mw = 7.65
     Rrup = 50
     Vs30 = 360
     rake = 90
     station_id = 50
-    station_id_num = 732 # station 總量
+    station_id_num = 732  # station 總量
 
-    #? data preprocess
+    # ? data preprocess
     TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv")
     TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")
 
-    filter = TSMIP_all_df[TSMIP_all_df['eq.type'] == "shallow crustal"].reset_index()
-    station_order = filter[filter["EQ_ID"] == "1999_0920_1747_16"][["STA_Lon_X","STA_Lat_Y","STA_rank","STA_ID"]]
+    filter = TSMIP_all_df[TSMIP_all_df['eq.type']
+                          == "shallow crustal"].reset_index()
+    station_order = filter[filter["EQ_ID"] == "1999_0920_1747_16"][[
+        "STA_Lon_X", "STA_Lat_Y", "STA_rank", "STA_ID"]]
     index_start = station_order.index[0]
     index_end = station_order.index[-1]+1
     # 1999_0920_1747_16 -> 3061~3460
@@ -1368,13 +1368,13 @@ if __name__ == '__main__':
 
     model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
     original_data = model.splitDataset(after_process_ori_data, f'ln{target}(gal)',
-                                        False, *model_feture)
-    
-    #? model predicted
+                                       False, *model_feture)
+
+    # ? model predicted
     booster = xgb.Booster()
     booster.load_model(f'../XGB/model/XGB_{target}.json')
 
-    #? plot figure
+    # ? plot figure
     plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
     plot_something.explainable(station_order, original_data[0], model_feture,
-                                booster, index_start, index_end)
+                               booster, index_start, index_end)

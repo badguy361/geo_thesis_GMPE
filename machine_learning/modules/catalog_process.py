@@ -75,39 +75,37 @@ def cut_period(target, period, column):
         f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv", index=False)
 
 
-def pre_SMOGN(target, column):
+def pre_SMOGN(target):
     """
     
     process the pre_SMOGN for a particular target .
 
     Args:
         target ([str]): [file target name]
-        column ([str]): [column name in the FF]
     """
     TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv")
     filtered_df = TSMIP_df[TSMIP_df["eq.type"] == "shallow crustal"]
     selected_columns_df = filtered_df[["MW", "fault.type", "Vs30", "Rrup",
-                                    "STA_rank", f"{column}"]]
+                                    "STA_rank", f"{target}"]]
     
     selected_columns_df.to_csv(
         f"../../../TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv", index=False)
 
 
-def synthesize(target, column):
+def synthesize(target):
     """
 
     Synthesize dataset through SMOGN method.
 
     Args:
         target ([str]): [file target name]
-        column ([str]): [column name in the FF]
     """
     TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv")
 
     # conduct smogn ##這步大概要兩個小時
     TSMIP_smogn = smogn.smoter(
         data=TSMIP_df,
-        y=column
+        y=target
     )
     TSMIP_smogn.to_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv", index=False)
 
@@ -190,23 +188,25 @@ if __name__=='__main__':
                 "T0.500S", "T0.700S", "T0.750S", "T1.000S", "T1.500S",
                 "T2.000S", "T3.000S", "T4.000S", "T5.000S", "T7.500S",
                 "T10.000S",]
-    periods = [0, 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
-            0.2, 0.25, 0.3, 0.4, 0.5, 0.7, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
-            7.5, 10.0]
-
+    # periods = [0, 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
+    #         0.2, 0.25, 0.3, 0.4, 0.5, 0.7, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
+    #         7.5, 10.0]
+    periods = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0]
+    
     for i in range(len(targets)):
         _ = cut_period(targets[i], periods[i], columns[i])
 
+    # change columns name to target name (ex: T1.0S -> Sa10)
+    for index, m in enumerate(targets):
+        TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{m}.csv")
+        TSMIP_df = TSMIP_df.rename(columns={columns[index]: targets[index]})
+        TSMIP_df.to_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{m}.csv", index=False)
+
     for j in range(len(targets)):
-        _ = pre_SMOGN(targets[j], columns[j])
+        _ = pre_SMOGN(targets[j])
 
     for k in range(len(targets)):
-        _ = synthesize(targets[k], columns[k])
-
-    #? change columns name to target name (ex: T1.0S -> Sa10)
-    for index, m in enumerate(targets):
-        TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{m}.csv")
-        TSMIP_df = TSMIP_df.rename(columns={columns[index]: targets[index]})
-        TSMIP_df.to_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{m}.csv", index=False)
+        _ = synthesize(targets[k])
 
     # _ = SMOGN_plot()

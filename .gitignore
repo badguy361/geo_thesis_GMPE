@@ -7,3 +7,4 @@ PowerBI
 *.pyc
 __pycache__
 *.ai
+*.json

@@ -34,6 +34,9 @@ class plot_fig:
         self.SMOGN_TSMIP = SMOGN_TSMIP
         self.target = target
         self.fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
+        self.period_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
+                       0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
+                       7.5, 10.0]
 
     def data_distribution(self, x_total, y_total):
         """
@@ -818,16 +821,8 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def distance_scaling(
-            self,
-            DSC_df,
-            Vs30,
-            rake,
-            station_id_num: "station總量",
-            plot_all_sta,
-            station_id,
-            total_data,
-            model_path):
+    def distance_scaling(self, DSC_df, Vs30, rake, station_id_num: "station總量",
+                         plot_all_sta, station_id, total_data, model_path):
         """
 
         Compute distance scaling figure follow condition given by ourself.
@@ -1221,10 +1216,7 @@ class plot_fig:
                    booster_Sa02, booster_Sa025, booster_Sa03, booster_Sa04, booster_Sa05, booster_Sa075,
                    booster_Sa10, booster_Sa15, booster_Sa20, booster_Sa30, booster_Sa40, booster_Sa50, booster_Sa75,
                    booster_Sa100]
-        period_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
-                       0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
-                       7.5, 10.0]
-        
+
         # * 1. focal.type independent
         if plot_all_rake == True:
             single_sta_predict = []
@@ -1239,7 +1231,7 @@ class plot_fig:
                      linestyle="-",
                      linewidth=0.5,
                      alpha=0.5)
-            plt.plot(period_list,
+            plt.plot(self.period_list,
                      single_sta_predict, label=self.fault_type_dict[rake])
             plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
             plt.xlabel("Period(s)", fontsize=12)
@@ -1301,8 +1293,8 @@ class plot_fig:
                         predict_value = np.exp(_model.predict(RSCon)) / 980
                         single_sta_predict.append(predict_value)
 
-                total_sta_predict.append(single_sta_predict)
-                plt.plot(period_list,
+                    total_sta_predict.append(single_sta_predict)
+                plt.plot(self.period_list,
                          np.array(total_sta_predict).mean(axis=0),
                          linewidth='1.2', zorder=20, label=f'Mw:{_Mw}')
 
@@ -1314,7 +1306,7 @@ class plot_fig:
                 for _model in booster:
                     predict_value = np.exp(_model.predict(RSCon)) / 980
                     single_sta_predict.append(predict_value)
-                plt.plot(period_list,
+                plt.plot(self.period_list,
                          single_sta_predict, label=f'Mw:{_Mw}')
 
         plt.grid(which="both",

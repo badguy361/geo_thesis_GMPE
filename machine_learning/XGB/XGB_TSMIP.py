@@ -15,7 +15,7 @@ from optuna.visualization import plot_param_importances
 #? parameters
 target = "PGA"
 Mw = 7.65
-Rrup = 50
+Rrup = 40
 Vs30 = 360
 rake = 90
 station_id = 50
@@ -43,10 +43,11 @@ score = {
 lowerbound = -2
 higherbound = 8
 study_name = 'XGB_TSMIP_2'
+dataset_type = "cut period_shallow crustal"
 
 #? data preprocess
-TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv")
-TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv")
+TSMIP_smogn_df = pd.read_csv(f"../../../{dataset_type}/TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv")
+TSMIP_df = pd.read_csv(f"../../../{dataset_type}/TSMIP_FF_period/TSMIP_FF_{target}.csv")
 TSMIP_filter_df = TSMIP_df.loc[TSMIP_df['MW'] == 7.65].copy() # filter 標準
 DSC_df = pd.read_csv(f"../../../distance_scaling_condition.csv") # Rrup range: 0.1,0.5,0.75,1,5,10,20,30,40,50,60,70,80,90,100,150,200
 TSMIP_Mw4_df = TSMIP_df.loc[(TSMIP_df['MW'] >= 4) & (TSMIP_df['MW'] < 5)].copy()
@@ -82,6 +83,7 @@ original_Mw7_data = model.splitDataset(after_process_ori_Mw7_data, f'ln{target}(
                                     False, *model_feture)
 total_Mw_data = [original_filter_data, original_Mw4_data, original_Mw5_data, original_Mw6_data, original_Mw7_data]
 
+# for SHAP
 # TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")
 # filter = TSMIP_all_df[TSMIP_all_df['eq.type'] == "shallow crustal"].reset_index()
 # station_order = filter[filter["EQ_ID"] == "1999_0920_1747_16"][["STA_Lon_X","STA_Lat_Y","STA_rank","STA_ID"]]

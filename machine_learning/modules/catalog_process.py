@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from process_train import dataprocess
 import matplotlib.pyplot as plt
 import smogn
-
+import glob
 
 def get_sta_rank():
     """
@@ -55,7 +55,6 @@ def get_sta_rank():
     plt.savefig("../XGB/station_id_distribution.jpg", dpi=300)
     plt.show()
 
-
 def cut_period(target, period, column):
     """
 
@@ -74,7 +73,6 @@ def cut_period(target, period, column):
     selected_columns_df.to_csv(
         f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv", index=False)
 
-
 def pre_SMOGN(target):
     """
     
@@ -90,7 +88,6 @@ def pre_SMOGN(target):
     
     selected_columns_df.to_csv(
         f"../../../TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv", index=False)
-
 
 def synthesize(target):
     """
@@ -108,7 +105,6 @@ def synthesize(target):
         y=target
     )
     TSMIP_smogn.to_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv", index=False)
-
 
 def SMOGN_plot(target):
     """
@@ -173,6 +169,14 @@ def SMOGN_plot(target):
     plt.savefig('TSMIP-SMOGN boxplots.png', dpi=300)
     return 0
 
+def period_statistics(periods, *args):
+    numbervalue = []
+    for data in args[0]:
+        numbervalue.append(len(data))
+    plt.plot(periods,numbervalue)
+    plt.show()
+    return numbervalue
+
 if __name__=='__main__':
     #? station id
     # _ = get_sta_rank()
@@ -188,11 +192,11 @@ if __name__=='__main__':
                 "T0.500S", "T0.700S", "T0.750S", "T1.000S", "T1.500S",
                 "T2.000S", "T3.000S", "T4.000S", "T5.000S", "T7.500S",
                 "T10.000S",]
-    # periods = [0, 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
-    #         0.2, 0.25, 0.3, 0.4, 0.5, 0.7, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
-    #         7.5, 10.0]
-    periods = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0]
+    periods = [0, 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
+            0.2, 0.25, 0.3, 0.4, 0.5, 0.7, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
+            7.5, 10.0]
+    # periods = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    #         0, 0, 0, 0, 0, 0, 0, 0]
     
     for i in range(len(targets)):
         _ = cut_period(targets[i], periods[i], columns[i])
@@ -205,8 +209,14 @@ if __name__=='__main__':
 
     for j in range(len(targets)):
         _ = pre_SMOGN(targets[j])
-
-    for k in range(len(targets)):
-        _ = synthesize(targets[k])
+        _ = synthesize(targets[j])
 
     # _ = SMOGN_plot()
+    
+    total_files = glob.glob(r"../../../cut period_shallow crustal/TSMIP_FF_period/*.csv")
+    all_df = []
+    for file in total_files:
+        all_df.append(pd.read_csv(file))
+    numbervalue = period_statistics(periods, all_df)
+        
+    

@@ -13,23 +13,24 @@ from optuna.visualization import plot_param_importances
 
 
 #? parameters
+dataset_type = "cut period_shallow crustal"
 target = "PGA"
 Mw = 7.65
 Rrup = 40
 Vs30 = 360
 rake = 90
-station_id = 50
+station_id = 500
 station_id_num = 732 # station 總量
 model_name = [
-    'model/XGB_PGA.json', 'model/XGB_PGV.json', 'model/XGB_Sa001.json',
-    'model/XGB_Sa002.json', 'model/XGB_Sa003.json', 'model/XGB_Sa004.json',
-    'model/XGB_Sa005.json', 'model/XGB_Sa0075.json', 'model/XGB_Sa01.json', 
-    'model/XGB_Sa012.json', 'model/XGB_Sa015.json', 'model/XGB_Sa017.json',
-    'model/XGB_Sa02.json', 'model/XGB_Sa025.json', 'model/XGB_Sa03.json', 
-    'model/XGB_Sa04.json', 'model/XGB_Sa05.json', 'model/XGB_Sa075.json',
-    'model/XGB_Sa10.json', 'model/XGB_Sa15.json', 'model/XGB_Sa20.json', 
-    'model/XGB_Sa30.json', 'model/XGB_Sa40.json', 'model/XGB_Sa50.json',
-    'model/XGB_Sa75.json', 'model/XGB_Sa100.json'
+    f'model/{dataset_type}/XGB_PGA.json', f'model/{dataset_type}/XGB_PGV.json', f'model/{dataset_type}/XGB_Sa001.json',
+    f'model/{dataset_type}/XGB_Sa002.json', f'model/{dataset_type}/XGB_Sa003.json', f'model/{dataset_type}/XGB_Sa004.json',
+    f'model/{dataset_type}/XGB_Sa005.json', f'model/{dataset_type}/XGB_Sa0075.json', f'model/{dataset_type}/XGB_Sa01.json', 
+    f'model/{dataset_type}/XGB_Sa012.json', f'model/{dataset_type}/XGB_Sa015.json', f'model/{dataset_type}/XGB_Sa017.json',
+    f'model/{dataset_type}/XGB_Sa02.json', f'model/{dataset_type}/XGB_Sa025.json', f'model{dataset_type}//XGB_Sa03.json', 
+    f'model/{dataset_type}/XGB_Sa04.json', f'model/{dataset_type}/XGB_Sa05.json', f'model/{dataset_type}/XGB_Sa075.json',
+    f'model/{dataset_type}/XGB_Sa10.json', f'model/{dataset_type}/XGB_Sa15.json', f'model/{dataset_type}/XGB_Sa20.json', 
+    f'model/{dataset_type}/XGB_Sa30.json', f'model/{dataset_type}/XGB_Sa40.json', f'model/{dataset_type}/XGB_Sa50.json',
+    f'model/{dataset_type}/XGB_Sa75.json', f'model/{dataset_type}/XGB_Sa100.json'
 ]
 score = {
     'XGB_PGA': 0.88, 'XGB_PGV': 0.90, 'XGB_Sa001': 0.87, 'XGB_Sa002': 0.88,
@@ -43,7 +44,6 @@ score = {
 lowerbound = -2
 higherbound = 8
 study_name = 'XGB_TSMIP_2'
-dataset_type = "cut period_shallow crustal"
 
 #? data preprocess
 TSMIP_smogn_df = pd.read_csv(f"../../../{dataset_type}/TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv")
@@ -109,7 +109,7 @@ total_Mw_data = [original_filter_data, original_Mw4_data, original_Mw5_data, ori
 
 #? model predicted
 booster = xgb.Booster()
-booster.load_model(f'model/XGB_{target}.json')
+booster.load_model(f'model/{dataset_type}/XGB_{target}.json')
 originaldata_predicted_result = model.predicted_original(
     booster, original_data)
 #! 檢測模型
@@ -128,6 +128,6 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # plot_something.distance_scaling(DSC_df, Vs30, rake, station_id_num, False, 
 #                                 station_id, total_Mw_data, f"model/XGB_{target}.json")
 plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id, station_id_num,
-                               True, True, *model_name)
+                               True, False, *model_name)
 # plot_something.explainable(station_order, original_data[0], model_feture,
 #                             booster, index_start, index_end)

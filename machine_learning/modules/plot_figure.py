@@ -579,10 +579,10 @@ class plot_fig:
         plt.xlabel('Mw', fontsize=12)
         plt.ylabel(
             f'Inter-event Residual ln({self.target})(cm/s^2)', fontsize=12)
-        inter_mean = round(inter_event['inter_event_residual'].mean(), 2)
-        inter_std = round(inter_event['inter_event_residual'].std(), 2)
+        inter_mw_mean = round(inter_event['inter_event_residual'].mean(), 2)
+        inter_mw_std = round(inter_event['inter_event_residual'].std(), 2)
         plt.title(
-            f'{self.abbreviation_name} Inter-event Residual Mean:{inter_mean} Std:{inter_std}'
+            f'{self.abbreviation_name} Inter-event Residual Mean:{inter_mw_mean} Std:{inter_mw_std}'
         )
         plt.legend()
         plt.savefig(
@@ -670,10 +670,10 @@ class plot_fig:
         plt.xlabel('Rrup(km)', fontsize=12)
         plt.ylabel(
             f'Intra-event Residual ln({self.target})(cm/s^2)', fontsize=12)
-        intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
-        intra_std = round(total_data_df['intra_event_residual'].std(), 2)
+        intra_rrup_mean = round(total_data_df['intra_event_residual'].mean(), 2)
+        intra_rrup_std = round(total_data_df['intra_event_residual'].std(), 2)
         plt.title(
-            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean} Std:{intra_std}'
+            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_rrup_mean} Std:{intra_rrup_std}'
         )
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Rrup-{self.abbreviation_name} Intra-event Residual.png',
@@ -740,16 +740,18 @@ class plot_fig:
         plt.xlabel('Vs30(m/s)', fontsize=12)
         plt.ylabel(
             f'Intra-event Residual ln({self.target})(cm/s^2)', fontsize=12)
-        intra_mean = round(total_data_df['intra_event_residual'].mean(), 2)
-        intra_std = round(total_data_df['intra_event_residual'].std(), 2)
+        intra_vs30_mean = round(total_data_df['intra_event_residual'].mean(), 2)
+        intra_vs30_std = round(total_data_df['intra_event_residual'].std(), 2)
         plt.title(
-            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_mean} Std:{intra_std}'
+            f'{self.abbreviation_name} Intra-event Residual Mean:{intra_vs30_mean} Std:{intra_vs30_std}'
         )
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} Vs30-{self.abbreviation_name} Intra-event Residual.png',
             dpi=300)
         plt.show()
 
+        return mu, sigma, inter_mw_mean, inter_mw_std, intra_rrup_mean, intra_rrup_std, intra_vs30_mean, intra_vs30_std
+    
     def measured_predict(self, y_test,
                          predict_value,
                          score,

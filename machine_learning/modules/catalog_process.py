@@ -167,15 +167,39 @@ def SMOGN_plot(target):
     ax5.set_xticklabels(['station number'], fontsize=15)
     plt.suptitle('Boxplots after SMOGN', fontsize=20)
     plt.savefig('TSMIP-SMOGN boxplots.png', dpi=300)
-    return 0
 
 def period_statistics(periods, *args):
+    """
+    Statistics the usable periods
+    Args:
+        periods ([list]): [the period which want to statistics]
+        args ([dataframe]): [after SMOGN dataframe whiche need to be calculate total number]
+    """
     numbervalue = []
     for data in args[0]:
         numbervalue.append(len(data))
-    plt.plot(periods,numbervalue)
+    plt.grid(which="both",
+                axis="both",
+                linestyle="--",
+                linewidth=0.5,
+                alpha=0.5,
+                zorder=0)
+    plt.plot(periods,numbervalue,'b--',zorder=10)
+    plt.title('Statistic Usable Period')
+    plt.xlim(0, 10)
+    plt.xscale("symlog")
+    plt.xticks([
+            0, 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
+            0.2, 0.25, 0.3, 0.4, 0.5, 0.7, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
+            7.5, 10.0]
+        , [
+            '', '', 0.01, '', '', '', '', '', '', '', '', '', '', '', '', '', 0.5,
+            '', '', 1.0, '', '2.0', '', '', 5.0, '', 10.0
+        ])
+    plt.xlabel('Periods', fontsize=12)
+    plt.ylabel('Number of Usable Records', fontsize=12)
+    plt.savefig('Statistic Usable Period.png', dpi=300)
     plt.show()
-    return numbervalue
 
 if __name__=='__main__':
     #? station id
@@ -198,18 +222,17 @@ if __name__=='__main__':
     # periods = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     #         0, 0, 0, 0, 0, 0, 0, 0]
     
-    for i in range(len(targets)):
-        _ = cut_period(targets[i], periods[i], columns[i])
+    # for i in range(len(targets)):
+    #     _ = cut_period(targets[i], periods[i], columns[i])
 
-    # change columns name to target name (ex: T1.0S -> Sa10)
-    for index, m in enumerate(targets):
-        TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{m}.csv")
-        TSMIP_df = TSMIP_df.rename(columns={columns[index]: targets[index]})
-        TSMIP_df.to_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{m}.csv", index=False)
+    # for index, m in enumerate(targets): # change columns name to target name (ex: T1.0S -> Sa10)
+    #     TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{m}.csv")
+    #     TSMIP_df = TSMIP_df.rename(columns={columns[index]: targets[index]})
+    #     TSMIP_df.to_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{m}.csv", index=False)
 
-    for j in range(len(targets)):
-        _ = pre_SMOGN(targets[j])
-        _ = synthesize(targets[j])
+    # for j in range(len(targets)):
+    #     _ = pre_SMOGN(targets[j])
+    #     _ = synthesize(targets[j])
 
     # _ = SMOGN_plot()
     
@@ -217,6 +240,6 @@ if __name__=='__main__':
     all_df = []
     for file in total_files:
         all_df.append(pd.read_csv(file))
-    numbervalue = period_statistics(periods, all_df)
+    _ = period_statistics(periods, all_df)
         
     

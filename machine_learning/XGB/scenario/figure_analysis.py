@@ -19,14 +19,14 @@ df_ori_dict = {
     "Chang2023": df_ori_chang
 }
 
-df_chang = pd.read_csv(
+df_int_chang = pd.read_csv(
     'scenario_result/Chang2023/chichi_interpolate_Chang2023.csv')
-df_lin = pd.read_csv(f'scenario_result/Lin2009/chichi_interpolate_Lin2009.csv')
-df_true = pd.read_csv(f'scenario_result/true/chichi_interpolate_true.csv')
-df_dict = {
-    "true": df_true,
-    "Lin2009": df_lin,
-    "Chang2023": df_chang
+df_int_lin = pd.read_csv(f'scenario_result/Lin2009/chichi_interpolate_Lin2009.csv')
+df_int_true = pd.read_csv(f'scenario_result/true/chichi_interpolate_true.csv')
+df_int_dict = {
+    "true": df_int_true,
+    "Lin2009": df_int_lin,
+    "Chang2023": df_int_chang
 }
 
 fault_data = [
@@ -82,7 +82,6 @@ fault_data = [
 hyp_lat = 23.85
 hyp_lon = 120.82
 
-
 def hazard_distribution(name, df, interpolate, fault_data, hyp_lat, hyp_lon):
     # before interpolate
     PGA = df["PGA"]
@@ -102,13 +101,15 @@ def hazard_distribution(name, df, interpolate, fault_data, hyp_lat, hyp_lon):
     fig.plot(x=hyp_lon, y=hyp_lat, style='kstar4/0.3c', color="red")
     fig.colorbar(frame=["x+lPGA(g)"])
     if (interpolate):
+        df_ori_true =  pd.read_csv("scenario_result/true/chichi_ori.csv")
+        fig.plot(x=df_ori_true["STA_Lon_X"], y=df_ori_true["STA_Lat_Y"], style="c0.05c", pen="white")
         fig.savefig(
             f'scenario_result/{name}/chichi earthquake Hazard Distribution interpolate {name}.png', dpi=300)
     else:
         fig.savefig(f'scenario_result/{name}/chichi earthquake Hazard Distribution {name}.png', dpi=300)
     fig.show()
 
-_ = hazard_distribution(name, df_dict[name], True, fault_data, hyp_lat, hyp_lon)
+_ = hazard_distribution(name, df_int_dict[name], True, fault_data, hyp_lat, hyp_lon)
 
 def residual_distribution(name, df_dict, fault_data, hyp_lat, hyp_lon):
     PGA_residual = df_dict[name]["PGA"] - df_dict["true"]["PGA"]
@@ -171,6 +172,6 @@ def residual_statistic(name, PGA_residual):
         dpi=300)
     plt.show()
 
-PGA_residual = residual_distribution(
-    name, df_dict, fault_data, hyp_lat, hyp_lon)
-_ = residual_statistic(name, PGA_residual)
+# PGA_residual = residual_distribution(
+#     name, df_dict, fault_data, hyp_lat, hyp_lon)
+# _ = residual_statistic(name, PGA_residual)

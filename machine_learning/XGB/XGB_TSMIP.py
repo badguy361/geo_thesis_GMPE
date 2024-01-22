@@ -1,26 +1,26 @@
 from optuna.visualization import plot_param_importances
 from optuna.visualization import plot_optimization_history
 import optuna
-from modules.optuna_define import optimize_train
-from modules.plot_figure import plot_fig
-from modules.process_train import dataprocess
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import sys
 import xgboost as xgb
 sys.path.append("..")
-
+from modules.optuna_define import optimize_train
+from modules.plot_figure import plot_fig
+from modules.process_train import dataprocess
 
 # ? parameters
-dataset_type = "all SMOGN"
-target = "Sa100"
+dataset_type = "cut period_shallow crustal"
+target = "PGA"
 Mw = 7.65
 Rrup = 40
 Vs30 = 360
 rake = 90
 station_id = 500
 station_id_num = 732  # station 總量
+model_path = f'model/{dataset_type}/XGB_{target}.json'
 model_name = [
     f'model/{dataset_type}/XGB_PGA.json', f'model/{dataset_type}/XGB_PGV.json', f'model/{dataset_type}/XGB_Sa001.json',
     f'model/{dataset_type}/XGB_Sa002.json', f'model/{dataset_type}/XGB_Sa003.json', f'model/{dataset_type}/XGB_Sa004.json',
@@ -125,10 +125,10 @@ total_Mw_data = [original_filter_data, original_Mw4_data,
 # print("study.best_value", study.best_value)
 
 # ? model predicted
-# booster = xgb.Booster()
-# booster.load_model(f'model/{dataset_type}/XGB_{target}.json')
-# originaldata_predicted_result = model.predicted_original(
-#     booster, original_data)
+booster = xgb.Booster()
+booster.load_model(model_path)
+originaldata_predicted_result = model.predicted_original(
+    booster, original_data)
 #! 檢測模型
 # for i in [6,6.2,6.3,6.4,6.6,6.7,6.9,7.0,7.1,7.2,7.4,7.5,7.7,7.9,8.0]:
 #     ans = booster.predict(xgb.DMatrix([(np.log(760), i, np.log(300), -90, 700)]))
@@ -141,11 +141,11 @@ plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
 # mu, sigma, inter_mw_mean, inter_mw_std, intra_rrup_mean, intra_rrup_std, intra_vs30_mean, intra_vs30_std = \
 #     plot_something.residual(original_data[0], original_data[1],
 #                             originaldata_predicted_result, after_process_ori_data,
-#                             score[f"XGB_{target}"])
+#                             cut_period_shallow_crustal_score[f"XGB_{target}"])
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result, score[f"XGB_{target}"], lowerbound, higherbound)
-# plot_something.distance_scaling(DSC_df, Vs30, rake, station_id_num, False,
-#                                 station_id, total_Mw_data, f"model/XGB_{target}.json")
-plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id, station_id_num,
-                                True, False, *model_name)
+plot_something.distance_scaling(DSC_df, Vs30, rake, station_id_num, False,
+                                station_id, total_Mw_data, model_path)
+# plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id, station_id_num,
+#                                 True, False, *model_name)
 # plot_something.explainable(station_order, original_data[0], model_feture,
 #                             booster, index_start, index_end)

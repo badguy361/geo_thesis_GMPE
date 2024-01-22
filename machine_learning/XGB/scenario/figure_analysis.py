@@ -4,15 +4,19 @@ import matplotlib.pyplot as plt
 import pygmt
 from scipy.interpolate import griddata
 from pykrige import OrdinaryKriging
+from mpl_toolkits.basemap import Basemap
+from matplotlib.patches import Path, PathPatch
 
-name = 'Lin2009'
+name = 'Chang2023'
 # df = pd.read_csv('../../../../TSMIP_FF.csv')
 # chichi_df = df[df["MW"] == 7.65]  # choose chichi eq
 # chichi_df.to_csv("chichi_ori.csv",index=False,columns=["STA_Lon_X","STA_Lat_Y","PGA"])
 
-df_ori_true =  pd.read_csv("scenario_result/true/chichi_ori.csv")
-df_ori_chang = pd.read_csv("scenario_result/Chang2023/chichi_scenario_record_Chang2023.csv")
-df_ori_lin = pd.read_csv("scenario_result/Lin2009/chichi_scenario_record_Lin2009.csv")
+df_ori_true = pd.read_csv("scenario_result/true/chichi_ori.csv")
+df_ori_chang = pd.read_csv(
+    "scenario_result/Chang2023/chichi_scenario_record_Chang2023.csv")
+df_ori_lin = pd.read_csv(
+    "scenario_result/Lin2009/chichi_scenario_record_Lin2009.csv")
 df_ori_dict = {
     "true": df_ori_true,
     "Lin2009": df_ori_lin,
@@ -21,7 +25,8 @@ df_ori_dict = {
 
 df_int_chang = pd.read_csv(
     'scenario_result/Chang2023/chichi_interpolate_Chang2023.csv')
-df_int_lin = pd.read_csv(f'scenario_result/Lin2009/chichi_interpolate_Lin2009.csv')
+df_int_lin = pd.read_csv(
+    f'scenario_result/Lin2009/chichi_interpolate_Lin2009.csv')
 df_int_true = pd.read_csv(f'scenario_result/true/chichi_interpolate_true.csv')
 df_int_dict = {
     "true": df_int_true,
@@ -82,34 +87,91 @@ fault_data = [
 hyp_lat = 23.85
 hyp_lon = 120.82
 
+
 def hazard_distribution(name, df, interpolate, fault_data, hyp_lat, hyp_lon):
     # before interpolate
     PGA = df["PGA"]
     x = df["STA_Lon_X"]
     y = df["STA_Lat_Y"]
 
-    fig = pygmt.Figure()
-    region = [119.5, 122.5, 21.5, 25.5]
-    fig.basemap(region=region,
-                projection="M12c",
-                frame=["af", f"WSne+tchichi earthquake Hazard Distribution"])
-    fig.coast(land="gray", water="gray")
-    pygmt.makecpt(cmap="turbo", series=(0, 1.5, 0.1))
-    fig.plot(x=x, y=y, style="c0.2c", cmap=True, color=PGA)
-    fig.coast(shorelines="1p,black")
-    fig.plot(x=fault_data[::2], y=fault_data[1::2], pen="thick,red")
-    fig.plot(x=hyp_lon, y=hyp_lat, style='kstar4/0.3c', color="red")
-    fig.colorbar(frame=["x+lPGA(g)"])
+    fig, ax = plt.subplots(figsize=(10, 10))
+    m = Basemap(llcrnrlon=119.9, llcrnrlat=21.6, urcrnrlon=122.2, urcrnrlat=25.4,
+                projection='merc', resolution='h', area_thresh=1000., ax=ax)
+    m.drawcoastlines()
+    x_map, y_map = m(x.values, y.values)
+    scatter = m.scatter(x_map, y_map, c=PGA.values,
+                        cmap='turbo', marker='o', edgecolor='none', vmin=0, vmax=1.0, s=50)
+    cbar = m.colorbar(scatter, boundaries=np.linspace(
+        0, 1.0, 15), location='right', pad="3%", extend='both', ticks=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+    cbar.set_label('PGA(g)')
+
+    # xy軸
+    parallels = np.arange(21.5, 26.0, 0.5)
+    m.drawparallels(parallels, labels=[1, 0, 0, 0], fontsize=14, linewidth=0.0)
+    meridians = np.arange(119.5, 122.5, 0.5)
+    m.drawmeridians(meridians, labels=[0, 0, 0, 1], fontsize=14, linewidth=0.0)
+
+    # 繪製遮罩
+    x0, x1 = ax.get_xlim()
+    y0, y1 = ax.get_ylim()
+    map_edges = np.array([[x0, y0], [x1, y0], [x1, y1], [x0, y1]])  # 地圖邊緣
+    polys = [p.boundary for p in m.landpolygons]  # 陸地多邊形
+    polys = [map_edges]+polys[:]  # 合併地圖邊緣和陸地多邊形
+    codes = [
+        [Path.MOVETO]+[Path.LINETO for p in p[1:]]
+        for p in polys
+    ]  # 定議遮罩繪製路徑
+    polys_lin = [v for p in polys for v in p]
+    codes_lin = [xx for cs in codes for xx in cs]
+    path = Path(polys_lin, codes_lin)
+    patch = PathPatch(path, facecolor='white', lw=0)  # 非陸地點畫白色
+    ax.add_patch(patch)
+
+    # 畫斷層
+    x_fault_map, y_fault_map = m(fault_data[::2], fault_data[1::2])
+    hyp_lon_map, hyp_lat_map = m(hyp_lon, hyp_lat)
+    m.plot(x_fault_map, y_fault_map, 'r-', linewidth=2)
+    m.scatter(hyp_lon_map, hyp_lat_map,
+              marker='*', color='r')
+
     if (interpolate):
-        df_ori_true =  pd.read_csv("scenario_result/true/chichi_ori.csv")
-        fig.plot(x=df_ori_true["STA_Lon_X"], y=df_ori_true["STA_Lat_Y"], style="c0.05c", pen="white")
+        df_ori_true = pd.read_csv("scenario_result/true/chichi_ori.csv")
+        x_ori_true_map, y_ori_true_map = m(
+            df_ori_true["STA_Lon_X"], df_ori_true["STA_Lat_Y"])
+        m.scatter(x_ori_true_map, y_ori_true_map,
+                  marker='*', color="white", s=2)
         fig.savefig(
             f'scenario_result/{name}/chichi earthquake Hazard Distribution interpolate {name}.png', dpi=300)
     else:
-        fig.savefig(f'scenario_result/{name}/chichi earthquake Hazard Distribution {name}.png', dpi=300)
-    fig.show()
+        fig.savefig(
+            f'scenario_result/{name}/chichi earthquake Hazard Distribution {name}.png', dpi=300)
+    plt.show()
 
-_ = hazard_distribution(name, df_int_dict[name], True, fault_data, hyp_lat, hyp_lon)
+    # fig = pygmt.Figure()
+    # region = [119.5, 122.5, 21.5, 25.5]
+    # fig.basemap(region=region,
+    #             projection="M12c",
+    #             frame=["af", f"WSne+tchichi earthquake Hazard Distribution"])
+    # fig.coast(land="gray", water="gray")
+    # pygmt.makecpt(cmap="turbo", series=(0, 1.5, 0.1))
+    # fig.plot(x=x, y=y, style="c0.2c", cmap=True, color=PGA)
+    # fig.coast(shorelines="1p,black")
+    # fig.plot(x=fault_data[::2], y=fault_data[1::2], pen="thick,red")
+    # fig.plot(x=hyp_lon, y=hyp_lat, style='kstar4/0.3c', color="red")
+    # fig.colorbar(frame=["x+lPGA(g)"])
+    # if (interpolate):
+    #     df_ori_true =  pd.read_csv("scenario_result/true/chichi_ori.csv")
+    #     fig.plot(x=df_ori_true["STA_Lon_X"], y=df_ori_true["STA_Lat_Y"], style="c0.05c", pen="white")
+    #     fig.savefig(
+    #         f'scenario_result/{name}/chichi earthquake Hazard Distribution interpolate {name}.png', dpi=300)
+    # else:
+    #     fig.savefig(f'scenario_result/{name}/chichi earthquake Hazard Distribution {name}.png', dpi=300)
+    # fig.show()
+
+
+_ = hazard_distribution(
+    name, df_int_dict[name], True, fault_data, hyp_lat, hyp_lon)
+
 
 def residual_distribution(name, df_dict, fault_data, hyp_lat, hyp_lon):
     PGA_residual = df_dict[name]["PGA"] - df_dict["true"]["PGA"]
@@ -133,6 +195,7 @@ def residual_distribution(name, df_dict, fault_data, hyp_lat, hyp_lon):
     fig.show()
 
     return PGA_residual
+
 
 def residual_statistic(name, PGA_residual):
     total_num_residual = [0] * 10

@@ -9,9 +9,10 @@ from matplotlib.patches import Path, PathPatch
 name = 'Lin2009'
 # df = pd.read_csv('../../../../TSMIP_FF.csv')
 # chichi_df = df[df["MW"] == 7.65]  # choose chichi eq
-# chichi_df.to_csv("chichi_ori.csv",index=False,columns=["STA_Lon_X","STA_Lat_Y","PGA"])
+# chichi_df.to_csv("chichi_scenario_record_true.csv",index=False,columns=["STA_Lon_X","STA_Lat_Y","PGA"])
 
-df_ori_true = pd.read_csv("scenario_result/true/chichi_ori.csv")
+df_ori_true = pd.read_csv(
+    "scenario_result/true/chichi_scenario_record_true.csv")
 df_ori_chang = pd.read_csv(
     "scenario_result/Chang2023/chichi_scenario_record_Chang2023.csv")
 df_ori_lin = pd.read_csv(
@@ -23,14 +24,21 @@ df_ori_dict = {
 }
 
 #! 1. get result csv
+
+
 def merge_scenario_result(name):
-    df_site = pd.read_csv(f"scenario_result/{name}/dataset/sitemesh.csv", skiprows=[0])
-    df_gmf = pd.read_csv(f"scenario_result/{name}/dataset/gmf-data.csv", skiprows=[0])
+    df_site = pd.read_csv(
+        f"scenario_result/{name}/dataset/sitemesh.csv", skiprows=[0])
+    df_gmf = pd.read_csv(
+        f"scenario_result/{name}/dataset/gmf-data.csv", skiprows=[0])
     df_total = df_gmf.merge(df_site, how='left', on='site_id')
     df_total = df_total.groupby("site_id").median()
-    df_total.to_csv(f"scenario_result/{name}/chichi_scenario_record_{name}.csv",index=False)
+    df_total.to_csv(
+        f"scenario_result/{name}/chichi_scenario_record_{name}.csv", index=False)
 
 #! 2. run Surfer to get grd file
+
+
 def get_interpolation(name, df):
     PGA = np.array(df["PGA"])
     lons = np.array(df["STA_Lon_X"])
@@ -48,6 +56,8 @@ def get_interpolation(name, df):
         'STA_Lat_Y': yintrp.ravel(),
         'PGA': z1.ravel()
     })
-    results.to_csv(f'scenario_result/{name}/chichi_kriging_interpolate_{name}.csv', index=False)
+    results.to_csv(
+        f'scenario_result/{name}/chichi_kriging_interpolate_{name}.csv', index=False)
+
 
 _ = get_interpolation(name, df_ori_dict[name])

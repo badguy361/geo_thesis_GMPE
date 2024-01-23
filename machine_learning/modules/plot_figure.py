@@ -1044,13 +1044,13 @@ class plot_fig:
             f"distance scaling {self.target} Vs30-{Vs30} fault-type-{self.fault_type_dict[rake]} local-{plot_all_sta} station_id-{station_id}.jpg", dpi=300)
         plt.show()
 
-    def explainable(self, all_df, x_total, model_feture, ML_model, index_start, index_end):
+    def explainable(self, eq_df, x_total, model_feture, ML_model, index_start, index_end):
         """
 
         This function shows explanation wihch include global explaination and local explaination of the model in the given target .
 
         Args:
-            all_df (all dataset): [all dataset]
+            eq_df (eq dataset): [the eq dataset]
             x_total (ori_total_feature): [original feature data]
             model_feture ([list]): [input parameters]
             ML_model ([model]): [the model from sklearn or other package]
@@ -1061,14 +1061,14 @@ class plot_fig:
         explainer = shap.Explainer(ML_model)
         shap_values = explainer(df)
 
-        #! station id and shap value
-        # plt.scatter(all_df['STA_Lon_X'][index_start], all_df['STA_Lat_Y'][index_start], \
+        #! Shap value(in map)
+        # plt.scatter(eq_df['STA_Lon_X'][index_start], eq_df['STA_Lat_Y'][index_start], \
         #         s=8, c='black', zorder=20) # 測站位置
-        # plt.text(all_df['STA_Lon_X'][index_start], all_df['STA_Lat_Y'][index_start], \
-        #         f"{all_df['STA_ID'][index_start]}_{all_df['STA_rank'][index_start]}", \
+        # plt.text(eq_df['STA_Lon_X'][index_start], eq_df['STA_Lat_Y'][index_start], \
+        #         f"{eq_df['STA_ID'][index_start]}_{eq_df['STA_rank'][index_start]}", \
         #         zorder=20)
-        plt.scatter(all_df["STA_Lon_X"],
-                    all_df["STA_Lat_Y"],
+        plt.scatter(eq_df["STA_Lon_X"],
+                    eq_df["STA_Lat_Y"],
                     c=np.sum(shap_values.values[index_start:index_end], axis=1)
                     + shap_values.base_values[index_start],
                     cmap='cool',
@@ -1080,8 +1080,68 @@ class plot_fig:
         plt.ylim(21.8, 25.5)
         plt.xlabel('longitude', fontsize=12)
         plt.ylabel('latitude', fontsize=12)
-        plt.title('TSMIP station id vs SHAP value')
-        plt.savefig(f"station_id and eq-{index_start} {self.target}.jpg",
+        plt.title('TSMIP SHAP value in map')
+        plt.savefig(f"SHAP value in map eq-{index_start} {self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
+
+        #! Station ID shap value
+        fig = plt.figure()
+        plt.scatter(eq_df["STA_Lon_X"],
+                    eq_df["STA_Lat_Y"],
+                    c=shap_values.values[index_start:index_end,4]
+                    + shap_values.base_values[index_start],
+                    cmap='cool',
+                    s=8,
+                    zorder=10)
+        cbar = plt.colorbar(extend='both', label='SHAP value')
+        cbar.set_label('SHAP value', fontsize=12)
+        plt.xlim(119.4, 122.3)
+        plt.ylim(21.8, 25.5)
+        plt.xlabel('longitude', fontsize=12)
+        plt.ylabel('latitude', fontsize=12)
+        plt.title('Station_ID SHAP value')
+        plt.savefig(f"Station_ID eq-{index_start} {self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
+        
+        #! Vs30 shap value
+        fig = plt.figure()
+        plt.scatter(eq_df["STA_Lon_X"],
+                    eq_df["STA_Lat_Y"],
+                    c=shap_values.values[index_start:index_end,0]
+                    + shap_values.base_values[index_start],
+                    cmap='cool',
+                    s=8,
+                    zorder=10)
+        cbar = plt.colorbar(extend='both', label='SHAP value')
+        cbar.set_label('SHAP value', fontsize=12)
+        plt.xlim(119.4, 122.3)
+        plt.ylim(21.8, 25.5)
+        plt.xlabel('longitude', fontsize=12)
+        plt.ylabel('latitude', fontsize=12)
+        plt.title('Vs30 SHAP value')
+        plt.savefig(f"Vs30 eq-{index_start} {self.target}.jpg",
+                    bbox_inches='tight',
+                    dpi=300)
+        
+        #! Station ID and Vs30 residual shap value
+        fig = plt.figure()
+        plt.scatter(eq_df["STA_Lon_X"],
+                    eq_df["STA_Lat_Y"],
+                    c=shap_values.values[index_start:index_end,0]
+                    - shap_values.values[index_start:index_end,4],
+                    cmap='cool',
+                    s=8,
+                    zorder=10)
+        cbar = plt.colorbar(extend='both', label='SHAP value')
+        cbar.set_label('residual', fontsize=12)
+        plt.xlim(119.4, 122.3)
+        plt.ylim(21.8, 25.5)
+        plt.xlabel('longitude', fontsize=12)
+        plt.ylabel('latitude', fontsize=12)
+        plt.title('TSMIP Station ID vs Vs30 SHAP value')
+        plt.savefig(f"Station_ID and Vs30 eq-{index_start} {self.target}.jpg",
                     bbox_inches='tight',
                     dpi=300)
 
@@ -1123,7 +1183,7 @@ class plot_fig:
                     bbox_inches='tight',
                     dpi=300)
 
-        #! Local Explainable
+        # ! Local Explainable
         # waterfall
         fig = plt.figure()
         shap.plots.waterfall(shap_values[index_start],

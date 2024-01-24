@@ -115,8 +115,8 @@ def SMOGN_plot(target):
         [figure]: [boxplots for original and SMOGN dataset]
     """
     # Compare synthesized data and original data
-    TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv")
-    TSMIP_smogn_df = pd.read_csv(f"../../../TSMIP_smogn_{target}.csv")
+    TSMIP_df = pd.read_csv(f"../../../cut period_shallow crustal/TSMIP_FF_period/TSMIP_FF_{target}.csv")
+    TSMIP_smogn_df = pd.read_csv(f"../../../cut period_shallow crustal/TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv")
     model = dataprocess()
     after_process_ori_data = model.preProcess(TSMIP_df, target, True)
     after_process_SMOGN_data = model.preProcess(TSMIP_smogn_df, target, False)
@@ -144,8 +144,8 @@ def SMOGN_plot(target):
     ax4.set_yticks([90, -90, 0])
     ax5.boxplot(o4)
     ax5.set_xticklabels(['station number'], fontsize=15)
-    plt.suptitle('Boxplots before SMOGN', fontsize=20)
-    plt.savefig('TSMIP boxplots.png', dpi=300)
+    plt.suptitle(f'Boxplots {target} before SMOGN', fontsize=20)
+    plt.savefig(f'TSMIP {target} boxplots.png', dpi=300)
 
     # SMOGN box plot
     o0 = np.swapaxes(result_SMOGN[0], 0, 1)[0]
@@ -165,8 +165,8 @@ def SMOGN_plot(target):
     ax4.set_yticks([90, -90, 0])
     ax5.boxplot(o4)
     ax5.set_xticklabels(['station number'], fontsize=15)
-    plt.suptitle('Boxplots after SMOGN', fontsize=20)
-    plt.savefig('TSMIP-SMOGN boxplots.png', dpi=300)
+    plt.suptitle(f'Boxplots {target} after SMOGN', fontsize=20)
+    plt.savefig(f'TSMIP-SMOGN {target} boxplots.png', dpi=300)
 
 def period_statistics(periods, *args):
     """
@@ -234,12 +234,12 @@ if __name__=='__main__':
     #     _ = pre_SMOGN(targets[j])
     #     _ = synthesize(targets[j])
 
-    # _ = SMOGN_plot()
+    _ = SMOGN_plot("Sa10")
     
-    total_files = glob.glob(r"../../../cut period_shallow crustal/TSMIP_FF_period/*.csv")
-    all_df = []
-    for file in total_files:
-        all_df.append(pd.read_csv(file))
-    _ = period_statistics(periods, all_df)
+    # total_files = glob.glob(r"../../../cut period_shallow crustal/TSMIP_FF_period/*.csv")
+    # all_df = []
+    # for file in total_files:
+    #     all_df.append(pd.read_csv(file))
+    # _ = period_statistics(periods, all_df)
         
     

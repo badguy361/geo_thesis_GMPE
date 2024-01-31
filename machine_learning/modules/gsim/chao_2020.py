@@ -201,6 +201,7 @@ class ChaoEtAl2020SInter():
             C = self.COEFFS[imt]
             s = CONSTANTS
             med = mean[m]
+            print(med)
             med += _ftype(trt, self.SUFFIX, C, ctx)
             med += (ctx.ztor - self.CONST_FAULT['href']) * C[
                 'c14' + self.SUFFIX]
@@ -283,23 +284,27 @@ class ChaoEtAl2020Asc(ChaoEtAl2020SInter):
     MC = 7.6
 
 if __name__=='__main__':
-    df = pd.read_csv('test2.csv')
-    ctx = df[df['sta_id']==1].to_records()
-    ctx = recfunctions.drop_fields(
-        ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
-    ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
-                    ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
-                    ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'), 
-                    ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
-                    ('sta_id', '<i8'),('hypo_depth', '<f8'),('z2pt5', '<f8')])
+    dtype = [('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
+            ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
+            ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
+            ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
+            ('hypo_depth', '<f8'), ('z2pt5', '<f8')]
+    rrup_num = [0.1, 0.5, 0.75, 1, 5, 10, 20, 30,
+                    40, 50, 60, 70, 80, 90, 100, 150, 200, 300]
+    
+    ctx = np.empty(len(rrup_num), dtype=dtype)
+    index = 0
+    for rrup in rrup_num:
+        ctx[index] = (40, 7.65, 90, 0, 360, 1, rrup,
+                    rrup, rrup, rrup, 10, True, 10, 1)
+        index += 1
     ctx = ctx.view(np.recarray)
     imts = [PGA()]
     choa = ChaoEtAl2020Asc()
-    choa_mean = [[0] * 17]
-    choa_sig = [[0] * 17]
-    choa_tau = [[0] * 17]
-    print(choa_mean)
-    choa_phi = [[0] * 17]
+    choa_mean = [[0] * len(imts)]
+    choa_sig = [[0] * len(imts)]
+    choa_tau = [[0] * len(imts)]
+    choa_phi = [[0] * len(imts)]
     choa_mean, choa_sig, choa_tau, choa_phi = choa.compute(ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
     choa_mean = np.exp(choa_mean)
     

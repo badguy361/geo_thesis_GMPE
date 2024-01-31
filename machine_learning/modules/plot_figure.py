@@ -35,8 +35,8 @@ class plot_fig:
         self.target = target
         self.fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
         self.period_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
-                       0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
-                       7.5, 10.0]
+                            0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
+                            7.5, 10.0]
 
     def data_distribution(self, x_total, y_total):
         """
@@ -670,7 +670,8 @@ class plot_fig:
         plt.xlabel('Rrup(km)', fontsize=12)
         plt.ylabel(
             f'Intra-event Residual ln({self.target})(cm/s^2)', fontsize=12)
-        intra_rrup_mean = round(total_data_df['intra_event_residual'].mean(), 2)
+        intra_rrup_mean = round(
+            total_data_df['intra_event_residual'].mean(), 2)
         intra_rrup_std = round(total_data_df['intra_event_residual'].std(), 2)
         plt.title(
             f'{self.abbreviation_name} Intra-event Residual Mean:{intra_rrup_mean} Std:{intra_rrup_std}'
@@ -740,7 +741,8 @@ class plot_fig:
         plt.xlabel('Vs30(m/s)', fontsize=12)
         plt.ylabel(
             f'Intra-event Residual ln({self.target})(cm/s^2)', fontsize=12)
-        intra_vs30_mean = round(total_data_df['intra_event_residual'].mean(), 2)
+        intra_vs30_mean = round(
+            total_data_df['intra_event_residual'].mean(), 2)
         intra_vs30_std = round(total_data_df['intra_event_residual'].std(), 2)
         plt.title(
             f'{self.abbreviation_name} Intra-event Residual Mean:{intra_vs30_mean} Std:{intra_vs30_std}'
@@ -751,7 +753,7 @@ class plot_fig:
         plt.show()
 
         return mu, sigma, inter_mw_mean, inter_mw_std, intra_rrup_mean, intra_rrup_std, intra_vs30_mean, intra_vs30_std
-    
+
     def measured_predict(self, y_test,
                          predict_value,
                          score,
@@ -840,94 +842,97 @@ class plot_fig:
 
         # * comparsion ohter GMMs
 
-        dataLen = 17  # rrup 總點位
-        total = np.array([0]*dataLen)
-        ch_mean = [[0] * dataLen] * station_id_num
-        ch_sig = [[0] * dataLen] * station_id_num
-        ch_tau = [[0] * dataLen] * station_id_num
-        ch_phi = [[0] * dataLen] * station_id_num
+        dtype = [('mag', '<f8'), ('rake', '<f8'), ('vs30', '<f8'), 
+                ('rrup', '<f8'), ('sta_id', '<i8')]
+        rrup_num = [0.1, 0.5, 0.75, 1, 5, 10, 20, 30,
+                    40, 50, 60, 70, 80, 90, 100, 150, 200, 300]
+        station_num = 732
+        total_elements = len(rrup_num) * station_num
+        ctx = np.empty(total_elements, dtype=dtype)
+        index = 0
+        for station_id in range(station_num):  # 依照station_num、Rrup的順序建recarray
+            for rrup in rrup_num:
+                ctx[index] = (7.65, 90, 360,
+                              rrup, station_id + 1)
+                index += 1
+        ctx = ctx.view(np.recarray)
+
+        imts = [PGA()]
+        ch_mean = [[0] * len(imts)]
+        ch_sig = [[0] * len(imts)]
+        ch_tau = [[0] * len(imts)]
+        ch_phi = [[0] * len(imts)]
 
         # calculate Chang2023 total station value
-        for i in tqdm(range(station_id_num)):
-            ctx = DSC_df[DSC_df['sta_id'] == i+1].to_records()
-            ctx = recfunctions.drop_fields(
-                ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
-            ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
-                              ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
-                              ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
-                              ('ry0', '<f8'), ('width',
-                                               '<f8'), ('vs30measured', 'bool'),
-                              ('sta_id', '<i8'), ('hypo_depth', '<f8'), ('z2pt5', '<f8')])
-            ctx = ctx.view(np.recarray)
-            imts = [PGA()]
-            chang = Chang2023(model_path)
-            ch_mean[i], ch_sig[i], ch_tau[i], ch_phi[i] = chang.compute(
-                ctx, imts, [ch_mean[i]], [ch_sig[i]], [ch_tau[i]], [ch_phi[i]])
-            if plot_all_sta:
-                ch_mean_copy = np.exp(ch_mean[i][0].copy())
-                plt.plot(ctx['rrup'], ch_mean_copy,
-                         'r', linewidth='0.4', zorder=5)
-            else:
-                total = total + np.exp(ch_mean[i][0])
-        if not plot_all_sta:
-            total_station_mean = total / station_id_num
-            plt.plot(ctx['rrup'], total_station_mean, 'r',
-                     linewidth='1.6', label="This study avg", zorder=20)
+        chang = Chang2023(model_path)
+        ch_mean, ch_sig, ch_tau, ch_phi = chang.compute(
+            ctx, imts, ch_mean, ch_sig, ch_tau, ch_phi)
+        ch_mean = np.exp(ch_mean)
+        split_mean = np.split(ch_mean[0], station_num) # 預測結果依station_num總數拆成n
+        
+        if plot_all_sta:
+            plt.plot(rrup_num, split_mean,
+                    'r', linewidth='0.4', zorder=5)
+        else:
+            avg_mean = np.array(split_mean).mean(axis=0)
+            plt.plot(rrup_num, avg_mean, 'r',
+                    linewidth='1.6', label="This study avg", zorder=20)
 
         # others GMM
-        ctx = DSC_df[DSC_df['sta_id'] == 1].to_records()  # 其餘GMM用不著sta_id
-        ctx = recfunctions.drop_fields(
-            ctx, ['index', 'src_id', 'rup_id', 'sids', 'occurrence_rate', 'mean'])
-        ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
-                          ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
-                          ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
-                          ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
-                          ('sta_id', '<i8'), ('hypo_depth', '<f8'), ('z2pt5', '<f8')])
+        dtype = [('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
+                ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
+                ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
+                ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
+                ('hypo_depth', '<f8'), ('z2pt5', '<f8')]
+        ctx = np.empty(len(rrup_num), dtype=dtype)
+        index = 0
+        for rrup in rrup_num:
+            ctx[index] = (40, 7.65, 90, 0, 360, 1, rrup,
+                        rrup, rrup, rrup, 10, True, 10, 1)
+            index += 1
         ctx = ctx.view(np.recarray)
+
         imts = [PGA()]
         phung = PhungEtAl2020Asc()
-        ph_mean = [[0] * dataLen]
-        ph_sig = [[0] * dataLen]
-        ph_tau = [[0] * dataLen]
-        ph_phi = [[0] * dataLen]
+        ph_mean = [[0] * len(imts)]
+        ph_sig = [[0] * len(imts)]
+        ph_tau = [[0] * len(imts)]
+        ph_phi = [[0] * len(imts)]
         ph_mean, ph_sig, ph_tau, ph_phi = phung.compute(
             ctx, imts, ph_mean, ph_sig, ph_tau, ph_phi)
         ph_mean = np.exp(ph_mean)
         lin = Lin2009()
-        lin_mean = [[0] * dataLen]
-        lin_sig = [[0] * dataLen]
-        lin_tau = [[0] * dataLen]
-        lin_phi = [[0] * dataLen]
+        lin_mean = [[0] * len(imts)]
+        lin_sig = [[0] * len(imts)]
+        lin_tau = [[0] * len(imts)]
+        lin_phi = [[0] * len(imts)]
         lin_mean, lin_sig = lin.compute(
             ctx, imts, lin_mean, lin_sig, lin_tau, lin_phi)
         lin_mean = np.exp(lin_mean)
         abrahamson = AbrahamsonEtAl2014()
-        abr_mean = [[0] * dataLen]
-        abr_sig = [[0] * dataLen]
-        abr_tau = [[0] * dataLen]
-        abr_phi = [[0] * dataLen]
+        abr_mean = [[0] * len(imts)]
+        abr_sig = [[0] * len(imts)]
+        abr_tau = [[0] * len(imts)]
+        abr_phi = [[0] * len(imts)]
         abr_mean, abr_sig, abr_tau, abr_phi = abrahamson.compute(
             ctx, imts, abr_mean, abr_sig, abr_tau, abr_phi)
         abr_mean = np.exp(abr_mean)
         campbell = CampbellBozorgnia2014()
-        cam_mean = [[0] * dataLen]
-        cam_sig = [[0] * dataLen]
-        cam_tau = [[0] * dataLen]
-        cam_phi = [[0] * dataLen]
+        cam_mean = [[0] * len(imts)]
+        cam_sig = [[0] * len(imts)]
+        cam_tau = [[0] * len(imts)]
+        cam_phi = [[0] * len(imts)]
         cam_mean, cam_sig, cam_tau, cam_phi = campbell.compute(
             ctx, imts, cam_mean, cam_sig, cam_tau, cam_phi)
         cam_mean = np.exp(cam_mean)
         choa = ChaoEtAl2020Asc()
-        choa_mean = [[0] * dataLen]
-        choa_sig = [[0] * dataLen]
-        choa_tau = [[0] * dataLen]
-        choa_phi = [[0] * dataLen]
+        choa_mean = [[0] * len(imts)]
+        choa_sig = [[0] * len(imts)]
+        choa_tau = [[0] * len(imts)]
+        choa_phi = [[0] * len(imts)]
         choa_mean, choa_sig, choa_tau, choa_phi = choa.compute(
             ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
         choa_mean = np.exp([choa_mean])
-        print("choa_sig: ",choa_sig)
-        print("choa_tau: ",choa_tau)
-        print("choa_phi: ",choa_phi)
 
         plt.grid(which="both",
                  axis="both",
@@ -942,15 +947,15 @@ class plot_fig:
                     color='grey',
                     label='data',
                     zorder=20)
-        plt.plot(ctx['rrup'], ph_mean[0], 'orange',
+        plt.plot(rrup_num, ph_mean[0], 'orange',
                  linewidth='1', label="Phung2020", zorder=10)
-        plt.plot(ctx['rrup'], lin_mean[0], 'g',
+        plt.plot(rrup_num, lin_mean[0], 'g',
                  linewidth='1', label="Lin2009", zorder=10)
-        plt.plot(ctx['rrup'], abr_mean[0], 'b',
+        plt.plot(rrup_num, abr_mean[0], 'b',
                  linewidth='1', label="Abrahamson2014", zorder=10)
-        plt.plot(ctx['rrup'], cam_mean[0], 'yellow',
+        plt.plot(rrup_num, cam_mean[0], 'yellow',
                  linewidth='1', label="CampbellBozorgnia2014", zorder=10)
-        plt.plot(ctx['rrup'], choa_mean[0], 'pink',
+        plt.plot(rrup_num, choa_mean[0], 'pink',
                  linewidth='1', label="ChaoEtAl2020Asc", zorder=10)
         plt.xlabel(f'Rrup(km)')
         plt.ylabel(f'{self.target}(g)')
@@ -1077,7 +1082,7 @@ class plot_fig:
         fig = plt.figure()
         plt.scatter(eq_df["STA_Lon_X"],
                     eq_df["STA_Lat_Y"],
-                    c=shap_values.values[index_start:index_end,4]
+                    c=shap_values.values[index_start:index_end, 4]
                     + shap_values.base_values[index_start],
                     cmap='cool',
                     s=8,
@@ -1092,12 +1097,12 @@ class plot_fig:
         plt.savefig(f"Station_ID eq-{index_start} {self.target}.jpg",
                     bbox_inches='tight',
                     dpi=300)
-        
+
         #! Vs30 shap value
         fig = plt.figure()
         plt.scatter(eq_df["STA_Lon_X"],
                     eq_df["STA_Lat_Y"],
-                    c=shap_values.values[index_start:index_end,0]
+                    c=shap_values.values[index_start:index_end, 0]
                     + shap_values.base_values[index_start],
                     cmap='cool',
                     s=8,
@@ -1112,13 +1117,13 @@ class plot_fig:
         plt.savefig(f"Vs30 eq-{index_start} {self.target}.jpg",
                     bbox_inches='tight',
                     dpi=300)
-        
+
         #! Station ID and Vs30 residual shap value
         fig = plt.figure()
         plt.scatter(eq_df["STA_Lon_X"],
                     eq_df["STA_Lat_Y"],
-                    c=shap_values.values[index_start:index_end,0]
-                    - shap_values.values[index_start:index_end,4],
+                    c=shap_values.values[index_start:index_end, 0]
+                    - shap_values.values[index_start:index_end, 4],
                     cmap='cool',
                     s=8,
                     zorder=10)

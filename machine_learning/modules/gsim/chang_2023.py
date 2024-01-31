@@ -95,10 +95,10 @@ if __name__ == '__main__':
     ctx = ctx.view(np.recarray)
 
     imts = [PGA()]
-    mean = [[0] * 8]
-    sig = [[0] * 8]
-    tau = [[0] * 8]
-    phi = [[0] * 8]
+    mean = [[0]*len(imts)]
+    sig = [[0]*len(imts)]
+    tau = [[0]*len(imts)]
+    phi = [[0]*len(imts)]
     gmm = Chang2023(f"XGB_PGA.json")
     mean, sig, tau, phi = gmm.compute(ctx, imts, mean, sig, tau, phi)
     mean = np.exp(mean)

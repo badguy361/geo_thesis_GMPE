@@ -26,6 +26,8 @@ import queue
 import pandas as pd
 import matplotlib.pyplot as plt
 import xgboost as xgb
+from tqdm import tqdm
+
 
 class Chang2023():
     #: Supported tectonic region type is active shallow crust, see title!
@@ -69,50 +71,54 @@ class Chang2023():
 
     def compute(self, ctx: np.recarray, imts, mean, sig, tau, phi):
         for m, imt in enumerate(imts):
-            predict = self.ML_model.predict(xgb.DMatrix(np.column_stack((np.log(ctx.vs30), ctx.mag, np.log(ctx.rrup), ctx.rake, ctx.sta_id))))
-            mean[m] = np.log(np.exp(predict)/980) # unit : ln(g)
-            sig[m], tau[m], phi[m] = 0.35,0.12,0.34
-        
+            predict = self.ML_model.predict(xgb.DMatrix(np.column_stack(
+                (np.log(ctx.vs30), ctx.mag, np.log(ctx.rrup), ctx.rake, ctx.sta_id))))
+            mean[m] = np.log(np.exp(predict)/980)  # unit : ln(g)
+            sig[m], tau[m], phi[m] = 0.35, 0.12, 0.34
+
         return mean, sig, tau, phi
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('test.csv')
-    ctx = df.to_records()
-    ctx = recfunctions.drop_fields(ctx, ['index','src_id','rup_id','sids','occurrence_rate','mean'])
-    ctx = ctx.astype([('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'), ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'), ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'), ('clon', '<f8'), ('clat', '<f8')])
-    # ctx = np.array([(df['dip'], df['mag'], df['rake'], df['ztor'], df['vs30'], df['z1pt0'], df['rjb'], df['rrup'],
-    #                  df['rx'],0)],
-    #                dtype=[('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
-    #                       ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
-    #                       ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'), ('test', '<f8', (0,))])
+    dtype = [('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
+             ('ztor', '<f8'), ('vs30', '<f8'), ('z1pt0', '<f8'),
+             ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'), ('sta_id', '<i8')]
+    rrup_num = [0.1, 0.5, 1, 10, 50, 100, 200, 300]
+    station_num = 400
+    total_elements = len(rrup_num) * station_num
+    ctx = np.empty(total_elements, dtype=dtype)
+    index = 0
+    for station_id in range(station_num): # 依照station_num、Rrup的順序建recarray
+        for rrup in rrup_num:
+            ctx[index] = (0, 7.65, 90, 1, 360, 1, 1, rrup, 1, station_id + 1)
+            index += 1
     ctx = ctx.view(np.recarray)
-    # print(ctx.mag)
-    # print(ctx.dtype.names)
-    imts = [PGA()]
-    mean = [[0] * 5]
-    sig = [[0] * 5]
-    tau = [[0] * 5]
-    phi = [[0] * 5]
 
-    gmm = Chang2023()
+    imts = [PGA()]
+    mean = [[0] * 8]
+    sig = [[0] * 8]
+    tau = [[0] * 8]
+    phi = [[0] * 8]
+    gmm = Chang2023(f"XGB_PGA.json")
     mean, sig, tau, phi = gmm.compute(ctx, imts, mean, sig, tau, phi)
     mean = np.exp(mean)
-    
-    plt.grid(linestyle=':')
-    plt.scatter(ctx['rrup'],
-                mean,
-                marker='o',
-                facecolors='none',
-                edgecolors='b',
-                label='original value')
-    plt.xlabel(f'rrup(km)')
+    split_array = np.split(mean[0], station_num) # 預測結果依station_num總數拆成n組
+
+    for i in range(station_num):
+        plt.plot(rrup_num, split_array[i])
+    plt.grid(which="both",
+                axis="both",
+                linestyle="-",
+                linewidth=0.5,
+                alpha=0.5)
+    plt.xlabel(f'Rrup(km)')
     plt.ylabel('PGA(g)')
     plt.title(f'Distance Scaling Chang2023')
-    plt.ylim(10e-5, 10)
-    plt.xscale("log")
-    plt.xticks([1, 10, 50, 100, 200, 300], [1, 10, 50, 100, 200, 300])
+    plt.ylim(10e-4, 5)
     plt.yscale("log")
+    plt.xscale("log")
+    plt.xticks([0.1, 0.5, 1, 10, 50, 100, 200, 300],
+                [0.1, 0.5, 1, 10, 50, 100, 200, 300])
     plt.legend()
     plt.savefig('Distance Scaling Chang2023.png',dpi=300)
     plt.show()

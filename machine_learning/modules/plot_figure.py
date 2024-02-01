@@ -825,18 +825,15 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def distance_scaling(self, DSC_df, Vs30, rake, station_id_num: "station總量",
-                         plot_all_sta, station_id, total_data, model_path):
+    def distance_scaling(self, Mw, Vs30, rake, station_id,
+                         plot_all_sta, total_Mw_data, model_path):
         """
 
         Compute distance scaling figure follow condition given by ourself.
 
         Args:
-            DSC_df ([dataframe]): [the condition given by ourself]
-            station_id_num (station): [total station number]
             plot_all_sta ([bool]): [to decide if we want to plot all station]
-            x_total (ori_feature): [feature]
-            y_total (ori_ans): [value]
+            total_data ([array]): [original dataset sperate by Mw]
             model_path ([str]): [the place which the model be stored]
         """
 
@@ -852,7 +849,7 @@ class plot_fig:
         index = 0
         for station_id in range(station_num):  # 依照station_num、Rrup的順序建recarray
             for rrup in rrup_num:
-                ctx[index] = (7.65, 90, 360,
+                ctx[index] = (Mw, Vs30, rake,
                               rrup, station_id + 1)
                 index += 1
         ctx = ctx.view(np.recarray)
@@ -868,11 +865,13 @@ class plot_fig:
         ch_mean, ch_sig, ch_tau, ch_phi = chang.compute(
             ctx, imts, ch_mean, ch_sig, ch_tau, ch_phi)
         ch_mean = np.exp(ch_mean)
-        split_mean = np.split(ch_mean[0], station_num) # 預測結果依station_num總數拆成n
+        split_mean = np.split(ch_mean[0], station_num) 
+        # 預測結果依station_num數量分組 shape:(732,18)
         
         if plot_all_sta:
-            plt.plot(rrup_num, split_mean,
-                    'r', linewidth='0.4', zorder=5)
+            for i in range(station_num):
+                plt.plot(rrup_num, split_mean[i],
+                        'r', linewidth='0.4', zorder=5)
         else:
             avg_mean = np.array(split_mean).mean(axis=0)
             plt.plot(rrup_num, avg_mean, 'r',
@@ -887,7 +886,7 @@ class plot_fig:
         ctx = np.empty(len(rrup_num), dtype=dtype)
         index = 0
         for rrup in rrup_num:
-            ctx[index] = (40, 7.65, 90, 0, 360, 1, rrup,
+            ctx[index] = (40, Mw, rake, 0, Vs30, 1, rrup,
                         rrup, rrup, rrup, 10, True, 10, 1)
             index += 1
         ctx = ctx.view(np.recarray)
@@ -939,8 +938,8 @@ class plot_fig:
                  linestyle="-",
                  linewidth=0.5,
                  alpha=0.5)
-        plt.scatter(np.exp(total_data[0][0][:, 2]),
-                    np.exp(total_data[0][1]) / 980,
+        plt.scatter(np.exp(total_Mw_data[0][0][:, 2]),
+                    np.exp(total_Mw_data[0][1]) / 980,
                     marker='o',
                     facecolors='none',
                     s=2,
@@ -981,35 +980,35 @@ class plot_fig:
         if plot_all_sta:
             for i, Mw in enumerate(Mw_list):
                 single_sta_predict = []
-                for rrup in [0.1, 0.5, 1, 10, 50, 100, 200, 300]:
+                for rrup in rrup_num:
                     RSCon = xgb.DMatrix(
                         np.array([[np.log(Vs30), Mw,
                                    np.log(rrup), rake, station_id]]))
                     single_sta_predict.append(
                         np.exp(booster_PGA.predict(RSCon)) / 980)
-                plt.scatter(np.exp(total_data[i+1][0][:, 2]),
-                            np.exp(total_data[i+1][1]) / 980,
+                plt.scatter(np.exp(total_Mw_data[i+1][0][:, 2]),
+                            np.exp(total_Mw_data[i+1][1]) / 980,
                             marker='o',
                             facecolors='none',
                             s=2,
                             c=color[i],
                             zorder=5)
-                plt.plot([0.1, 0.5, 1, 10, 50, 100, 200, 300], single_sta_predict,
+                plt.plot(rrup_num, single_sta_predict,
                          linewidth='1.2', zorder=20, label=f"Mw:{Mw_list[i]}")
         else:
             for i, Mw in enumerate(Mw_list):
                 total_sta_predict = []
-                for sta in tqdm(range(station_id_num)):  # 預測所有station取平均
+                for sta in tqdm(range(station_num)):  # 預測所有station取平均
                     single_sta_predict = []
-                    for rrup in [0.1, 0.5, 1, 10, 50, 100, 200, 300]:
+                    for rrup in rrup_num:
                         RSCon = xgb.DMatrix(
                             np.array([[np.log(Vs30), Mw,
                                        np.log(rrup), 90, sta]]))
                         single_sta_predict.append(
                             np.exp(booster_PGA.predict(RSCon)) / 980)
                     total_sta_predict.append(single_sta_predict)
-                plt.scatter(np.exp(total_data[i+1][0][:, 2]),
-                            np.exp(total_data[i+1][1]) / 980,
+                plt.scatter(np.exp(total_Mw_data[i+1][0][:, 2]),
+                            np.exp(total_Mw_data[i+1][1]) / 980,
                             marker='o',
                             facecolors='none',
                             s=2,

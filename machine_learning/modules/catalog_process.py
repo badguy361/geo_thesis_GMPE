@@ -6,6 +6,7 @@ from process_train import dataprocess
 import matplotlib.pyplot as plt
 import smogn
 import glob
+from sklearn.model_selection import train_test_split
 
 def get_sta_rank():
     """
@@ -81,13 +82,14 @@ def pre_SMOGN(target):
     Args:
         target ([str]): [file target name]
     """
-    TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv")
+    TSMIP_df = pd.read_csv(f"../../../pre cut/TSMIP_FF_period/TSMIP_FF_{target}.csv")
     filtered_df = TSMIP_df[TSMIP_df["eq.type"] == "shallow crustal"]
     selected_columns_df = filtered_df[["MW", "fault.type", "Vs30", "Rrup",
                                     "STA_rank", f"{target}"]]
-    
-    selected_columns_df.to_csv(
-        f"../../../TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv", index=False)
+    train, test = train_test_split(selected_columns_df, random_state=50,
+                                    train_size=0.8, shuffle=True)
+    train.to_csv(
+        f"../../../pre cut/TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv", index=False)
 
 def synthesize(target):
     """
@@ -97,14 +99,14 @@ def synthesize(target):
     Args:
         target ([str]): [file target name]
     """
-    TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv")
+    TSMIP_df = pd.read_csv(f"../../../pre cut/TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv")
 
     # conduct smogn ##這步大概要兩個小時
     TSMIP_smogn = smogn.smoter(
         data=TSMIP_df,
         y=target
     )
-    TSMIP_smogn.to_csv(f"../../../TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv", index=False)
+    TSMIP_smogn.to_csv(f"../../../pre cut/TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv", index=False)
 
 def SMOGN_plot(target):
     """
@@ -234,8 +236,13 @@ if __name__=='__main__':
     #     _ = pre_SMOGN(targets[j])
     #     _ = synthesize(targets[j])
 
-    _ = SMOGN_plot("Sa10")
+    # _ = pre_SMOGN("PGA")
+    _ = synthesize("PGA")
     
+    #? plot distributions
+    # _ = SMOGN_plot("Sa01")
+    
+    #? statistics period
     # total_files = glob.glob(r"../../../cut period_shallow crustal/TSMIP_FF_period/*.csv")
     # all_df = []
     # for file in total_files:

@@ -201,7 +201,6 @@ class ChaoEtAl2020SInter():
             C = self.COEFFS[imt]
             s = CONSTANTS
             med = mean[m]
-            print(med)
             med += _ftype(trt, self.SUFFIX, C, ctx)
             med += (ctx.ztor - self.CONST_FAULT['href']) * C[
                 'c14' + self.SUFFIX]

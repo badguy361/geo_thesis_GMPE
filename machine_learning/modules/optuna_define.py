@@ -12,7 +12,7 @@ class optimize_train():
         self.y_test = y_test
 
     def XGB(self, trial):
-        xgb_n = trial.suggest_float('n_estimators', 100, 1000)
+        xgb_n = trial.suggest_float('n_estimators', 500, 1500)
         xgb_dep = trial.suggest_float(
             'max_depth', 1, 50)
         xgb_eta = trial.suggest_float('eta', 0, 1)
@@ -21,8 +21,8 @@ class optimize_train():
         xgb_subsample = trial.suggest_float('subsample', 0.1, 1)
         xgb_lambda = trial.suggest_float('lambda', 0, 10)
         xgb_alpha = trial.suggest_float('alpha', 0, 10)
-        XGB_params = {'eta': float(xgb_eta), 'max_depth': int(xgb_dep), 'gamma': float(xgb_gamma), 'min_child_weight': int(
-            xgb_min_child_weight), 'subsample': float(xgb_subsample), 'lambda': int(xgb_lambda), 'alpha': int(xgb_alpha), 'n_jobs': -1}
+        XGB_params = {'n_estimators': int(xgb_n), 'eta': float(xgb_eta), 'max_depth': int(xgb_dep), 'gamma': float(xgb_gamma), 
+                      'min_child_weight': int(xgb_min_child_weight), 'subsample': float(xgb_subsample), 'lambda': int(xgb_lambda), 'alpha': int(xgb_alpha), 'n_jobs': -1}
         XGBModel = XGBRegressor(**XGB_params)
 
         grid_result = XGBModel.fit(self.x_train, self.y_train)

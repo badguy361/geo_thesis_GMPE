@@ -752,8 +752,6 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-        return mu, sigma, inter_mw_mean, inter_mw_std, intra_rrup_mean, intra_rrup_std, intra_vs30_mean, intra_vs30_std
-
     def measured_predict(self, y_test,
                          predict_value,
                          score,
@@ -1014,7 +1012,7 @@ class plot_fig:
                             s=2,
                             c=color[i],
                             zorder=5)
-                plt.plot([0.1, 0.5, 1, 10, 50, 100, 200, 300], np.array(total_sta_predict).mean(axis=0),
+                plt.plot(rrup_num, np.array(total_sta_predict).mean(axis=0),
                          linewidth='1.2', zorder=20, label=f"Mw:{Mw_list[i]}")
 
         plt.grid(which="both",

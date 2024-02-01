@@ -67,12 +67,12 @@ def cut_period(target, period, column):
     """
     TSMIP_df = pd.read_csv(f"../../../TSMIP_FF.csv")
 
-    filtered_df = TSMIP_df[TSMIP_df["usable_period_H"] > period]
+    filtered_df = TSMIP_df[(TSMIP_df["usable_period_H"] > period) & (TSMIP_df["eq.type"] == "shallow crustal")]
     selected_columns_df = filtered_df[["EQ_ID", "MW", "fault.type", "Vs30", "Rrup",
                                        "STA_Lon_X", "STA_Lat_Y", "STA_rank", "STA_ID", "eq.type", "Z1.0", f"{column}"]]
 
     selected_columns_df.to_csv(
-        f"../../../TSMIP_FF_period/TSMIP_FF_{target}.csv", index=False)
+        f"../../../no SMOGN/TSMIP_FF_period/TSMIP_FF_{target}.csv", index=False)
 
 def pre_SMOGN(target):
     """
@@ -82,14 +82,12 @@ def pre_SMOGN(target):
     Args:
         target ([str]): [file target name]
     """
-    TSMIP_df = pd.read_csv(f"../../../pre cut/TSMIP_FF_period/TSMIP_FF_{target}.csv")
-    filtered_df = TSMIP_df[TSMIP_df["eq.type"] == "shallow crustal"]
-    selected_columns_df = filtered_df[["MW", "fault.type", "Vs30", "Rrup",
+    TSMIP_df = pd.read_csv(f"../../../no SMOGN/TSMIP_FF_period/TSMIP_FF_{target}.csv")
+    selected_columns_df = TSMIP_df[["MW", "fault.type", "Vs30", "Rrup",
                                     "STA_rank", f"{target}"]]
-    train, test = train_test_split(selected_columns_df, random_state=50,
-                                    train_size=0.8, shuffle=True)
-    train.to_csv(
-        f"../../../pre cut/TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv", index=False)
+
+    selected_columns_df.to_csv(
+        f"../../../no SMOGN/TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv", index=False)
 
 def synthesize(target):
     """
@@ -221,23 +219,18 @@ if __name__=='__main__':
     periods = [0, 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
             0.2, 0.25, 0.3, 0.4, 0.5, 0.7, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
             7.5, 10.0]
-    # periods = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    #         0, 0, 0, 0, 0, 0, 0, 0]
     
-    # for i in range(len(targets)):
-    #     _ = cut_period(targets[i], periods[i], columns[i])
+    for i in range(len(targets)):
+        _ = cut_period(targets[i], periods[i], columns[i])
 
-    # for index, m in enumerate(targets): # change columns name to target name (ex: T1.0S -> Sa10)
-    #     TSMIP_df = pd.read_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{m}.csv")
-    #     TSMIP_df = TSMIP_df.rename(columns={columns[index]: targets[index]})
-    #     TSMIP_df.to_csv(f"../../../TSMIP_FF_period/TSMIP_FF_{m}.csv", index=False)
+    for index, m in enumerate(targets): # change columns name to target name (ex: T1.0S -> Sa10)
+        TSMIP_df = pd.read_csv(f"../../../no SMOGN/TSMIP_FF_period/TSMIP_FF_{m}.csv")
+        TSMIP_df = TSMIP_df.rename(columns={columns[index]: targets[index]})
+        TSMIP_df.to_csv(f"../../../no SMOGN/TSMIP_FF_period/TSMIP_FF_{m}.csv", index=False)
 
-    # for j in range(len(targets)):
-    #     _ = pre_SMOGN(targets[j])
+    for j in range(len(targets)):
+        _ = pre_SMOGN(targets[j])
     #     _ = synthesize(targets[j])
-
-    # _ = pre_SMOGN("PGA")
-    _ = synthesize("PGA")
     
     #? plot distributions
     # _ = SMOGN_plot("Sa01")

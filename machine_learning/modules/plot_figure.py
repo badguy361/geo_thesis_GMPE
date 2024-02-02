@@ -29,7 +29,16 @@ class plot_fig:
     """
 
     def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP, target,
+                x_total, y_total, predict_value, ori_full_data, score,
                 Vs30, Mw, rrup, rake, station_id, station_num):
+        """
+        Args:
+            x_total ([series]): [dataset feature test subset or all dataset]
+            y_total ([series]): [dataset answer test subset or all dataset]
+            predict_value ([series]): [predicted answer]
+            ori_full_data ([series]): [ori_full_data]
+            score ([float]): [R2 score from model]
+        """
         self.model_name = model_name
         self.abbreviation_name = abbreviation_name
         self.SMOGN_TSMIP = SMOGN_TSMIP
@@ -38,6 +47,7 @@ class plot_fig:
         self.period_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
                             0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
                             7.0, 7.5, 10.0]
+        
         self.Vs30 = Vs30
         self.Mw = Mw
         self.rrup = rrup
@@ -45,23 +55,26 @@ class plot_fig:
         self.station_id = station_id
         self.station_num = station_num
 
-    def data_distribution(self, x_total, y_total):
+        self.x_total = x_total
+        self.y_total = y_total
+        self.predict_value = predict_value
+        self.ori_full_data = ori_full_data
+        self.score = score
+
+    def data_distribution(self):
         """
 
         Plot the train & test data distribution.
 
-        Args:
-            x_total ([dataframe]): [original feature data]
-            y_total ([dataframe]): [original answer data]
         """
-        unique_color = set(x_total[:, 3])
+        unique_color = set(self.x_total[:, 3])
         color_map = {-90.0: ["r", "NM"], 0.0: ["g", "SS"], 90.0: ["b", "REV"]}
 
         # # Vs30 Mw relationship
 
         plt.grid(linestyle=':', color='darkgrey', zorder=0)
-        plt.scatter(np.exp(x_total[:, 0]),
-                    x_total[:, 1],
+        plt.scatter(np.exp(self.x_total[:, 0]),
+                    self.x_total[:, 1],
                     c="gray",
                     marker='o',
                     facecolors='none',
@@ -79,8 +92,8 @@ class plot_fig:
 
         plt.grid(linestyle=':', color='darkgrey', zorder=0)
         for color in unique_color:
-            indices = x_total[:, 3] == color
-            plt.scatter(x_total[indices, -1], x_total[indices, 1],
+            indices = self.x_total[:, 3] == color
+            plt.scatter(self.x_total[indices, -1], self.x_total[indices, 1],
                         facecolors='none', c=color_map[color][0],
                         s=8, zorder=10, label=color_map[color][1])
         plt.xlabel('Hypocenter Depth(km)', fontsize=12)
@@ -100,8 +113,8 @@ class plot_fig:
                  alpha=0.5,
                  zorder=0)
         for color in unique_color:
-            indices = x_total[:, 3] == color
-            plt.scatter(np.exp(x_total[indices, 2]), x_total[indices, 1],
+            indices = self.x_total[:, 3] == color
+            plt.scatter(np.exp(self.x_total[indices, 2]), self.x_total[indices, 1],
                         facecolors='none', c=color_map[color][0],
                         s=8, zorder=10, label=color_map[color][1])
         plt.legend(loc="lower left")
@@ -124,7 +137,7 @@ class plot_fig:
 
         # fault type number relationship
 
-        counter = Counter(x_total[:, 3])
+        counter = Counter(self.x_total[:, 3])
         reverse = counter[90.0]
         normal = counter[-90.0]
         strike_slip = counter[0.0]
@@ -140,29 +153,23 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def residual(self, x_total, y_total, predict_value, ori_full_data, score):
+    def residual(self):
         """
 
         Total residual and standard deviation and inter & intra event residual.
         Calculate residual by original anser and original predicted value.
 
-        Args:
-            x_total ([series]): [dataset feature test subset or all dataset]
-            y_total ([series]): [dataset answer test subset or all dataset]
-            predict_value ([series]): [predicted answer]
-            ori_full_data ([series]): [ori_full_data]
-            score ([float]): [R2 score from model]
         """
 
         # * 1. Vs30 Total Residual
-        residual = predict_value - y_total
+        residual = self.predict_value - self.y_total
         residual_121 = []
         residual_199 = []
         residual_398 = []
         residual_794 = []
         residual_1000 = []
 
-        for index, i in enumerate(np.exp(x_total[:, 0])):
+        for index, i in enumerate(np.exp(self.x_total[:, 0])):
             if i >= 121 and i < 199:
                 residual_121.append(residual[index])
             elif i >= 199 and i < 398:
@@ -194,7 +201,7 @@ class plot_fig:
 
         i = 0
         while i < len(residual):  # 計算每個網格中總點數
-            x_net = (round(np.exp(x_total[:, 0])[i], 2) - 1e2) / (
+            x_net = (round(np.exp(self.x_total[:, 0])[i], 2) - 1e2) / (
                 (2 * 1e3 - 1e2) / net)  # 看是落在哪個x網格
             y_net = (round(residual[i], 2) - (-3)) / (
                 (3 - (-3)) / net)  # 看是落在哪個y網格
@@ -203,7 +210,7 @@ class plot_fig:
 
         j = 0
         while j < len(residual):  # 並非所有網格都有用到，沒用到的就不要畫進圖裡
-            x_net = (round(np.exp(x_total[:, 0])[j], 2) - 1e2) / (
+            x_net = (round(np.exp(self.x_total[:, 0])[j], 2) - 1e2) / (
                 (2 * 1e3 - 1e2) / net)
             y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
@@ -216,7 +223,7 @@ class plot_fig:
                                                    N=256)
 
         plt.grid(linestyle=':', color='darkgrey', zorder=0)
-        plt.scatter(np.exp(x_total[:, 0]),
+        plt.scatter(np.exp(self.x_total[:, 0]),
                     residual,
                     s=8,
                     c=color_column,
@@ -260,7 +267,7 @@ class plot_fig:
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)', fontsize=12)
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
-            % (score, total_std))
+            % (self.score, total_std))
         plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} Vs30-{self.abbreviation_name} Predict Residual.png',
@@ -268,13 +275,13 @@ class plot_fig:
         plt.show()
 
         # * 2. Mw Toral Residual
-        residual = predict_value - y_total
+        residual = self.predict_value - self.y_total
         residual_3_5 = []
         residual_4_5 = []
         residual_5_5 = []
         residual_6_5 = []
 
-        for index, i in enumerate(x_total[:, 1]):
+        for index, i in enumerate(self.x_total[:, 1]):
             if i >= 3.5 and i < 4.5:
                 residual_3_5.append(residual[index])
             elif i >= 4.5 and i < 5.5:
@@ -302,14 +309,14 @@ class plot_fig:
 
         i = 0
         while i < len(residual):
-            x_net = (round(x_total[:, 1][i], 2) - 3) / ((8 - 3) / net)
+            x_net = (round(self.x_total[:, 1][i], 2) - 3) / ((8 - 3) / net)
             y_net = (round(residual[i], 2) - (-3)) / ((3 - (-3)) / net)
             zz[math.floor(x_net), math.floor(y_net)] += 1
             i += 1
 
         j = 0
         while j < len(residual):
-            x_net = (round(x_total[:, 1][j], 2) - 3) / ((8 - 3) / net)
+            x_net = (round(self.x_total[:, 1][j], 2) - 3) / ((8 - 3) / net)
             y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
             j += 1
@@ -320,7 +327,7 @@ class plot_fig:
                                                    N=256)
 
         plt.grid(linestyle=':', color='darkgrey', zorder=0)
-        plt.scatter(x_total[:, 1], residual,
+        plt.scatter(self.x_total[:, 1], residual,
                     s=8, c=color_column, cmap=newcmp,
                     zorder=10)
         cbar = plt.colorbar(extend='both', label='number value')
@@ -367,13 +374,13 @@ class plot_fig:
         plt.show()
 
         # *  3. Rrup Total Residual
-        residual = predict_value - y_total
+        residual = self.predict_value - self.y_total
         residual_10 = []
         residual_31 = []
         residual_100 = []
         residual_316 = []
 
-        for index, i in enumerate(np.exp(x_total[:, 2])):
+        for index, i in enumerate(np.exp(self.x_total[:, 2])):
             if i >= 10 and i < 31:
                 residual_10.append(residual[index])
             elif i >= 31 and i < 100:
@@ -401,7 +408,7 @@ class plot_fig:
 
         i = 0
         while i < len(residual):
-            x_net = (round(np.exp(x_total[:, 2])[i], 2) - 5 * 1e0) / (
+            x_net = (round(np.exp(self.x_total[:, 2])[i], 2) - 5 * 1e0) / (
                 (1e3 - 5 * 1e0) / net)
             y_net = (round(residual[i], 2) - (-3)) / ((3 - (-3)) / net)
             zz[math.floor(x_net), math.floor(y_net)] += 1
@@ -409,7 +416,7 @@ class plot_fig:
 
         j = 0
         while j < len(residual):
-            x_net = (round(np.exp(x_total[:, 2])[j], 2) - 5 * 1e0) / (
+            x_net = (round(np.exp(self.x_total[:, 2])[j], 2) - 5 * 1e0) / (
                 (1e3 - 5 * 1e0) / net)
             y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
@@ -426,7 +433,7 @@ class plot_fig:
                  linewidth=0.5,
                  alpha=0.5,
                  zorder=0)
-        plt.scatter(np.exp(x_total[:, 2]),
+        plt.scatter(np.exp(self.x_total[:, 2]),
                     residual,
                     s=8,
                     c=color_column,
@@ -476,7 +483,7 @@ class plot_fig:
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)', fontsize=12)
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
-            % (score, total_std))
+            % (self.score, total_std))
         plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} Rrup-{self.abbreviation_name} Predict Residual.png',
@@ -551,10 +558,10 @@ class plot_fig:
         """
 
         # 計算inter-event(between-event) by mean value(共273顆地震)
-        originaldata_predicted_result_df = pd.DataFrame(predict_value,
+        originaldata_predicted_result_df = pd.DataFrame(self.predict_value,
                                                         columns=['predicted'])
         total_data_df = pd.concat(
-            [ori_full_data, originaldata_predicted_result_df], axis=1)
+            [self.ori_full_data, originaldata_predicted_result_df], axis=1)
         # total_data_df["residual"] = np.abs((np.exp(total_data_df["predicted"]) - np.exp(total_data_df["lnPGA(gal)"]))/980)
         total_data_df["residual"] = total_data_df["predicted"] - total_data_df[
             f"ln{self.target}(gal)"]
@@ -765,19 +772,12 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def measured_predict(self, y_total,
-                         predict_value,
-                         score,
-                         lowerbound,
-                         higherbound):
+    def measured_predict(self, lowerbound, higherbound):
         """
 
         Plot the predict value and true value distribution .
 
         Args:
-            y_total ([series]): [dataset answer test subset or all dataset]
-            predict_value ([series]): [dataset prediction value]
-            score ([float]): [R2 score from model]
             lowerbound ([int]): [net lowerbound]
             higherbound ([int]): [net higherbound]
         """
@@ -786,11 +786,11 @@ class plot_fig:
         color_column = []
 
         i = 0
-        while i < len(y_total):
-            x_net = (round(y_total[i], 2) - lowerbound) / \
+        while i < len(self.y_total):
+            x_net = (round(self.y_total[i], 2) - lowerbound) / \
                 ((higherbound - lowerbound) / net)
             # +2:因為網格從-2開始打 10:頭減尾8-(-2) 10/net:網格間格距離 x_net:x方向第幾個網格
-            y_net = (round(predict_value[i], 2) - lowerbound) / \
+            y_net = (round(self.predict_value[i], 2) - lowerbound) / \
                 ((higherbound - lowerbound) / net)
             if x_net < net and y_net < net:
                 zz[math.floor(x_net), math.floor(y_net)] += 1
@@ -799,10 +799,10 @@ class plot_fig:
             i += 1
 
         j = 0
-        while j < len(y_total):
-            x_net = (round(y_total[j], 2) - lowerbound) / \
+        while j < len(self.y_total):
+            x_net = (round(self.y_total[j], 2) - lowerbound) / \
                 ((higherbound - lowerbound) / net)
-            y_net = (round(predict_value[j], 2) - lowerbound) / \
+            y_net = (round(self.predict_value[j], 2) - lowerbound) / \
                 ((higherbound - lowerbound) / net)
             if x_net < net and y_net < net:
                 color_column.append(zz[math.floor(x_net), math.floor(y_net)])
@@ -816,7 +816,7 @@ class plot_fig:
                                                    N=256)
 
         plt.grid(linestyle=':', zorder=0)
-        plt.scatter(y_total, predict_value, s=8,
+        plt.scatter(self.y_total, self.predict_value, s=8,
                     c=color_column, cmap=newcmp, zorder=10)
         x_line = [lowerbound, higherbound]
         y_line = [lowerbound, higherbound]
@@ -828,7 +828,7 @@ class plot_fig:
         plt.title(
             f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predicted Distribution'
         )
-        plt.text(higherbound-4, lowerbound+2, f"R2 score = {round(score,2)}")
+        plt.text(higherbound-4, lowerbound+2, f"R2 score = {round(self.score,2)}")
         cbar = plt.colorbar(extend='both', label='number value')
         cbar.set_label('number value', fontsize=12)
         plt.savefig(
@@ -1046,20 +1046,19 @@ class plot_fig:
             f"distance scaling {self.target} Vs30-{self.Vs30} fault-type-{self.fault_type_dict[self.rake]} avg_station_id-{avg_station_id} station_id-{self.station_id}.jpg", dpi=300)
         plt.show()
 
-    def explainable(self, eq_df, x_total, model_feture, ML_model, index_start, index_end):
+    def explainable(self, eq_df, model_feture, ML_model, index_start, index_end):
         """
 
         This function shows explanation wihch include global explaination and local explaination of the model in the given target .
 
         Args:
             eq_df (eq dataset): [the eq dataset]
-            x_total (ori_total_feature): [original feature data]
             model_feture ([list]): [input parameters]
             ML_model ([model]): [the model from sklearn or other package]
             index_start ([int]): [start record index]
             index_end ([int]): [end record index]
         """
-        df = pd.DataFrame(x_total, columns=model_feture)
+        df = pd.DataFrame(self.x_total, columns=model_feture)
         explainer = shap.Explainer(ML_model)
         shap_values = explainer(df)
 

@@ -366,7 +366,7 @@ class plot_fig:
         plt.ylabel(f'Residual ln({self.target})(cm/s^2)', fontsize=12)
         plt.title(
             f'{self.abbreviation_name} Predicted Residual R2 score: %.2f std: %.2f'
-            % (score, total_std))
+            % (self.score, total_std))
         plt.legend()
         plt.savefig(
             f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} Mw-{self.abbreviation_name} Predict Residual.png',

@@ -21,7 +21,7 @@ targets = ["PGA", "PGV", "Sa001", "Sa002", "Sa003", "Sa004", "Sa005",
 dataset_type = "no SMOGN"
 target = "PGA"
 Mw = 7.65
-Rrup = 40
+rrup = 40
 Vs30 = 360
 rake = 90
 station_id = 500
@@ -58,12 +58,12 @@ cut_period_shallow_crustal_score = {
 }
 no_SMOGN = {
     'XGB_PGA': 0.84, 'XGB_PGV': 0.88, 'XGB_Sa001': 0.84, 'XGB_Sa002': 0.84,
-    'XGB_Sa003': 0.84, 'XGB_Sa004': 0.84, 'XGB_Sa005': 0.85, 'XGB_Sa0075': '-',
-    'XGB_Sa01': 0.85, 'XGB_Sa012': '-', 'XGB_Sa015': '-', 'XGB_Sa017': '-',
-    'XGB_Sa02': '-', 'XGB_Sa025': '-', 'XGB_Sa03': 0.82, 'XGB_Sa04': '-',
-    'XGB_Sa05': '-', 'XGB_Sa075': '-', 'XGB_Sa10': 0.88, 'XGB_Sa15': '-',
-    'XGB_Sa20': '-', 'XGB_Sa30': '-', 'XGB_Sa40': '-', 'XGB_Sa50': '-',
-    'XGB_Sa75': '-', 'XGB_Sa100': '-'
+    'XGB_Sa003': 0.84, 'XGB_Sa004': 0.84, 'XGB_Sa005': 0.85, 'XGB_Sa0075': 0.85,
+    'XGB_Sa01': 0.85, 'XGB_Sa012': 0.85, 'XGB_Sa015': 0.84, 'XGB_Sa017': 0.84,
+    'XGB_Sa02': 0.83, 'XGB_Sa025': 0.82, 'XGB_Sa03': 0.82, 'XGB_Sa04': 0.82,
+    'XGB_Sa05': 0.84, 'XGB_Sa075': 0.87, 'XGB_Sa10': 0.88, 'XGB_Sa15': 0.90,
+    'XGB_Sa20': 0.92, 'XGB_Sa30': 0.92, 'XGB_Sa40': 0.93, 'XGB_Sa50': 0.93,
+    'XGB_Sa75': 0.92, 'XGB_Sa100': 0.93
 }
 lowerbound = -2
 higherbound = 8
@@ -152,20 +152,19 @@ originaldata_predicted_result = dataset.predicted_original(
 # plt.show()
 
 # ? plot figure(no SMOGN)
-plot_something = plot_fig("XGBooster", "XGB", "no SMOGN", target)
+plot_something = plot_fig("XGBooster", "XGB", "no SMOGN", target, 
+                        Vs30, Mw, rrup, rake, station_id, station_id_num)
 # plot_something.data_distribution(original_data[0], original_data[1])
-plot_something.residual(result_ori[1], result_ori[3],
-                        originaldata_predicted_result, originaldata_predicted_result_df,
-                        no_SMOGN[f"XGB_{target}"]) #? for test subset
+# plot_something.residual(result_ori[1], result_ori[3],
+#                         originaldata_predicted_result, originaldata_predicted_result_df,
+#                         no_SMOGN[f"XGB_{target}"]) #? for test subset
 # plot_something.residual(original_data[0], original_data[1],
 #                         originaldata_predicted_result, after_process_ori_data,
 #                         cut_period_shallow_crustal_score[f"XGB_{target}"]) #? for all dataset
 # plot_something.measured_predict(original_data[1], originaldata_predicted_result,
 #                                 no_SMOGN[f"XGB_{target}"], lowerbound, higherbound)
-# plot_something.distance_scaling(Mw, Vs30, rake, station_id, False,
-#                                 total_Mw_data, model_path)
-# plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id, station_id_num,
-#                                 True, False, *model_name)
+# plot_something.distance_scaling(False, total_Mw_data, model_path)
+plot_something.respond_spectrum(True, False, *model_name)
 #! SHAP
 # TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")
 # filter = TSMIP_all_df[TSMIP_all_df['eq.type'] == "shallow crustal"].reset_index()

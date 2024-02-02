@@ -28,7 +28,8 @@ class plot_fig:
 
     """
 
-    def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP, target):
+    def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP, target,
+                Vs30, Mw, rrup, rake, station_id, station_num):
         self.model_name = model_name
         self.abbreviation_name = abbreviation_name
         self.SMOGN_TSMIP = SMOGN_TSMIP
@@ -36,7 +37,13 @@ class plot_fig:
         self.fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
         self.period_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
                             0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
-                            7.5, 10.0]
+                            7.0, 7.5, 10.0]
+        self.Vs30 = Vs30
+        self.Mw = Mw
+        self.rrup = rrup
+        self.rake = rake
+        self.station_id = station_id
+        self.station_num = station_num
 
     def data_distribution(self, x_total, y_total):
         """
@@ -139,6 +146,12 @@ class plot_fig:
         Total residual and standard deviation and inter & intra event residual.
         Calculate residual by original anser and original predicted value.
 
+        Args:
+            x_total ([series]): [dataset feature test subset or all dataset]
+            y_total ([series]): [dataset answer test subset or all dataset]
+            predict_value ([series]): [predicted answer]
+            ori_full_data ([series]): [ori_full_data]
+            score ([float]): [R2 score from model]
         """
 
         # * 1. Vs30 Total Residual
@@ -752,7 +765,7 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def measured_predict(self, y_test,
+    def measured_predict(self, y_total,
                          predict_value,
                          score,
                          lowerbound,
@@ -762,8 +775,8 @@ class plot_fig:
         Plot the predict value and true value distribution .
 
         Args:
-            y_test (ori_ans): [original dataset answer]
-            predict_value (ori_predicted): [prediction value]
+            y_total ([series]): [dataset answer test subset or all dataset]
+            predict_value ([series]): [dataset prediction value]
             score ([float]): [R2 score from model]
             lowerbound ([int]): [net lowerbound]
             higherbound ([int]): [net higherbound]
@@ -773,8 +786,8 @@ class plot_fig:
         color_column = []
 
         i = 0
-        while i < len(y_test):
-            x_net = (round(y_test[i], 2) - lowerbound) / \
+        while i < len(y_total):
+            x_net = (round(y_total[i], 2) - lowerbound) / \
                 ((higherbound - lowerbound) / net)
             # +2:因為網格從-2開始打 10:頭減尾8-(-2) 10/net:網格間格距離 x_net:x方向第幾個網格
             y_net = (round(predict_value[i], 2) - lowerbound) / \
@@ -786,8 +799,8 @@ class plot_fig:
             i += 1
 
         j = 0
-        while j < len(y_test):
-            x_net = (round(y_test[j], 2) - lowerbound) / \
+        while j < len(y_total):
+            x_net = (round(y_total[j], 2) - lowerbound) / \
                 ((higherbound - lowerbound) / net)
             y_net = (round(predict_value[j], 2) - lowerbound) / \
                 ((higherbound - lowerbound) / net)
@@ -803,7 +816,7 @@ class plot_fig:
                                                    N=256)
 
         plt.grid(linestyle=':', zorder=0)
-        plt.scatter(y_test, predict_value, s=8,
+        plt.scatter(y_total, predict_value, s=8,
                     c=color_column, cmap=newcmp, zorder=10)
         x_line = [lowerbound, higherbound]
         y_line = [lowerbound, higherbound]
@@ -823,14 +836,13 @@ class plot_fig:
             dpi=300)
         plt.show()
 
-    def distance_scaling(self, Mw, Vs30, rake, station_id,
-                         plot_all_sta, total_Mw_data, model_path):
+    def distance_scaling(self, avg_station_id, total_Mw_data, model_path):
         """
 
         Compute distance scaling figure follow condition given by ourself.
 
         Args:
-            plot_all_sta ([bool]): [to decide if we want to plot all station]
+            avg_station_id ([bool]): [to decide if we want to plot all station]
             total_data ([array]): [original dataset sperate by Mw]
             model_path ([str]): [the place which the model be stored]
         """
@@ -841,13 +853,12 @@ class plot_fig:
                 ('rrup', '<f8'), ('sta_id', '<i8')]
         rrup_num = [0.1, 0.5, 0.75, 1, 5, 10, 20, 30,
                     40, 50, 60, 70, 80, 90, 100, 150, 200, 300]
-        station_num = 732
-        total_elements = len(rrup_num) * station_num
+        total_elements = len(rrup_num) * self.station_num
         ctx = np.empty(total_elements, dtype=dtype)
         index = 0
-        for station_id in range(station_num):  # 依照station_num、Rrup的順序建recarray
+        for station_id in range(self.station_num):  # 依照station_num、Rrup的順序建recarray
             for rrup in rrup_num:
-                ctx[index] = (Mw, Vs30, rake,
+                ctx[index] = (self.Mw, self.Vs30, self.rake,
                               rrup, station_id + 1)
                 index += 1
         ctx = ctx.view(np.recarray)
@@ -863,17 +874,17 @@ class plot_fig:
         ch_mean, ch_sig, ch_tau, ch_phi = chang.compute(
             ctx, imts, ch_mean, ch_sig, ch_tau, ch_phi)
         ch_mean = np.exp(ch_mean)
-        split_mean = np.split(ch_mean[0], station_num) 
+        split_mean = np.split(ch_mean[0], self.station_num) 
         # 預測結果依station_num數量分組 shape:(732,18)
         
-        if plot_all_sta:
-            for i in range(station_num):
-                plt.plot(rrup_num, split_mean[i],
-                        'r', linewidth='0.4', zorder=5)
-        else:
+        if avg_station_id:
             avg_mean = np.array(split_mean).mean(axis=0)
             plt.plot(rrup_num, avg_mean, 'r',
                     linewidth='1.6', label="This study avg", zorder=20)
+        else:
+            for i in range(self.station_num):
+                plt.plot(rrup_num, split_mean[i],
+                        'r', linewidth='0.4', zorder=5)
 
         # others GMM
         dtype = [('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
@@ -884,8 +895,8 @@ class plot_fig:
         ctx = np.empty(len(rrup_num), dtype=dtype)
         index = 0
         for rrup in rrup_num:
-            ctx[index] = (40, Mw, rake, 0, Vs30, 1, rrup,
-                        rrup, rrup, rrup, 10, True, 10, 1)
+            ctx[index] = (40, self.Mw, self.rake, 0, self.Vs30,
+                          1, rrup, rrup, rrup, rrup, 10, True, 10, 1)
             index += 1
         ctx = ctx.view(np.recarray)
 
@@ -965,7 +976,7 @@ class plot_fig:
                    [0.1, 0.5, 1, 10, 50, 100, 200, 300])
         plt.legend()
         plt.savefig(
-            f"distance scaling Mw-{ctx['mag'][0]} Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} global-{plot_all_sta}.jpg", dpi=300)
+            f"distance scaling Mw-{ctx['mag'][0]} Vs30-{ctx['vs30'][0]} fault-type-{self.fault_type_dict[ctx['rake'][0]]} avg_station_id-{avg_station_id}.jpg", dpi=300)
         plt.show()
 
         # * comparsion different Mw
@@ -975,32 +986,14 @@ class plot_fig:
         Mw_list = [4, 5, 6, 7]
         color = ["lightblue", "lightsalmon", "lightgreen", "lightcoral"]
 
-        if plot_all_sta:
-            for i, Mw in enumerate(Mw_list):
-                single_sta_predict = []
-                for rrup in rrup_num:
-                    RSCon = xgb.DMatrix(
-                        np.array([[np.log(Vs30), Mw,
-                                   np.log(rrup), rake, station_id]]))
-                    single_sta_predict.append(
-                        np.exp(booster_PGA.predict(RSCon)) / 980)
-                plt.scatter(np.exp(total_Mw_data[i+1][0][:, 2]),
-                            np.exp(total_Mw_data[i+1][1]) / 980,
-                            marker='o',
-                            facecolors='none',
-                            s=2,
-                            c=color[i],
-                            zorder=5)
-                plt.plot(rrup_num, single_sta_predict,
-                         linewidth='1.2', zorder=20, label=f"Mw:{Mw_list[i]}")
-        else:
+        if avg_station_id:
             for i, Mw in enumerate(Mw_list):
                 total_sta_predict = []
-                for sta in tqdm(range(station_num)):  # 預測所有station取平均
+                for sta in tqdm(range(self.station_num)):  # 預測所有station取平均
                     single_sta_predict = []
                     for rrup in rrup_num:
                         RSCon = xgb.DMatrix(
-                            np.array([[np.log(Vs30), Mw,
+                            np.array([[np.log(self.Vs30), Mw,
                                        np.log(rrup), 90, sta]]))
                         single_sta_predict.append(
                             np.exp(booster_PGA.predict(RSCon)) / 980)
@@ -1015,6 +1008,25 @@ class plot_fig:
                 plt.plot(rrup_num, np.array(total_sta_predict).mean(axis=0),
                          linewidth='1.2', zorder=20, label=f"Mw:{Mw_list[i]}")
 
+        else:
+            for i, Mw in enumerate(Mw_list):
+                single_sta_predict = []
+                for rrup in rrup_num:
+                    RSCon = xgb.DMatrix(
+                        np.array([[np.log(self.Vs30), Mw,
+                                   np.log(rrup), self.rake, self.station_id]]))
+                    single_sta_predict.append(
+                        np.exp(booster_PGA.predict(RSCon)) / 980)
+                plt.scatter(np.exp(total_Mw_data[i+1][0][:, 2]),
+                            np.exp(total_Mw_data[i+1][1]) / 980,
+                            marker='o',
+                            facecolors='none',
+                            s=2,
+                            c=color[i],
+                            zorder=5)
+                plt.plot(rrup_num, single_sta_predict,
+                         linewidth='1.2', zorder=20, label=f"Mw:{Mw_list[i]}")
+                
         plt.grid(which="both",
                  axis="both",
                  linestyle="-",
@@ -1023,7 +1035,7 @@ class plot_fig:
         plt.xlabel(f'Rrup(km)')
         plt.ylabel(f'{self.target}(g)')
         plt.title(
-            f"Vs30 = {Vs30}m/s  Fault = {self.fault_type_dict[rake]}")
+            f"Vs30 = {self.Vs30}m/s  Fault = {self.fault_type_dict[self.rake]}")
         plt.ylim(10e-4, 5)
         plt.yscale("log")
         plt.xscale("log")
@@ -1031,7 +1043,7 @@ class plot_fig:
                    [0.1, 0.5, 1, 10, 50, 100, 200, 300])
         plt.legend(loc="lower left")
         plt.savefig(
-            f"distance scaling {self.target} Vs30-{Vs30} fault-type-{self.fault_type_dict[rake]} local-{plot_all_sta} station_id-{station_id}.jpg", dpi=300)
+            f"distance scaling {self.target} Vs30-{self.Vs30} fault-type-{self.fault_type_dict[self.rake]} avg_station_id-{avg_station_id} station_id-{self.station_id}.jpg", dpi=300)
         plt.show()
 
     def explainable(self, eq_df, x_total, model_feture, ML_model, index_start, index_end):
@@ -1197,22 +1209,14 @@ class plot_fig:
 
         fig.canvas.draw()
 
-    def respond_spectrum(self, Vs30, Mw, Rrup, rake, station_id, station_id_num,
-                         plot_all_rake, plot_all_sta, *args: "model"):
+    def respond_spectrum(self, plot_all_rake, avg_station_id, *args: "model"):
         """
 
         This function is called to plot respond spectrum .
 
         Args:
-            total_data ([list]): [total filter by Mw dataset]
-            Vs30 ([float]): [Vs30 value]
-            Mw ([int]): [Mw value]
-            Rrup ([float]): [Rrup value]
-            rake ([float]): [rake value]
-            station_id ([int]): [station number value]
-            station_id_num ([int]): [all station number]
             plot_all_rake ([bool]): [to decide if plot all rake figure]
-            plot_all_sta ([bool]): [to decide if plot all station figure]
+            avg_station_id ([bool]): [to decide if plot all station figure]
         """
         booster_PGA = xgb.Booster()
         booster_PGA.load_model(args[0])
@@ -1274,41 +1278,11 @@ class plot_fig:
 
         # * 1. focal.type independent
         if plot_all_rake == True:
-            single_sta_predict = []
-            RSCon = xgb.DMatrix(
-                np.array([[np.log(Vs30), Mw,
-                           np.log(Rrup), rake, station_id]]))
-            for _model in booster:
-                predict_value = np.exp(_model.predict(RSCon)) / 980
-                single_sta_predict.append(predict_value)
-            plt.grid(which="both",
-                     axis="both",
-                     linestyle="-",
-                     linewidth=0.5,
-                     alpha=0.5)
-            plt.plot(self.period_list,
-                     single_sta_predict, label=self.fault_type_dict[rake])
-            plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
-            plt.xlabel("Period(s)", fontsize=12)
-            plt.ylabel("PSA(g)", fontsize=12)
-            plt.ylim(10e-6, 1)
-            plt.xlim(0.01, 10.0)
-            plt.yscale("log")
-            plt.xscale("log")
-            plt.xticks([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
-                       [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
-            plt.legend()
-            plt.savefig(
-                f"response spectrum-local Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} fault-type-{self.fault_type_dict[rake]} station-{station_id}.png",
-                dpi=300)
-            plt.show()
-
-        else:
             for _rake in self.fault_type_dict:
                 single_sta_predict = []
                 RSCon = xgb.DMatrix(
-                    np.array([[np.log(Vs30), Mw,
-                               np.log(Rrup), _rake, station_id]]))
+                    np.array([[np.log(self.Vs30), self.Mw,
+                               np.log(self.rrup), _rake, self.station_id]]))
                 for _model in booster:
                     predict_value = np.exp(_model.predict(RSCon)) / 980
                     single_sta_predict.append(predict_value)
@@ -1320,7 +1294,7 @@ class plot_fig:
                      linestyle="-",
                      linewidth=0.5,
                      alpha=0.5)
-            plt.title(f"Mw = {Mw}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
+            plt.title(f"Mw = {self.Mw}, Rrup = {self.rrup}km, Vs30 = {self.Vs30}m/s")
             plt.xlabel("Period(s)", fontsize=12)
             plt.ylabel("PSA(g)", fontsize=12)
             plt.ylim(10e-6, 1)
@@ -1331,19 +1305,49 @@ class plot_fig:
                        [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
             plt.legend()
             plt.savefig(
-                f"response spectrum-global Mw-{Mw} Rrup-{Rrup} Vs30-{Vs30} station-{station_id}.png",
+                f"response spectrum-all_rake-{plot_all_rake} Mw-{self.Mw} Rrup-{self.rrup} Vs30-{self.Vs30} station-{self.station_id}.png",
+                dpi=300)
+            plt.show()
+
+        else:
+            single_sta_predict = []
+            RSCon = xgb.DMatrix(
+                np.array([[np.log(self.Vs30), self.Mw,
+                           np.log(self.rrup), self.rake, self.station_id]]))
+            for _model in booster:
+                predict_value = np.exp(_model.predict(RSCon)) / 980
+                single_sta_predict.append(predict_value)
+            plt.grid(which="both",
+                     axis="both",
+                     linestyle="-",
+                     linewidth=0.5,
+                     alpha=0.5)
+            plt.plot(self.period_list,
+                     single_sta_predict, label=self.fault_type_dict[self.rake])
+            plt.title(f"Mw = {self.Mw}, Rrup = {self.rrup}km, Vs30 = {self.Vs30}m/s")
+            plt.xlabel("Period(s)", fontsize=12)
+            plt.ylabel("PSA(g)", fontsize=12)
+            plt.ylim(10e-6, 1)
+            plt.xlim(0.01, 10.0)
+            plt.yscale("log")
+            plt.xscale("log")
+            plt.xticks([0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0],
+                       [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
+            plt.legend()
+            plt.savefig(
+                f"response spectrum-all_rake-{plot_all_rake} Mw-{self.Mw} Rrup-{self.rrup} Vs30-{self.Vs30} fault-type-{self.fault_type_dict[self.rake]} station-{self.station_id}.png",
                 dpi=300)
             plt.show()
 
         # * 2. Mw independent
         Mw_list = [4, 5, 6, 7]
-        if plot_all_sta:
+        if avg_station_id:
             for i, _Mw in enumerate(Mw_list):
                 total_sta_predict = []
-                for sta in tqdm(range(station_id_num)):  # 預測所有station取平均
+                for sta in tqdm(range(self.station_num)):  # 預測所有station取平均
                     single_sta_predict = []
-                    RSCon = xgb.DMatrix(np.array([[np.log(Vs30), _Mw,
-                                                   np.log(Rrup), rake, sta]]))
+                    RSCon = xgb.DMatrix(np.array([[np.log(self.Vs30), _Mw,
+                                                   np.log(self.rrup), self.rake, sta]]))
                     for _model in booster:
                         predict_value = np.exp(_model.predict(RSCon)) / 980
                         single_sta_predict.append(predict_value)
@@ -1356,8 +1360,8 @@ class plot_fig:
         else:
             for i, _Mw in enumerate(Mw_list):
                 single_sta_predict = []
-                RSCon = xgb.DMatrix(np.array([[np.log(Vs30), _Mw,
-                                               np.log(Rrup), rake, station_id]]))
+                RSCon = xgb.DMatrix(np.array([[np.log(self.Vs30), _Mw,
+                                               np.log(self.rrup), self.rake, self.station_id]]))
                 for _model in booster:
                     predict_value = np.exp(_model.predict(RSCon)) / 980
                     single_sta_predict.append(predict_value)
@@ -1370,7 +1374,7 @@ class plot_fig:
                  linewidth=0.5,
                  alpha=0.5)
         plt.title(
-            f"Fault_type = {self.fault_type_dict[rake]}, Rrup = {Rrup}km, Vs30 = {Vs30}m/s")
+            f"Fault_type = {self.fault_type_dict[self.rake]}, Rrup = {self.rrup}km, Vs30 = {self.Vs30}m/s")
         plt.xlabel("Period(s)", fontsize=12)
         plt.ylabel("PSA(g)", fontsize=12)
         plt.ylim(10e-6, 1)
@@ -1381,7 +1385,7 @@ class plot_fig:
                    [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
         plt.legend(loc="lower left")
         plt.savefig(
-            f"response spectrum-global plot_all_sta-{plot_all_sta} Fault_type-{self.fault_type_dict[rake]} Rrup-{Rrup} Vs30-{Vs30} station-{station_id}.png",
+            f"response spectrum-all_rake-{plot_all_rake} avg_station_id-{avg_station_id} Fault_type-{self.fault_type_dict[self.rake]} Rrup-{self.rrup} Vs30-{self.Vs30} station-{self.station_id}.png",
             dpi=300)
         plt.show()
 

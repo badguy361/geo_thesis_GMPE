@@ -21,7 +21,7 @@ targets = ["PGA", "PGV", "Sa001", "Sa002", "Sa003", "Sa004", "Sa005",
 dataset_type = "no SMOGN"
 target = "PGA"
 Mw = 7.65
-rrup = 40
+rrup = 75
 Vs30 = 360
 rake = 90
 station_id = 500
@@ -164,8 +164,8 @@ plot_something = plot_fig("XGBooster", "XGB", "no SMOGN", target,
 # plot_something.data_distribution()
 # plot_something.residual()
 # plot_something.measured_predict(lowerbound, higherbound)
-# plot_something.distance_scaling(avg_station_id = False, total_Mw_data, model_path)
-plot_something.respond_spectrum(plot_all_rake = True, avg_station_id = False, *model_name)
+# plot_something.distance_scaling(False, total_Mw_data, model_path)
+plot_something.respond_spectrum(False, True, *model_name)
 #! SHAP
 # TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")
 # filter = TSMIP_all_df[TSMIP_all_df['eq.type'] == "shallow crustal"].reset_index()
@@ -173,25 +173,4 @@ plot_something.respond_spectrum(plot_all_rake = True, avg_station_id = False, *m
 # index_start = station_order.index[0]
 # index_end = station_order.index[-1]+1
 # plot_something.explainable(station_order, model_feture,
-#                             booster, index_start, index_end)
-
-# ? plot figure(SMOGN)
-# plot_something = plot_fig("XGBooster", "XGB", "SMOGN", target)
-# plot_something.data_distribution(result_SMOGN[0], result_SMOGN[1])
-# plot_something.residual(original_data[0], original_data[1],
-#                         originaldata_predicted_result, after_process_ori_data,
-#                         cut_period_shallow_crustal_score[f"XGB_{target}"])
-# plot_something.measured_predict(original_data[1], originaldata_predicted_result,
-#                                 cut_period_shallow_crustal_score[f"XGB_{target}"], lowerbound, higherbound)
-# plot_something.distance_scaling(Mw, Vs30, rake, station_id, False,
-#                                 total_Mw_data, model_path)
-# plot_something.respond_spectrum(Vs30, Mw, Rrup, rake, station_id, station_id_num,
-#                                 True, False, *model_name)
-#! SHAP
-# TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")
-# filter = TSMIP_all_df[TSMIP_all_df['eq.type'] == "shallow crustal"].reset_index()
-# station_order = filter[filter["EQ_ID"] == "1999_0920_1747_16"][["STA_Lon_X","STA_Lat_Y","STA_rank","STA_ID"]]
-# index_start = station_order.index[0]
-# index_end = station_order.index[-1]+1
-# plot_something.explainable(station_order, original_data[0], model_feture,
 #                             booster, index_start, index_end)

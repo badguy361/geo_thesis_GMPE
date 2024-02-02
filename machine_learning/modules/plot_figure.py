@@ -46,7 +46,7 @@ class plot_fig:
         self.fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
         self.period_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
                             0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
-                            7.0, 7.5, 10.0]
+                            7.5, 10.0]
         
         self.Vs30 = Vs30
         self.Mw = Mw
@@ -1208,7 +1208,7 @@ class plot_fig:
 
         fig.canvas.draw()
 
-    def respond_spectrum(self, plot_all_rake, avg_station_id, *args: "model"):
+    def respond_spectrum(self, plot_all_rake=False, avg_station_id=True, *args: "model"):
         """
 
         This function is called to plot respond spectrum .

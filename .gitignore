@@ -8,3 +8,6 @@ PowerBI
 __pycache__
 *.ai
 *.json
+*.csv
+*.rst
+*.grd

@@ -6,22 +6,10 @@ from pykrige import OrdinaryKriging
 from mpl_toolkits.basemap import Basemap
 from matplotlib.patches import Path, PathPatch
 
-name = 'Lin2009'
-# df = pd.read_csv('../../../../TSMIP_FF.csv')
-# chichi_df = df[df["MW"] == 7.65]  # choose chichi eq
+name = 'Chang2023'
+df = pd.read_csv('../../../../TSMIP_FF.csv')
+chichi_df = df[df["MW"] == 7.65]  # choose chichi eq
 # chichi_df.to_csv("chichi_scenario_record_true.csv",index=False,columns=["STA_Lon_X","STA_Lat_Y","PGA"])
-
-df_ori_true = pd.read_csv(
-    "scenario_result/true/chichi_scenario_record_true.csv")
-df_ori_chang = pd.read_csv(
-    "scenario_result/Chang2023/chichi_scenario_record_Chang2023.csv")
-df_ori_lin = pd.read_csv(
-    "scenario_result/Lin2009/chichi_scenario_record_Lin2009.csv")
-df_ori_dict = {
-    "true": df_ori_true,
-    "Lin2009": df_ori_lin,
-    "Chang2023": df_ori_chang
-}
 
 #! 1. get result csv
 
@@ -33,10 +21,14 @@ def merge_scenario_result(name):
         f"scenario_result/{name}/dataset/gmf-data.csv", skiprows=[0])
     df_total = df_gmf.merge(df_site, how='left', on='site_id')
     df_total = df_total.groupby("site_id").median()
+    df_total = df_total.drop(columns=['event_id'])
+    df_total.rename(columns = {'lon':'STA_Lon_X','lat':'STA_Lat_Y','gmv_PGA':'PGA'}, inplace = True)
     df_total.to_csv(
         f"scenario_result/{name}/chichi_scenario_record_{name}.csv", index=False)
 
-#! 2. run Surfer to get grd file
+# _ = merge_scenario_result(name)
+
+#! 2. get interpolation file by Kriging
 
 
 def get_interpolation(name, df):
@@ -59,5 +51,16 @@ def get_interpolation(name, df):
     results.to_csv(
         f'scenario_result/{name}/chichi_kriging_interpolate_{name}.csv', index=False)
 
+df_ori_true = pd.read_csv(
+    "scenario_result/true/chichi_scenario_record_true.csv")
+df_ori_chang = pd.read_csv(
+    "scenario_result/Chang2023/chichi_scenario_record_Chang2023.csv")
+df_ori_lin = pd.read_csv(
+    "scenario_result/Lin2009/chichi_scenario_record_Lin2009.csv")
+df_ori_dict = {
+    "true": df_ori_true,
+    "Lin2009": df_ori_lin,
+    "Chang2023": df_ori_chang
+}
 
 _ = get_interpolation(name, df_ori_dict[name])

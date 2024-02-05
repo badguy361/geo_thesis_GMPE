@@ -50,9 +50,15 @@ class dataprocess:
 
     def splitDataset(self, after_process_data, target, split, *args):
         """
+        Split or not dataset, and change data structure 
 
-        Split or not dataset, and change some data structure 
+        Args:
+            after_process_data ([array]): [the data after pre processing]
+            target ([str]): [target term]
+            split ([bool]): [to decide if want to split dataset]
 
+        Returns:
+            [list]: [train and test dataset depend by split or not]
         """
         assert str(
             type(after_process_data)
@@ -75,6 +81,40 @@ class dataprocess:
             y = after_process_data[target]
             print("--------not split_your_data----------")
             return [x.values, y.values]
+
+    def resetTrainTest(self, SMOGN_train_x, SMOGN_train_y, all_dataset_x,
+                       all_dataset_y, features, target):
+        """
+        To reset the train and test subset in order to avoid repeated data
+        in the test dataset when using the SMOGN dataset
+
+        Args:
+            SMOGN_train_x ([df]): [train dataset feature part from SMOGN]
+            SMOGN_train_y ([df]): [train dataset target part from SMOGN]
+            all_dataset_x ([df]): [original train feature part]
+            all_dataset_y ([df]): [original train target part]
+            features ([list]): [features name]
+            target ([str]): [target name]
+
+        Returns:
+            [list]: [new test dataset array]
+        """
+        train_SMOGN_df = pd.DataFrame(SMOGN_train_x, columns=features)
+        train_SMOGN_df[target] = SMOGN_train_y
+        train_all_df = pd.DataFrame(all_dataset_x, columns=features)
+        train_all_df[target] = all_dataset_y
+
+        # remove same part in train and all dataframe and gernate new test subset
+        merged_df = pd.merge(train_SMOGN_df, train_all_df,
+                             how='right', indicator=True)
+        merged_df = merged_df[merged_df['_merge'] == 'right_only']
+        merged_df = merged_df.drop(columns=['_merge'])
+        # randomly gernate test subset
+        test_df = merged_df.sample(n=int(len(train_all_df)*0.2), random_state=87)
+
+        test_y_array = test_df[target].to_numpy()
+        test_x_array = test_df.drop(columns=[target]).to_numpy()
+        return [test_x_array, test_y_array]
 
     def training(self, target, model_name, x_train, x_test, y_train, y_test):
         """

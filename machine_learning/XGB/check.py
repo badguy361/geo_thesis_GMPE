@@ -1,6 +1,6 @@
 import pandas as pd
-test_df=pd.read_csv("test_df.csv")
-train_df=pd.read_csv("train_df.csv")
+# test_df=pd.read_csv("test_df.csv")
+train_df=pd.read_csv("SMOGN_train.csv")
 all_df=pd.read_csv("all_df.csv")
 
 # test_aligned = test_df[train_df.columns]

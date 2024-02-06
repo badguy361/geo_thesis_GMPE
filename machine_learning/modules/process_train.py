@@ -108,9 +108,9 @@ class dataprocess:
         merged_df = pd.merge(train_SMOGN_df, train_all_df,
                              how='right', indicator=True)
         merged_df = merged_df[merged_df['_merge'] == 'right_only']
-        merged_df = merged_df.drop(columns=['_merge'])
+        test_df = merged_df.drop(columns=['_merge'])
         # randomly gernate test subset
-        test_df = merged_df.sample(n=int(len(train_all_df)*0.2), random_state=87)
+        test_df = test_df.sample(n=int(len(train_all_df)*0.2), random_state=5566)
 
         test_y_array = test_df[target].to_numpy()
         test_x_array = test_df.drop(columns=[target]).to_numpy()
@@ -215,9 +215,7 @@ class dataprocess:
             t0 = time.time()
             grid_result = XGBModel.fit(x_train, y_train)
             feature_importances = grid_result.feature_importances_
-            print("feature importances :", grid_result.feature_importances_)
-            fit_time = time.time() - t0
-            final_predict = XGBModel.predict(x_test)
+            print("feature importances :", feature_importances)
             score = XGBModel.score(x_test, y_test)
             print("test_R2_score :", score)
 
@@ -258,7 +256,7 @@ class dataprocess:
             print("Method not in this funcion, please add this by manual")
 
         # pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
-        return score, feature_importances, fit_time, final_predict, model
+        return model
 
     def predicted_original(self, model, ori_dataset):
         """

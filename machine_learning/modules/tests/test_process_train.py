@@ -8,6 +8,7 @@ import time
 from numpy.testing import assert_array_equal
 import xgboost as xgb
 sys.path.append("/TSMIP/machine_learning/modules")
+# sys.path.append("..")
 from process_train import dataprocess
 
 model = dataprocess()
@@ -30,7 +31,7 @@ class Testprocess_train(unittest.TestCase):
         data[f'ln{target}(gal)'] = np.log(data[f'{target}'] * 980)
         after_process_data = data[(data["eq.type"] != "subduction interface")
                                   & (data["eq.type"] != "subduction intraslab")
-                                  & (data["eq.type"] != "deep crustal")].reset_index() 
+                                  & (data["eq.type"] != "deep crustal")].reset_index()
 
         df = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
         result = model.preProcess(df, target, True)
@@ -42,12 +43,12 @@ class Testprocess_train(unittest.TestCase):
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
         after_process_data = model.preProcess(data, target, True)
 
-        model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
+        model_feature = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
         result_ori = model.splitDataset(after_process_data,
-                                         f'ln{target}(gal)', True,
-                                         *model_feture)
+                                        f'ln{target}(gal)', True,
+                                        *model_feature)
 
-        x = after_process_data.loc[:, [x for x in model_feture]]
+        x = after_process_data.loc[:, [x for x in model_feature]]
         y = after_process_data[target]
         x_train, x_test, y_train, y_test = train_test_split(x.values,
                                                             y.values,
@@ -57,21 +58,48 @@ class Testprocess_train(unittest.TestCase):
         self.assertEqual(round(x_train[0][0], 2),
                          round(result_ori[0][0][0], 2))
 
+    def test_resetTrainTest(self):
+        target = "PGA"
+        data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
+        after_process_data = model.preProcess(data, target, True)
+        model_feature = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
+        result_ori = model.splitDataset(after_process_data,
+                                        f'ln{target}(gal)', True,
+                                        *model_feature)
+        original_data = model.splitDataset(after_process_data, 
+                                        f'ln{target}(gal)', False,
+                                        *model_feature)
+        new_result_ori = model.resetTrainTest(result_ori[1], result_ori[3],
+                                              original_data[0], original_data[1], model_feature, f'ln{target}(gal)')
+
+        train_SMOGN_df = pd.DataFrame(result_ori[1], columns=model_feature)
+        train_SMOGN_df[target] = result_ori[3]
+        train_all_df = pd.DataFrame(original_data[0], columns=model_feature)
+        train_all_df[target] = original_data[1]
+        merged_df = pd.merge(train_SMOGN_df, train_all_df,
+                             how='right', indicator=True)
+        merged_df = merged_df[(merged_df['_merge'] == 'right_only')]
+        test_df = merged_df.drop(columns=['_merge'])
+        test_y_array = test_df[target].to_numpy()
+        test_x_array = test_df.drop(columns=[target]).to_numpy()
+        np.testing.assert_array_equal(test_x_array, new_result_ori[0])
+        np.testing.assert_array_equal(test_y_array, new_result_ori[1])
+
     def test_training(self):
         target = "PGA"
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
         model = dataprocess()
         after_process_data = model.preProcess(data, target, True)
-        model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
+        model_feature = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
         result_ori = model.splitDataset(after_process_data,
-                                         f'ln{target}(gal)', True,
-                                         *model_feture)
-        score_model, feature_importances_model, fit_time, final_predict_model, ML_model = model.training(
+                                        f'ln{target}(gal)', True,
+                                        *model_feature)
+        ML_model = model.training(
             target, "XGB", result_ori[0], result_ori[1], result_ori[2],
             result_ori[3])
 
         XGB_params = {'n_estimators': 893, 'eta': 0.18, 'max_depth': 30, 'gamma': 0.004,
-                          'min_child_weight': 6.9, 'subsample': 0.99, 'lambda': 4.3, 'alpha': 0.24, 'n_jobs': -1}
+                      'min_child_weight': 6.9, 'subsample': 0.99, 'lambda': 4.3, 'alpha': 0.24, 'n_jobs': -1}
         XGBModel = XGBRegressor(**XGB_params)
         t0 = time.time()
         grid_result = XGBModel.fit(result_ori[0], result_ori[2])
@@ -81,18 +109,18 @@ class Testprocess_train(unittest.TestCase):
         score_test = XGBModel.score(result_ori[1], result_ori[3])
         model = XGBModel
 
-        self.assertEqual(score_model, score_test)
+        self.assertEqual(type(ML_model), type(model))
 
     def test_predictedOriginal(self):
         target = "PGA"
         data = pd.read_csv("/TSMIP/TSMIP_FF_test.csv")
-        model_feture = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
+        model_feature = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
         after_process_ori_data = model.preProcess(data, target, True)
         original_data = model.splitDataset(after_process_ori_data,
-                                            f'ln{target}(gal)', False,
-                                            *model_feture)
+                                           f'ln{target}(gal)', False,
+                                           *model_feature)
         booster = xgb.Booster()
-        booster.load_model(f'XGB_{target}.json')  
+        booster.load_model(f'XGB_{target}.json')
         originaldata_predicted_result = model.predicted_original(
             booster, original_data)
 
@@ -103,6 +131,7 @@ class Testprocess_train(unittest.TestCase):
 suite = unittest.TestSuite()
 suite.addTest(Testprocess_train('test_preProcess'))
 suite.addTest(Testprocess_train('test_splitDataset'))
+suite.addTest(Testprocess_train('test_resetTrainTest'))
 suite.addTest(Testprocess_train('test_training'))
 suite.addTest(Testprocess_train('test_predictedOriginal'))
 

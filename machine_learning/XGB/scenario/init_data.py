@@ -26,7 +26,7 @@ def merge_scenario_result(name):
     df_total.to_csv(
         f"scenario_result/{name}/chichi_scenario_record_{name}.csv", index=False)
 
-# _ = merge_scenario_result(name)
+_ = merge_scenario_result(name)
 
 #! 2. get interpolation file by Kriging
 

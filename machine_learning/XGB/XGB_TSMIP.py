@@ -1,16 +1,11 @@
-import optuna
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import sys
 import xgboost as xgb
+import json
 sys.path.append("..")
 from modules.process_train import dataprocess
 from modules.plot_figure import plot_fig
-from modules.optuna_define import optimize_train
-from optuna.visualization import plot_param_importances
-from optuna.visualization import plot_optimization_history
-from sklearn.model_selection import train_test_split
 
 targets = ["PGA", "PGV", "Sa001", "Sa002", "Sa003", "Sa004", "Sa005",
            "Sa0075", "Sa01", "Sa012", "Sa015", "Sa017", "Sa02",
@@ -19,12 +14,13 @@ targets = ["PGA", "PGV", "Sa001", "Sa002", "Sa003", "Sa004", "Sa005",
 
 # ? parameters
 dataset_type = "cut period_shallow crustal"
-target = "PGA"
+target = "Sa10"
+plot_subset = "test subset"
 Mw = 7.65
-rrup = 75
+rrup = 100
 Vs30 = 360
 rake = 90
-station_id = 500
+station_id = 350
 station_id_num = 732  # station 總量
 model_path = f'model/{dataset_type}/XGB_{target}.json'
 model_name = [
@@ -38,44 +34,20 @@ model_name = [
     f'model/{dataset_type}/XGB_Sa30.json', f'model/{dataset_type}/XGB_Sa40.json', f'model/{dataset_type}/XGB_Sa50.json',
     f'model/{dataset_type}/XGB_Sa75.json', f'model/{dataset_type}/XGB_Sa100.json'
 ]
-# all_SMOGN_score = {
-#     'XGB_PGA': 0.87, 'XGB_PGV': 0.90, 'XGB_Sa001': 0.87, 'XGB_Sa002': 0.88,
-#     'XGB_Sa003': 0.88, 'XGB_Sa004': 0.88, 'XGB_Sa005': 0.88, 'XGB_Sa0075': 0.88,
-#     'XGB_Sa01': 0.88 , 'XGB_Sa012': 0.88 , 'XGB_Sa015': 0.87 , 'XGB_Sa017': 0.87 ,
-#     'XGB_Sa02': 0.86, 'XGB_Sa025': 0.86, 'XGB_Sa03': 0.86, 'XGB_Sa04': 0.86,
-#     'XGB_Sa05': 0.86, 'XGB_Sa075': 0.89, 'XGB_Sa10': 0.91, 'XGB_Sa15': 0.92,
-#     'XGB_Sa20': 0.92, 'XGB_Sa30': 0.93, 'XGB_Sa40': 0.93, 'XGB_Sa50': 0.93,
-#     'XGB_Sa75': 0.93, 'XGB_Sa100': 0.94
-# }
-cut_period_shallow_crustal_score = {
-    'XGB_PGA': 0.88, 'XGB_PGV': 0.90, 'XGB_Sa001': 0.87, 'XGB_Sa002': 0.88,
-    'XGB_Sa003': 0.89, 'XGB_Sa004': 0.88, 'XGB_Sa005': 0.88, 'XGB_Sa0075': 0.88,
-    'XGB_Sa01': 0.88, 'XGB_Sa012': 0.88, 'XGB_Sa015': 0.87, 'XGB_Sa017': 0.87,
-    'XGB_Sa02': 0.87, 'XGB_Sa025': 0.86, 'XGB_Sa03': 0.86, 'XGB_Sa04': 0.86,
-    'XGB_Sa05': 0.86, 'XGB_Sa075': 0.89, 'XGB_Sa10': 0.91, 'XGB_Sa15': 0.92,
-    'XGB_Sa20': 0.93, 'XGB_Sa30': 0.93, 'XGB_Sa40': 0.94, 'XGB_Sa50': 0.94,
-    'XGB_Sa75': 0.94, 'XGB_Sa100': 0.94
-}
-no_SMOGN = {
-    'XGB_PGA': 0.84, 'XGB_PGV': 0.88, 'XGB_Sa001': 0.84, 'XGB_Sa002': 0.84,
-    'XGB_Sa003': 0.84, 'XGB_Sa004': 0.84, 'XGB_Sa005': 0.85, 'XGB_Sa0075': 0.85,
-    'XGB_Sa01': 0.85, 'XGB_Sa012': 0.85, 'XGB_Sa015': 0.84, 'XGB_Sa017': 0.84,
-    'XGB_Sa02': 0.83, 'XGB_Sa025': 0.82, 'XGB_Sa03': 0.82, 'XGB_Sa04': 0.82,
-    'XGB_Sa05': 0.84, 'XGB_Sa075': 0.87, 'XGB_Sa10': 0.88, 'XGB_Sa15': 0.90,
-    'XGB_Sa20': 0.92, 'XGB_Sa30': 0.92, 'XGB_Sa40': 0.93, 'XGB_Sa50': 0.93,
-    'XGB_Sa75': 0.92, 'XGB_Sa100': 0.93
-}
 lowerbound = -2
 higherbound = 8
-study_name = 'XGB_TSMIP_4'
+model_feature = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
+with open('model_info.json') as f:
+    score = json.loads(f.read())
+    for i in score["R2 score"]:
+        if i["name"] == dataset_type:
+            r2_score = i[f"XGB_{target}"]
 
 # ? data preprocess
-TSMIP_smogn_df = pd.read_csv(
-    f"../../../{dataset_type}/TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv")
+dataset = dataprocess()
 TSMIP_df = pd.read_csv(
     f"../../../{dataset_type}/TSMIP_FF_period/TSMIP_FF_{target}.csv")
 TSMIP_filter_df = TSMIP_df.loc[TSMIP_df['MW'] == 7.65].copy()  # filter 標準
-# Rrup range: 0.1,0.5,0.75,1,5,10,20,30,40,50,60,70,80,90,100,150,200
 TSMIP_Mw4_df = TSMIP_df.loc[(TSMIP_df['MW'] >= 4)
                             & (TSMIP_df['MW'] < 5)].copy()
 TSMIP_Mw5_df = TSMIP_df.loc[(TSMIP_df['MW'] >= 5)
@@ -85,8 +57,6 @@ TSMIP_Mw6_df = TSMIP_df.loc[(TSMIP_df['MW'] >= 6)
 TSMIP_Mw7_df = TSMIP_df.loc[(TSMIP_df['MW'] >= 7)
                             & (TSMIP_df['MW'] < 8)].copy()
 
-dataset = dataprocess()
-after_process_SMOGN_data = dataset.preProcess(TSMIP_smogn_df, target, False)
 after_process_ori_data = dataset.preProcess(TSMIP_df, target, True)
 after_process_ori_filter_data = dataset.preProcess(
     TSMIP_filter_df, target, True)
@@ -95,9 +65,6 @@ after_process_ori_Mw5_data = dataset.preProcess(TSMIP_Mw5_df, target, True)
 after_process_ori_Mw6_data = dataset.preProcess(TSMIP_Mw6_df, target, True)
 after_process_ori_Mw7_data = dataset.preProcess(TSMIP_Mw7_df, target, True)
 
-model_feature = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-result_SMOGN = dataset.splitDataset(after_process_SMOGN_data,
-                                    f'ln{target}(gal)', True, *model_feature)
 result_ori = dataset.splitDataset(after_process_ori_data,
                                   f'ln{target}(gal)', True, *model_feature)
 original_data = dataset.splitDataset(after_process_ori_data, f'ln{target}(gal)',
@@ -115,60 +82,65 @@ original_Mw7_data = dataset.splitDataset(after_process_ori_Mw7_data, f'ln{target
 total_Mw_data = [original_filter_data, original_Mw4_data,
                  original_Mw5_data, original_Mw6_data, original_Mw7_data]
 
-# test_subset_x = pd.read_csv("final_test.csv")
-# test_subset_y = pd.read_csv("test_subset_y.csv")
+# * SMOGN case
+if dataset_type != "no SMOGN":
+    TSMIP_smogn_df = pd.read_csv(
+        f"../../../{dataset_type}/TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv")
+    after_process_SMOGN_data = dataset.preProcess(
+        TSMIP_smogn_df, target, False)
+    result_SMOGN = dataset.splitDataset(after_process_SMOGN_data,
+                                        f'ln{target}(gal)', True, *model_feature)
+    new_result_ori = dataset.resetTrainTest(result_SMOGN[0], result_SMOGN[2],
+                                            original_data[0], original_data[1], model_feature, f'ln{target}(gal)')
 
 # ? model train
-new_result_ori = dataset.resetTrainTest(result_SMOGN[0], result_SMOGN[2],
-                       original_data[0], original_data[1], model_feature, f'ln{target}(gal)')
-#! result_ori[0](訓練資料)之shape : (29896,5) 為 29896筆 records 加上以下5個columns ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-score, feature_importances, fit_time, final_predict, ML_model = dataset.training(
-    target, "XGB", result_SMOGN[0], new_result_ori[0], result_SMOGN[2], new_result_ori[1])
-
-# ? optuna choose parameter
-#! dashboard : optuna-dashboard mysql://root@localhost/XGB_TSMIP
-# trainer = optimize_train(result_ori[0], result_ori[1], result_ori[2], result_ori[3])
-# def objective_wrapper(trial):
-#     return trainer.XGB(trial)
-# study = optuna.create_study(study_name=study_name,
-#                             storage="mysql://root@localhost/XGB_TSMIP",
-#                             direction="maximize")
-# study.optimize(objective_wrapper, n_trials=10)
-# print("study.best_params", study.best_params)
-# print("study.best_value", study.best_value)
+# if dataset_type != "no SMOGN":
+#     ML_model = dataset.training(target, "XGB",
+#                             result_SMOGN[0], new_result_ori[0],
+#                             result_SMOGN[2], new_result_ori[1])
+# else:
+#     ML_model = dataset.training(target, "XGB",
+#                             result_ori[0], result_ori[1],
+#                             result_ori[2], result_ori[3])
 
 # ? model predicted
-# booster = xgb.Booster()
-# booster.load_model(f"model/{dataset_type}/XGB_{target}.json")
-#! residual std. 畫全部dataset
-# originaldata_predicted_result = dataset.predicted_original(
-#     booster, original_data)
-#! residual std. 只畫test subset
-# result_ori_dataset = [result_ori[1], result_ori[3]]
-# combined_data = np.concatenate((result_ori[1], result_ori[3][:,np.newaxis]), axis=1)
-# originaldata_predicted_result_df = pd.DataFrame(combined_data,
-#                                  columns=['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank',f'ln{target}(gal)'])
-# originaldata_predicted_result = dataset.predicted_original(
-#     booster, result_ori_dataset)
+booster = xgb.Booster()
+booster.load_model(model_path)
+if plot_subset == "all dataset":
+    originaldata_predicted_result = dataset.predicted_original(
+        booster, original_data)
+
+    plot_something = plot_fig("XGBooster", "XGB", dataset_type, target,
+                              original_data[0], original_data[1], originaldata_predicted_result,
+                              after_process_ori_data, r2_score,
+                              Vs30, Mw, rrup, rake, station_id, station_id_num)
+
+elif plot_subset == "test subset":
+    if dataset_type != "no SMOGN": # 若是SMOGN test subset需考慮資料重複問題
+        result_ori_dataset = [new_result_ori[0], new_result_ori[1]]
+    else:
+        result_ori_dataset = [result_ori[1], result_ori[3]]
+    combined_data = np.concatenate(
+        (result_ori_dataset[0], result_ori_dataset[1][:, np.newaxis]), axis=1)
+    originaldata_predicted_result_df = pd.DataFrame(combined_data,
+                                                    columns=['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank', f'ln{target}(gal)'])
+    originaldata_predicted_result = dataset.predicted_original(
+        booster, result_ori_dataset)
+
+    plot_something = plot_fig("XGBooster", "XGB", dataset_type, target,
+                              result_ori_dataset[0], result_ori_dataset[1], originaldata_predicted_result,
+                              originaldata_predicted_result_df, r2_score,
+                              Vs30, Mw, rrup, rake, station_id, station_id_num)
 #! 檢測模型
 # for i in [6,6.2,6.3,6.4,6.6,6.7,6.9,7.0,7.1,7.2,7.4,7.5,7.7,7.9,8.0]:
 #     ans = booster.predict(xgb.DMatrix([(np.log(760), i, np.log(300), -90, 700)]))
 #     plt.scatter(i,ans)
 # plt.show()
 
-# ? plot figure(no SMOGN)
-# plot_something = plot_fig("XGBooster", "XGB", "no SMOGN", target,
-#                         original_data[0], original_data[1], originaldata_predicted_result,
-#                         after_process_ori_data, no_SMOGN[f"XGB_{target}"],
-#                         Vs30, Mw, rrup, rake, station_id, station_id_num) #? for all dataset
-# plot_something = plot_fig("XGBooster", "XGB", "no SMOGN", target,
-#                         result_ori[1], result_ori[3], originaldata_predicted_result,
-#                         originaldata_predicted_result_df, no_SMOGN[f"XGB_{target}"],
-#                         Vs30, Mw, rrup, rake, station_id, station_id_num)  #? for test subset
-
+# ? plot figure
 # plot_something.data_distribution()
-# plot_something.residual()
 # plot_something.measured_predict(lowerbound, higherbound)
+plot_something.residual()
 # plot_something.distance_scaling(True, total_Mw_data, model_path)
 # plot_something.respond_spectrum(False, True, *model_name)
 #! SHAP

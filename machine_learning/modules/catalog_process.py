@@ -1,11 +1,9 @@
 import numpy as np
-from collections import Counter
 import pandas as pd
 import matplotlib.pyplot as plt
 from process_train import dataprocess
 import matplotlib.pyplot as plt
 import smogn
-import glob
 from sklearn.model_selection import train_test_split
 
 def get_sta_rank():
@@ -56,7 +54,7 @@ def get_sta_rank():
     plt.savefig("../XGB/station_id_distribution.jpg", dpi=300)
     plt.show()
 
-def cut_period(target, period, column):
+def cut_period(folder, target, period, column):
     """
 
     Args:
@@ -72,9 +70,9 @@ def cut_period(target, period, column):
                                        "STA_Lon_X", "STA_Lat_Y", "STA_rank", "STA_ID", "eq.type", "Z1.0", f"{column}"]]
 
     selected_columns_df.to_csv(
-        f"../../../no SMOGN/TSMIP_FF_period/TSMIP_FF_{target}.csv", index=False)
+        f"../../../{folder}/TSMIP_FF_period/TSMIP_FF_{target}.csv", index=False)
 
-def pre_SMOGN(target):
+def pre_SMOGN(folder, target):
     """
     
     process the pre_SMOGN for a particular target .
@@ -82,14 +80,14 @@ def pre_SMOGN(target):
     Args:
         target ([str]): [file target name]
     """
-    TSMIP_df = pd.read_csv(f"../../../no SMOGN/TSMIP_FF_period/TSMIP_FF_{target}.csv")
+    TSMIP_df = pd.read_csv(f"../../../{folder}/TSMIP_FF_period/TSMIP_FF_{target}.csv")
     selected_columns_df = TSMIP_df[["MW", "fault.type", "Vs30", "Rrup",
                                     "STA_rank", f"{target}"]]
 
     selected_columns_df.to_csv(
-        f"../../../no SMOGN/TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv", index=False)
+        f"../../../{folder}/TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv", index=False)
 
-def synthesize(target):
+def synthesize(folder, target):
     """
 
     Synthesize dataset through SMOGN method.
@@ -97,14 +95,14 @@ def synthesize(target):
     Args:
         target ([str]): [file target name]
     """
-    TSMIP_df = pd.read_csv(f"../../../pre cut/TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv")
+    TSMIP_df = pd.read_csv(f"../../../{folder}/TSMIP_FF_pre_SMOGN/TSMIP_FF_pre_smogn_{target}.csv")
 
     # conduct smogn ##這步大概要兩個小時
     TSMIP_smogn = smogn.smoter(
         data=TSMIP_df,
         y=target
     )
-    TSMIP_smogn.to_csv(f"../../../pre cut/TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv", index=False)
+    TSMIP_smogn.to_csv(f"../../../{folder}/TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv", index=False)
 
 def SMOGN_plot(target):
     """
@@ -202,6 +200,7 @@ def period_statistics(periods, *args):
     plt.show()
 
 if __name__=='__main__':
+    folder = "retry SMOGN"
     #? station id
     # _ = get_sta_rank()
 
@@ -221,16 +220,16 @@ if __name__=='__main__':
             7.5, 10.0]
     
     for i in range(len(targets)):
-        _ = cut_period(targets[i], periods[i], columns[i])
+        _ = cut_period(folder, targets[i], periods[i], columns[i])
 
     for index, m in enumerate(targets): # change columns name to target name (ex: T1.0S -> Sa10)
-        TSMIP_df = pd.read_csv(f"../../../no SMOGN/TSMIP_FF_period/TSMIP_FF_{m}.csv")
+        TSMIP_df = pd.read_csv(f"../../../{folder}/TSMIP_FF_period/TSMIP_FF_{m}.csv")
         TSMIP_df = TSMIP_df.rename(columns={columns[index]: targets[index]})
-        TSMIP_df.to_csv(f"../../../no SMOGN/TSMIP_FF_period/TSMIP_FF_{m}.csv", index=False)
+        TSMIP_df.to_csv(f"../../../{folder}/TSMIP_FF_period/TSMIP_FF_{m}.csv", index=False)
 
     for j in range(len(targets)):
-        _ = pre_SMOGN(targets[j])
-    #     _ = synthesize(targets[j])
+        _ = pre_SMOGN(folder, targets[j])
+        _ = synthesize(folder, targets[j])
     
     #? plot distributions
     # _ = SMOGN_plot("Sa01")

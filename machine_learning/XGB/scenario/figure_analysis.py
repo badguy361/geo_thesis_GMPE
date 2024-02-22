@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 from matplotlib.patches import Path, PathPatch
 
-name = 'Chang2023'
+name = 'Phung2020'
 
 fault_data = [
     120.6436, 23.6404, 120.6480, 23.6424, 120.6511, 23.6459, 120.6543, 23.6493,

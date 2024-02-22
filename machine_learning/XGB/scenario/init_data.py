@@ -6,7 +6,7 @@ from pykrige import OrdinaryKriging
 from mpl_toolkits.basemap import Basemap
 from matplotlib.patches import Path, PathPatch
 
-name = 'Chang2023'
+name = 'Phung2020'
 df = pd.read_csv('../../../../TSMIP_FF.csv')
 chichi_df = df[df["MW"] == 7.65]  # choose chichi eq
 # chichi_df.to_csv("chichi_scenario_record_true.csv",index=False,columns=["STA_Lon_X","STA_Lat_Y","PGA"])
@@ -57,10 +57,16 @@ df_ori_chang = pd.read_csv(
     "scenario_result/Chang2023/chichi_scenario_record_Chang2023.csv")
 df_ori_lin = pd.read_csv(
     "scenario_result/Lin2009/chichi_scenario_record_Lin2009.csv")
+df_ori_chao = pd.read_csv(
+    "scenario_result/Chao2020/chichi_scenario_record_Chao2020.csv")
+df_ori_phung = pd.read_csv(
+    "scenario_result/Phung2020/chichi_scenario_record_Phung2020.csv")
 df_ori_dict = {
     "true": df_ori_true,
     "Lin2009": df_ori_lin,
-    "Chang2023": df_ori_chang
+    "Chang2023": df_ori_chang,
+    "Chao2020": df_ori_chao,
+    "Phung2020": df_ori_phung
 }
 
 _ = get_interpolation(name, df_ori_dict[name])

@@ -107,7 +107,7 @@ class dataprocess:
         # remove same part in train and all dataframe and gernate new test subset
         merged_df = pd.merge(train_SMOGN_df, train_all_df,
                              how='right', indicator=True)
-        merged_df = merged_df[(merged_df['_merge'] == 'right_only')]
+        merged_df = merged_df[(merged_df['_merge'] == 'right_only') & (merged_df['lnPGA(gal)'] > 4)]
         test_df = merged_df.drop(columns=['_merge'])
         # randomly gernate test subset
         # test_df = test_df.sample(n=int(len(train_all_df)*0.2), random_state=20)

@@ -1,3 +1,4 @@
+import pickle
 import pandas as pd
 import time
 import numpy as np
@@ -153,8 +154,9 @@ class dataprocess:
             print("cross_val R2 score:", cv_scores)
 
             model = randomForestModel
+            pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
 
-        elif model_name == "GBDT":
+        elif model_name == "GBRT":
             gbr_params = {
                 'n_estimators': 1000,
                 'max_depth': 3,
@@ -181,6 +183,7 @@ class dataprocess:
             print("cross_val R2 score:", cv_scores)
 
             model = GradientBoostingModel
+            pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
 
         elif model_name == "Ada":
             Ada_params = {
@@ -207,6 +210,7 @@ class dataprocess:
             print("cross_val R2 score:", cv_scores)
 
             model = AdaBoostModel
+            pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
 
         elif model_name == "XGB":
             XGB_params = {'n_estimators': 893, 'eta': 0.18, 'max_depth': 30, 'gamma': 0.004,
@@ -232,7 +236,7 @@ class dataprocess:
 
         elif model_name == "SVR":
             feature_importances = 0
-            SVR_params = {'C': 1.99, 'kernel': 'rbf', 'epsilon': 0.001}
+            SVR_params = {'C': 0.+46, 'kernel': 'rbf', 'epsilon': 0.0008}
             SVRModel = SVR(**SVR_params)
             t0 = time.time()
             grid_result = SVRModel.fit(x_train, y_train)
@@ -251,11 +255,11 @@ class dataprocess:
             print("cross_val R2 score:", cv_scores)
 
             model = SVRModel
+            pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
 
         else:
             print("Method not in this funcion, please add this by manual")
 
-        # pickle.dump(model, open(f"{model_name}_{target}.pkl", 'wb'))
         return model
 
     def predicted_original(self, model, ori_dataset):

@@ -3,7 +3,7 @@ import xgboost as xgb
 from xgboost import XGBRegressor
 from sklearn.model_selection import cross_val_score
 import pandas as pd
-from modules.process_train import dataprocess
+from process_train import dataprocess
 
 class optimize_train():
     def __init__(self, x_train, x_test, y_train, y_test):
@@ -43,36 +43,40 @@ class optimize_train():
 
 
 if __name__ == '__main__':
-    dataset_type = "no SMOGN"
-    target = "Sa03"
-    model_feature = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
-    
-    dataset = dataprocess()
-    TSMIP_df = pd.read_csv(
-        f"../../../{dataset_type}/TSMIP_FF_period/TSMIP_FF_{target}.csv")
-    after_process_ori_data = dataset.preProcess(TSMIP_df, target, True)
-    original_data = dataset.splitDataset(after_process_ori_data, f'ln{target}(gal)',
-                                     False, *model_feature)
-    
-    TSMIP_smogn_df = pd.read_csv(
-        f"../../../{dataset_type}/TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv")
-    after_process_SMOGN_data = dataset.preProcess(TSMIP_smogn_df, target, False)
-    result_SMOGN = dataset.splitDataset(after_process_SMOGN_data,
+    targets = ["Sa004"] #Sa004
+    for tar in targets:
+        dataset_type = "no SMOGN"
+        target = tar
+        model_feature = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
+        
+        dataset = dataprocess()
+        TSMIP_df = pd.read_csv(
+            f"../../../{dataset_type}/TSMIP_FF_period/TSMIP_FF_{target}.csv")
+        after_process_ori_data = dataset.preProcess(TSMIP_df, target, True)
+        original_data = dataset.splitDataset(after_process_ori_data, f'ln{target}(gal)',
+                                        False, *model_feature)
+        result_ori = dataset.splitDataset(after_process_ori_data,
                                         f'ln{target}(gal)', True, *model_feature)
-    new_result_ori = dataset.resetTrainTest(result_SMOGN[0], result_SMOGN[2],
-                       original_data[0], original_data[1], model_feature, f'ln{target}(gal)')
-    
-    # ? optuna choose parameter
-    #! dashboard : optuna-dashboard mysql://root@localhost/XGB_TSMIP
-    study_name = 'XGB_TSMIP_5'
-    trainer = optimize_train(result_SMOGN[0], new_result_ori[0], result_SMOGN[2], new_result_ori[1])
-    def objective_wrapper(trial):
-        return trainer.XGB(trial)
-    study = optuna.create_study(study_name=study_name,
-                                storage="mysql://root@localhost/XGB_TSMIP",
-                                direction="maximize")
-    study.optimize(objective_wrapper, n_trials=50)
-    print("study.best_params", study.best_params)
-    print("study.best_value", study.best_value)
+        
+        # TSMIP_smogn_df = pd.read_csv(
+        #     f"../../../{dataset_type}/TSMIP_FF_SMOGN/TSMIP_smogn_{target}.csv")
+        # after_process_SMOGN_data = dataset.preProcess(TSMIP_smogn_df, target, False)
+        # result_SMOGN = dataset.splitDataset(after_process_SMOGN_data,
+        #                                     f'ln{target}(gal)', True, *model_feature)
+        # new_result_ori = dataset.resetTrainTest(result_SMOGN[0], result_SMOGN[2],
+        #                    original_data[0], original_data[1], model_feature, f'ln{target}(gal)')
+        
+        # ? optuna choose parameter
+        #! dashboard : optuna-dashboard mysql://root@localhost/XGB_TSMIP
+        study_name = f'XGB_TSMIP_{target}'
+        trainer = optimize_train(result_ori[0], result_ori[1], result_ori[2], result_ori[3])
+        def objective_wrapper(trial):
+            return trainer.XGB(trial)
+        study = optuna.create_study(study_name=study_name,
+                                    storage="mysql://root@localhost/XGB_TSMIP",
+                                    direction="maximize")
+        study.optimize(objective_wrapper, n_trials=50)
+        print("study.best_params", study.best_params)
+        print("study.best_value", study.best_value)
 
 

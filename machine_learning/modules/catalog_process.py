@@ -5,6 +5,7 @@ from process_train import dataprocess
 import matplotlib.pyplot as plt
 import smogn
 from sklearn.model_selection import train_test_split
+import glob
 
 def get_sta_rank():
     """
@@ -176,15 +177,25 @@ def period_statistics(periods, *args):
     numbervalue = []
     for data in args[0]:
         numbervalue.append(len(data))
-    plt.grid(which="both",
-                axis="both",
-                linestyle="--",
-                linewidth=0.5,
-                alpha=0.5,
-                zorder=0)
-    plt.plot(periods,numbervalue,'b--',zorder=10)
+
+    # 計算長條的左邊和右邊邊界
+    left_edges = np.zeros(len(periods))
+    right_edges = np.zeros(len(periods))
+
+    left_edges[0] = periods[0] - (periods[1] - periods[0]) / 2
+    right_edges[-1] = periods[-1] + (periods[-1] - periods[-2]) / 2
+    for i in range(1, len(periods) - 1):
+        left_edges[i] = (periods[i] + periods[i - 1]) / 2
+        right_edges[i - 1] = left_edges[i]
+
+    # 計算每個長條的寬度
+    widths = right_edges - left_edges
+
+    print(numbervalue)
+    print(periods)
+    plt.bar(periods,numbervalue,width=widths)
     plt.title('Statistic Usable Period')
-    plt.xlim(0, 10)
+    plt.xlim(-0.1, 11)
     plt.xscale("symlog")
     plt.xticks([
             0, 0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
@@ -195,7 +206,7 @@ def period_statistics(periods, *args):
             '', '', 1.0, '', '2.0', '', '', 5.0, '', 10.0
         ])
     plt.xlabel('Periods', fontsize=12)
-    plt.ylabel('Number of Usable Records', fontsize=12)
+    plt.ylabel('Number of Records', fontsize=12)
     plt.savefig('Statistic Usable Period.png', dpi=300)
     plt.show()
 
@@ -219,26 +230,26 @@ if __name__=='__main__':
             0.2, 0.25, 0.3, 0.4, 0.5, 0.7, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
             7.5, 10.0]
     
-    for i in range(len(targets)):
-        _ = cut_period(folder, targets[i], periods[i], columns[i])
+    # for i in range(len(targets)):
+    #     _ = cut_period(folder, targets[i], periods[i], columns[i])
 
-    for index, m in enumerate(targets): # change columns name to target name (ex: T1.0S -> Sa10)
-        TSMIP_df = pd.read_csv(f"../../../{folder}/TSMIP_FF_period/TSMIP_FF_{m}.csv")
-        TSMIP_df = TSMIP_df.rename(columns={columns[index]: targets[index]})
-        TSMIP_df.to_csv(f"../../../{folder}/TSMIP_FF_period/TSMIP_FF_{m}.csv", index=False)
+    # for index, m in enumerate(targets): # change columns name to target name (ex: T1.0S -> Sa10)
+    #     TSMIP_df = pd.read_csv(f"../../../{folder}/TSMIP_FF_period/TSMIP_FF_{m}.csv")
+    #     TSMIP_df = TSMIP_df.rename(columns={columns[index]: targets[index]})
+    #     TSMIP_df.to_csv(f"../../../{folder}/TSMIP_FF_period/TSMIP_FF_{m}.csv", index=False)
 
-    for j in range(len(targets)):
-        _ = pre_SMOGN(folder, targets[j])
-        _ = synthesize(folder, targets[j])
+    # for j in range(len(targets)):
+    #     _ = pre_SMOGN(folder, targets[j])
+    #     _ = synthesize(folder, targets[j])
     
     #? plot distributions
     # _ = SMOGN_plot("Sa01")
     
     #? statistics period
-    # total_files = glob.glob(r"../../../cut period_shallow crustal/TSMIP_FF_period/*.csv")
-    # all_df = []
-    # for file in total_files:
-    #     all_df.append(pd.read_csv(file))
-    # _ = period_statistics(periods, all_df)
+    total_files = glob.glob(r"../../../cut period_shallow crustal/TSMIP_FF_period/*.csv")
+    all_df = []
+    for file in total_files:
+        all_df.append(pd.read_csv(file))
+    _ = period_statistics(periods, all_df)
         
     

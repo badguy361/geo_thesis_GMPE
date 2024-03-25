@@ -11,7 +11,8 @@
 
     "workbench.colorCustomizations": {
         "editorCursor.foreground": "#F28500"
-      }
+    },
+    "workbench.editor.tabActionUnpinVisibility": false
 }
 
   

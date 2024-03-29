@@ -131,6 +131,20 @@ def SMOGN_plot(target):
     o2 = np.swapaxes(original_data[0], 0, 1)[2]
     o3 = np.swapaxes(original_data[0], 0, 1)[3]
     o4 = np.swapaxes(original_data[0], 0, 1)[4]
+    
+    min_o2 = np.min(o2)
+    q1_o2 = np.percentile(o2, 25)
+    median_o2 = np.median(o2)
+    q3_o2 = np.percentile(o2, 75)
+    max_o2 = np.max(o2)
+    mean_o2 = np.mean(o2)
+    print("Minimum:", min_o2)
+    print("First Quartile:", q1_o2)
+    print("Median:", median_o2)
+    print("Third Quartile:", q3_o2)
+    print("Maximum:", max_o2)
+    print("Mean:", mean_o2)
+
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(1, 5, figsize=(15, 5))
     ax1.boxplot(o0)
     ax1.set_xticklabels(['lnVs30'], fontsize=15)
@@ -152,6 +166,21 @@ def SMOGN_plot(target):
     o2 = np.swapaxes(result_SMOGN[0], 0, 1)[2]
     o3 = np.swapaxes(result_SMOGN[0], 0, 1)[3]
     o4 = np.swapaxes(result_SMOGN[0], 0, 1)[4]
+
+    min_o2 = np.min(o2)
+    q1_o2 = np.percentile(o2, 25)
+    median_o2 = np.median(o2)
+    q3_o2 = np.percentile(o2, 75)
+    max_o2 = np.max(o2)
+    mean_o2 = np.mean(o2)
+    print('------------after SMOGN---------------')
+    print("Minimum:", min_o2)
+    print("First Quartile:", q1_o2)
+    print("Median:", median_o2)
+    print("Third Quartile:", q3_o2)
+    print("Maximum:", max_o2)
+    print("Mean:", mean_o2)
+
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(1, 5, figsize=(15, 5))
     ax1.boxplot(o0)
     ax1.set_xticklabels(['lnVs30'], fontsize=15)
@@ -165,7 +194,7 @@ def SMOGN_plot(target):
     ax5.boxplot(o4)
     ax5.set_xticklabels(['station number'], fontsize=15)
     plt.suptitle(f'Boxplots {target} after SMOGN', fontsize=20)
-    plt.savefig(f'TSMIP-SMOGN {target} boxplots.png', dpi=300)
+    # plt.savefig(f'TSMIP-SMOGN {target} boxplots.png', dpi=300)
 
 def period_statistics(periods, *args):
     """
@@ -243,13 +272,13 @@ if __name__=='__main__':
     #     _ = synthesize(folder, targets[j])
     
     #? plot distributions
-    # _ = SMOGN_plot("Sa01")
+    _ = SMOGN_plot("PGA")
     
     #? statistics period
-    total_files = glob.glob(r"../../../cut period_shallow crustal/TSMIP_FF_period/*.csv")
-    all_df = []
-    for file in total_files:
-        all_df.append(pd.read_csv(file))
-    _ = period_statistics(periods, all_df)
+    # total_files = glob.glob(r"../../../cut period_shallow crustal/TSMIP_FF_period/*.csv")
+    # all_df = []
+    # for file in total_files:
+    #     all_df.append(pd.read_csv(file))
+    # _ = period_statistics(periods, all_df)
         
     

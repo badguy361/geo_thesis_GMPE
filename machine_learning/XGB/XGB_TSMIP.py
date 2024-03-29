@@ -13,7 +13,7 @@ targets = ["PGA", "PGV", "Sa001", "Sa002", "Sa003", "Sa004", "Sa005",
            "Sa15", "Sa20", "Sa30", "Sa40", "Sa50", "Sa75", "Sa100"]
     # ? parameters
     
-dataset_type = "no SMOGN"
+dataset_type = "cut period_shallow crustal" # 'cut period_shallow crustal' or 'no SMOGN'
 target = "PGA"
 model_type = "XGB"
 plot_subset = "test subset" # 'all dataset' or 'test subset'
@@ -35,7 +35,7 @@ model_name = [
     f'model/{dataset_type}/{model_type}_Sa30.json', f'model/{dataset_type}/{model_type}_Sa40.json', f'model/{dataset_type}/{model_type}_Sa50.json',
     f'model/{dataset_type}/{model_type}_Sa75.json', f'model/{dataset_type}/{model_type}_Sa100.json'
 ]
-lowerbound = -4
+lowerbound = -2
 higherbound = 8
 model_feature = ['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank']
 with open('model_info.json') as f:
@@ -141,7 +141,7 @@ elif plot_subset == "test subset":
 # ? plot figure
 # plot_something.data_distribution()
 plot_something.measured_predict(lowerbound, higherbound)
-plot_something.residual()
+# plot_something.residual()
 # plot_something.distance_scaling(True, total_Mw_data, model_path)
 # plot_something.respond_spectrum(False, True, *model_name)
 #! SHAP

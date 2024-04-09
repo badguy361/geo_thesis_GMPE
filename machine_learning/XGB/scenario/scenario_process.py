@@ -73,6 +73,9 @@ class scenario():
             hyp_lat ([str]): hypocenter lat
             hyp_lon ([str]): hypocenter lon
         """
+        max_color = 0.55
+        color_list = [round(i * 0.1, 1) for i in range(1,
+                                                       int(max_color * 10) + 1)]  # 0.1到max_color
         fig, ax = plt.subplots(figsize=(10, 10))
         m = Basemap(llcrnrlon=119.9, llcrnrlat=21.6, urcrnrlon=122.2, urcrnrlat=25.4,
                     projection='merc', resolution='h', area_thresh=1000., ax=ax)
@@ -118,18 +121,18 @@ class scenario():
             # 內插作圖
             x_map, y_map = m(lons, lats)
             scatter = m.scatter(x_map, y_map, c=PGA,
-                                cmap='turbo', marker='o', edgecolor='none', vmin=0, vmax=1.0, s=4)
+                                cmap='turbo', marker='o', edgecolor='none', vmin=0, vmax=max_color, s=4)
             cbar = m.colorbar(scatter, boundaries=np.linspace(
-                0, 1.0, 15), location='right', pad="3%", extend='both', ticks=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+                0, max_color, 15), location='right', pad="3%", extend='both', ticks=color_list)
             cbar.set_label('PGA(g)')
 
             # 畫測站
-            # df_ori_true = pd.read_csv(
-            #     f"{eq}/true/{eq}_scenario_record_true.csv")
-            # x_ori_true_map, y_ori_true_map = m(
-            #     df_ori_true["STA_Lon_X"], df_ori_true["STA_Lat_Y"])
-            # m.scatter(x_ori_true_map, y_ori_true_map,
-            #           marker='*', color="white", s=2)
+            df_ori_true = pd.read_csv(
+                f"{eq}/true/{eq}_scenario_record_true.csv")
+            x_ori_true_map, y_ori_true_map = m(
+                df_ori_true["STA_Lon_X"], df_ori_true["STA_Lat_Y"])
+            m.scatter(x_ori_true_map, y_ori_true_map,
+                      marker='*', color="white", s=2)
             fig.savefig(
                 f'{self.eq}/{gmm}/{self.eq} earthquake Hazard Distribution interpolate {gmm}.png', dpi=300)
         else:
@@ -142,9 +145,9 @@ class scenario():
             # 未內插作圖
             x_map, y_map = m(lons, lats)
             scatter = m.scatter(x_map, y_map, c=PGA,
-                                cmap='turbo', marker='o', edgecolor='none', vmin=0, vmax=1.0, s=50)
+                                cmap='turbo', marker='o', edgecolor='none', vmin=0, vmax=max_color, s=50)
             cbar = m.colorbar(scatter, boundaries=np.linspace(
-                0, 1.0, 15), location='right', pad="3%", extend='both', ticks=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+                0, max_color, 15), location='right', pad="3%", extend='both', ticks=color_list)
             cbar.set_label('PGA(g)')
             fig.savefig(
                 f'{self.eq}/{gmm}/{self.eq} earthquake Hazard Distribution {gmm}.png', dpi=300)
@@ -274,9 +277,9 @@ class scenario():
 
 
 if __name__ == '__main__':
-    eq = "chichi"
+    eq = "0403"
     scenario_record_dict = {}
-    cal_gmm = ['Chang2023', 'true']
+    cal_gmm = ['true']
     fault_data = [
         120.6436, 23.6404, 120.6480, 23.6424, 120.6511, 23.6459, 120.6543, 23.6493,
         120.6574, 23.6528, 120.6601, 23.6566, 120.6632, 23.6600, 120.6665, 23.6633,
@@ -326,17 +329,17 @@ if __name__ == '__main__':
         120.8276, 24.3040, 120.8299, 24.3080, 120.8310, 24.3123, 120.8323, 24.3167,
         120.8334, 24.3203
     ]
-    hyp_lat = 24.275617  # chichi: 23.85
-    hyp_lon = 121.784707  # chichi: 120.82
+    hyp_lat = 23.77  # chichi: 23.85
+    hyp_lon = 121.66  # chichi: 120.82
 
     sce = scenario(eq)
     for gmm in cal_gmm:
         if gmm != "true":
             print("merge ", gmm, " result")
             # _ = sce.merge_scenario_result(gmm)
-            # scenario_record = pd.read_csv(
-            #     f"{eq}/{gmm}/{eq}_scenario_record_{gmm}.csv")
-            # _ = sce.get_interpolation(gmm, scenario_record)
+        # scenario_record = pd.read_csv(
+        #     f"{eq}/{gmm}/{eq}_scenario_record_{gmm}.csv")
+        # _ = sce.get_interpolation(gmm, scenario_record)
         _ = sce.hazard_distribution(
             gmm, True, fault_data, hyp_lat, hyp_lon)
         PGA_residual = sce.residual_distribution(

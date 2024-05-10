@@ -5,7 +5,7 @@ import pygmt
 from pykrige import OrdinaryKriging
 from mpl_toolkits.basemap import Basemap
 from matplotlib.patches import Path, PathPatch
-
+from matplotlib.colors import LinearSegmentedColormap, BoundaryNorm, ListedColormap
 # df = pd.read_csv('../../../../TSMIP_FF.csv')
 # chichi_df = df[df["MW"] == 7.65]  # choose chichi eq
 # chichi_df.to_csv("chichi_scenario_record_true.csv",index=False,columns=["STA_Lon_X","STA_Lat_Y","PGA"])
@@ -73,9 +73,16 @@ class scenario():
             hyp_lat ([str]): hypocenter lat
             hyp_lon ([str]): hypocenter lon
         """
-        max_color = 0.55
-        color_list = [round(i * 0.1, 1) for i in range(1,
-                                                       int(max_color * 10) + 1)]  # 0.1到max_color
+        # max_color = 0.55
+        # color_list = [round(i * 0.1, 1) for i in range(1,
+        #                                                int(max_color * 10) + 1)]  # 0.1到max_color
+
+        levels = [0.8, 2.5, 8.0, 25, 80, 140.0, 250.0, 440.0, 800.0]
+        colors = ["#dffae0", "#39e838", "#fff62b", "#ff8a21", 
+            "#ff5f2a", "#ce493c", "#a24d46", "#9e5586", "#c23bed"]
+        cmap = ListedColormap(colors)
+        norm = BoundaryNorm(levels, cmap.N)
+        
         fig, ax = plt.subplots(figsize=(10, 10))
         m = Basemap(llcrnrlon=119.9, llcrnrlat=21.6, urcrnrlon=122.2, urcrnrlat=25.4,
                     projection='merc', resolution='h', area_thresh=1000., ax=ax)
@@ -115,24 +122,42 @@ class scenario():
             df_int = pd.read_csv(
                 f'{self.eq}/{gmm}/{self.eq}_kriging_interpolate_{gmm}.csv')
             PGA = np.array(df_int["PGA"])
+            pga_gal = PGA*980
             lons = np.array(df_int["STA_Lon_X"])
             lats = np.array(df_int["STA_Lat_Y"])
 
             # 內插作圖
             x_map, y_map = m(lons, lats)
-            scatter = m.scatter(x_map, y_map, c=PGA,
-                                cmap='turbo', marker='o', edgecolor='none', vmin=0, vmax=max_color, s=4)
-            cbar = m.colorbar(scatter, boundaries=np.linspace(
-                0, max_color, 15), location='right', pad="3%", extend='both', ticks=color_list)
-            cbar.set_label('PGA(g)')
+
+            # 連續g分布
+            # scatter = m.scatter(x_map, y_map, c=PGA,
+            #                     cmap='turbo', marker='o', edgecolor='none', vmin=0, vmax=max_color, s=4)
+            # cbar = m.colorbar(scatter, boundaries=np.linspace(
+            #     0, max_color, 15), location='right', pad="3%", extend='both', ticks=color_list)
+            # cbar.set_label('PGA(g)')
+            
+            # 震級gal分布
+            scatter = m.scatter(x_map, y_map, c=pga_gal,
+                                cmap=cmap, norm=norm, marker='o', edgecolor='none', vmin=levels[0], vmax=levels[-1], s=4)
+            cbar = m.colorbar(scatter, location='right', pad="3%", extend='both', ticks=levels)
+            cbar.set_label('PGA(gal)')
+            cbar.ax.text(0.5, 0.11, '1', transform=cbar.ax.transAxes, ha='center', va='center', color='black', fontsize=12)
+            cbar.ax.text(0.5, 0.22, '2', transform=cbar.ax.transAxes, ha='center', va='center', color='black', fontsize=12)
+            cbar.ax.text(0.5, 0.33, '3', transform=cbar.ax.transAxes, ha='center', va='center', color='black', fontsize=12)
+            cbar.ax.text(0.5, 0.44, '4', transform=cbar.ax.transAxes, ha='center', va='center', color='black', fontsize=12)
+            cbar.ax.text(0.5, 0.55, '5-', transform=cbar.ax.transAxes, ha='center', va='center', color='black', fontsize=12)
+            cbar.ax.text(0.5, 0.66, '5+', transform=cbar.ax.transAxes, ha='center', va='center', color='black', fontsize=12)
+            cbar.ax.text(0.5, 0.77, '6-', transform=cbar.ax.transAxes, ha='center', va='center', color='black', fontsize=12)
+            cbar.ax.text(0.5, 0.88, '6+', transform=cbar.ax.transAxes, ha='center', va='center', color='black', fontsize=12)
+            cbar.ax.text(0.5, 0.96, '7', transform=cbar.ax.transAxes, ha='center', va='center', color='black', fontsize=12)
 
             # 畫測站
             df_ori_true = pd.read_csv(
                 f"{eq}/true/{eq}_scenario_record_true.csv")
             x_ori_true_map, y_ori_true_map = m(
                 df_ori_true["STA_Lon_X"], df_ori_true["STA_Lat_Y"])
-            m.scatter(x_ori_true_map, y_ori_true_map,
-                      marker='*', color="white", s=2)
+            m.scatter(x_ori_true_map, y_ori_true_map,c=df_ori_true["PGA"]*980,
+                      cmap=cmap, norm=norm, marker='o', edgecolor='black', s=20)
             fig.savefig(
                 f'{self.eq}/{gmm}/{self.eq} earthquake Hazard Distribution interpolate {gmm}.png', dpi=300)
         else:
@@ -144,11 +169,10 @@ class scenario():
 
             # 未內插作圖
             x_map, y_map = m(lons, lats)
-            scatter = m.scatter(x_map, y_map, c=PGA,
-                                cmap='turbo', marker='o', edgecolor='none', vmin=0, vmax=max_color, s=50)
-            cbar = m.colorbar(scatter, boundaries=np.linspace(
-                0, max_color, 15), location='right', pad="3%", extend='both', ticks=color_list)
-            cbar.set_label('PGA(g)')
+            scatter = m.scatter(x_map, y_map, c=pga_gal,
+                                cmap=cmap, marker='o', edgecolor='none', vmin=levels[0], vmax=levels[-1], s=4)
+            cbar = m.colorbar(scatter, boundaries=levels, location='right', pad="3%", extend='both', ticks=levels)
+            cbar.set_label('PGA(gal)')
             fig.savefig(
                 f'{self.eq}/{gmm}/{self.eq} earthquake Hazard Distribution {gmm}.png', dpi=300)
         plt.show()
@@ -342,6 +366,6 @@ if __name__ == '__main__':
         # _ = sce.get_interpolation(gmm, scenario_record)
         _ = sce.hazard_distribution(
             gmm, True, fault_data, hyp_lat, hyp_lon)
-        PGA_residual = sce.residual_distribution(
-            gmm, fault_data, hyp_lat, hyp_lon)
-        _ = sce.residual_statistic(gmm, PGA_residual)
+        # PGA_residual = sce.residual_distribution(
+        #     gmm, fault_data, hyp_lat, hyp_lon)
+        # _ = sce.residual_statistic(gmm, PGA_residual)

@@ -849,8 +849,8 @@ class plot_fig:
 
         # * comparsion ohter GMMs
 
-        dtype = [('mag', '<f8'), ('rake', '<f8'), ('vs30', '<f8'), 
-                ('rrup', '<f8'), ('sta_id', '<i8')]
+        dtype = [('vs30', '<f8'), ('mag', '<f8'), ('rrup', '<f8'),
+                ('rake', '<f8'), ('sta_id', '<i8')]
         rrup_num = [0.1, 0.5, 0.75, 1, 5, 10, 20, 30,
                     40, 50, 60, 70, 80, 90, 100, 150, 200, 300]
         total_elements = len(rrup_num) * self.station_num
@@ -858,8 +858,8 @@ class plot_fig:
         index = 0
         for station_id in range(self.station_num):  # 依照station_num、Rrup的順序建recarray
             for rrup in rrup_num:
-                ctx[index] = (self.Mw, self.Vs30, self.rake,
-                              rrup, station_id + 1)
+                ctx[index] = (self.Vs30, self.Mw, rrup,
+                            self.rake, station_id + 1)
                 index += 1
         ctx = ctx.view(np.recarray)
 

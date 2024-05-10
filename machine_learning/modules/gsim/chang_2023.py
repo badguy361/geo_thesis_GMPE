@@ -74,7 +74,7 @@ class Chang2023():
             predict = self.ML_model.predict(xgb.DMatrix(np.column_stack(
                 (np.log(ctx.vs30), ctx.mag, np.log(ctx.rrup), ctx.rake, ctx.sta_id))))
             mean[m] = np.log(np.exp(predict)/980)  # unit : ln(g)
-            sig[m], tau[m], phi[m] = 0.35, 0.12, 0.34
+            sig[m], tau[m], phi[m] = 0.18, 0.03, 0.18
 
         return mean, sig, tau, phi
 

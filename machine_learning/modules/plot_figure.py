@@ -28,9 +28,9 @@ class plot_fig:
 
     """
 
-    def __init__(self, model_name, abbreviation_name, SMOGN_TSMIP, target,
+    def __init__(self, model_name, abbreviation_name, dataset_type, target,
                 x_total, y_total, predict_value, ori_full_data, score,
-                Vs30, Mw, rrup, rake, station_id, station_num):
+                Vs30, Mw, rrup, rake, station_id, station_num, station_map):
         """
         Args:
             x_total ([series]): [dataset feature test subset or all dataset]
@@ -41,7 +41,7 @@ class plot_fig:
         """
         self.model_name = model_name
         self.abbreviation_name = abbreviation_name
-        self.SMOGN_TSMIP = SMOGN_TSMIP
+        self.dataset_type = dataset_type
         self.target = target
         self.fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
         self.period_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
@@ -54,6 +54,7 @@ class plot_fig:
         self.rake = rake
         self.station_id = station_id
         self.station_num = station_num
+        self.station_map = station_map
 
         self.x_total = x_total
         self.y_total = y_total
@@ -194,7 +195,7 @@ class plot_fig:
         residual_1000_std = np.std(residual_1000)
 
         total_std = np.std(residual)
-
+        print("total_std:",total_std)
         net = 50
         zz = np.array([0] * net * net).reshape(net, net)  # 打net*net個網格
         color_column = []
@@ -270,7 +271,7 @@ class plot_fig:
             % (self.score, total_std))
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} Vs30-{self.abbreviation_name} Predict Residual.png',
+            f'../{self.abbreviation_name}/{self.dataset_type} {self.target} Vs30-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
         plt.show()
 
@@ -369,7 +370,7 @@ class plot_fig:
             % (self.score, total_std))
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} Mw-{self.abbreviation_name} Predict Residual.png',
+            f'../{self.abbreviation_name}/{self.dataset_type} {self.target} Mw-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
         plt.show()
 
@@ -486,7 +487,7 @@ class plot_fig:
             % (self.score, total_std))
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} Rrup-{self.abbreviation_name} Predict Residual.png',
+            f'../{self.abbreviation_name}/{self.dataset_type} {self.target} Rrup-{self.abbreviation_name} Predict Residual.png',
             dpi=300)
         plt.show()
 
@@ -548,7 +549,7 @@ class plot_fig:
         plt.ylabel('Numbers', fontsize=12)
         plt.title(f'{self.abbreviation_name} Total-Residual Distribution')
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Total-Residual Distribution.png',
+            f'../{self.abbreviation_name}/{self.dataset_type} {self.target} {self.abbreviation_name} Total-Residual Distribution.png',
             dpi=300)
         plt.show()
         """
@@ -606,7 +607,7 @@ class plot_fig:
         )
         plt.legend()
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} Mw-{self.abbreviation_name} Inter-event Residual.png',
+            f'../{self.abbreviation_name}/{self.dataset_type} {self.target} Mw-{self.abbreviation_name} Inter-event Residual.png',
             dpi=300)
         plt.show()
 
@@ -697,7 +698,7 @@ class plot_fig:
             f'{self.abbreviation_name} Intra-event Residual Mean:{intra_rrup_mean} Std:{intra_rrup_std}'
         )
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} Rrup-{self.abbreviation_name} Intra-event Residual.png',
+            f'../{self.abbreviation_name}/{self.dataset_type} {self.target} Rrup-{self.abbreviation_name} Intra-event Residual.png',
             dpi=300)
         plt.show()
 
@@ -768,7 +769,7 @@ class plot_fig:
             f'{self.abbreviation_name} Intra-event Residual Mean:{intra_vs30_mean} Std:{intra_vs30_std}'
         )
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} Vs30-{self.abbreviation_name} Intra-event Residual.png',
+            f'../{self.abbreviation_name}/{self.dataset_type} {self.target} Vs30-{self.abbreviation_name} Intra-event Residual.png',
             dpi=300)
         plt.show()
 
@@ -826,13 +827,13 @@ class plot_fig:
         plt.ylim(lowerbound, higherbound)
         plt.xlim(lowerbound, higherbound)
         plt.title(
-            f'{self.SMOGN_TSMIP} {self.abbreviation_name} Measured Predicted Distribution'
+            f'{self.dataset_type} {self.abbreviation_name} Measured Predicted Distribution'
         )
         plt.text(higherbound-4, lowerbound+2, f"R2 score = {round(self.score,2)}")
         cbar = plt.colorbar(extend='both', label='number value')
         cbar.set_label('number value', fontsize=12)
         plt.savefig(
-            f'../{self.abbreviation_name}/{self.SMOGN_TSMIP} {self.target} {self.abbreviation_name} Measured Predicted Comparison.png',
+            f'../{self.abbreviation_name}/{self.dataset_type} {self.target} {self.abbreviation_name} Measured Predicted Comparison.png',
             dpi=300)
         plt.show()
 
@@ -857,8 +858,10 @@ class plot_fig:
         ctx = np.empty(total_elements, dtype=dtype)
         index = 0
         for station_id in range(self.station_num):  # 依照station_num、Rrup的順序建recarray
+            Vs30 = self.station_map.iloc[station_id]["Vs30"]
+            print(station_id,Vs30)
             for rrup in rrup_num:
-                ctx[index] = (self.Vs30, self.Mw, rrup,
+                ctx[index] = (Vs30, self.Mw, rrup,
                             self.rake, station_id + 1)
                 index += 1
         ctx = ctx.view(np.recarray)
@@ -968,7 +971,7 @@ class plot_fig:
         plt.xlabel(f'Rrup(km)')
         plt.ylabel(f'{self.target}(g)')
         plt.title(
-            f"Mw = {ctx['mag'][0]}, Vs30 = {ctx['vs30'][0]}m/s  Fault = {self.fault_type_dict[ctx['rake'][0]]}")
+            f"Mw = {ctx['mag'][0]}, Fault = {self.fault_type_dict[ctx['rake'][0]]}")
         plt.ylim(10e-4, 5)
         plt.yscale("log")
         plt.xscale("log")
@@ -989,12 +992,13 @@ class plot_fig:
         if avg_station_id:
             for i, Mw in enumerate(Mw_list):
                 total_sta_predict = []
-                for sta in tqdm(range(self.station_num)):  # 預測所有station取平均
+                for station_id in tqdm(range(self.station_num)):  # 預測所有station取平均
                     single_sta_predict = []
+                    Vs30 = self.station_map.iloc[station_id]["Vs30"]
                     for rrup in rrup_num:
                         RSCon = xgb.DMatrix(
-                            np.array([[np.log(self.Vs30), Mw,
-                                       np.log(rrup), 90, sta]]))
+                            np.array([[np.log(Vs30), Mw,
+                                       np.log(rrup), 90, station_id + 1]]))
                         single_sta_predict.append(
                             np.exp(booster_PGA.predict(RSCon)) / 980)
                     total_sta_predict.append(single_sta_predict)
@@ -1011,9 +1015,10 @@ class plot_fig:
         else:
             for i, Mw in enumerate(Mw_list):
                 single_sta_predict = []
+                Vs30 = self.station_map.iloc[self.station_id-1]["Vs30"]
                 for rrup in rrup_num:
                     RSCon = xgb.DMatrix(
-                        np.array([[np.log(self.Vs30), Mw,
+                        np.array([[np.log(Vs30), Mw,
                                    np.log(rrup), self.rake, self.station_id]]))
                     single_sta_predict.append(
                         np.exp(booster_PGA.predict(RSCon)) / 980)
@@ -1035,7 +1040,7 @@ class plot_fig:
         plt.xlabel(f'Rrup(km)')
         plt.ylabel(f'{self.target}(g)')
         plt.title(
-            f"Vs30 = {self.Vs30}m/s  Fault = {self.fault_type_dict[self.rake]}")
+            f"Fault = {self.fault_type_dict[self.rake]}")
         plt.ylim(10e-4, 5)
         plt.yscale("log")
         plt.xscale("log")
@@ -1043,7 +1048,7 @@ class plot_fig:
                    [0.1, 0.5, 1, 10, 50, 100, 200, 300])
         plt.legend(loc="lower left")
         plt.savefig(
-            f"distance scaling {self.target} Vs30-{self.Vs30} fault-type-{self.fault_type_dict[self.rake]} avg_station_id-{avg_station_id} station_id-{self.station_id}.jpg", dpi=300)
+            f"distance scaling {self.target} fault-type-{self.fault_type_dict[self.rake]} avg_station_id-{avg_station_id} station_id-{self.station_id}.jpg", dpi=300)
         plt.show()
 
     def explainable(self, eq_df, model_feture, ML_model, index_start, index_end):

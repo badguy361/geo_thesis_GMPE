@@ -13,16 +13,17 @@ targets = ["PGA", "PGV", "Sa001", "Sa002", "Sa003", "Sa004", "Sa005",
            "Sa15", "Sa20", "Sa30", "Sa40", "Sa50", "Sa75", "Sa100"]
     # ? parameters
     
-dataset_type = "cut period_shallow crustal" # 'cut period_shallow crustal' or 'no SMOGN'
+dataset_type = "no SMOGN" # 'cut period_shallow crustal' or 'no SMOGN'
 target = "PGA"
 model_type = "XGB"
-plot_subset = "test subset" # 'all dataset' or 'test subset'
+plot_subset = "all dataset" # 'all dataset' or 'test subset'
 Mw = 7.65
-rrup = 40
+rrup = 30
 Vs30 = 360
 rake = 90
-station_id = 350
+station_id = 250
 station_id_num = 732  # station 總量
+station_map = pd.read_csv("station_id_info.csv")
 model_path = f'model/{dataset_type}/{model_type}_{target}.json'
 model_name = [
     f'model/{dataset_type}/{model_type}_PGA.json', f'model/{dataset_type}/{model_type}_PGV.json', f'model/{dataset_type}/{model_type}_Sa001.json',
@@ -81,7 +82,7 @@ original_Mw6_data = dataset.splitDataset(after_process_ori_Mw6_data, f'ln{target
 original_Mw7_data = dataset.splitDataset(after_process_ori_Mw7_data, f'ln{target}(gal)',
                                         False, *model_feature)
 total_Mw_data = [original_filter_data, original_Mw4_data,
-                original_Mw5_data, original_Mw6_data, original_Mw7_data]
+                original_Mw5_data, original_Mw6_data, original_Mw7_data, original_Mw7_data]
 
 # * SMOGN case
 if dataset_type != "no SMOGN":
@@ -114,7 +115,7 @@ if plot_subset == "all dataset":
     plot_something = plot_fig("XGBooster", f"{model_type}", dataset_type, target,
                               original_data[0], original_data[1], originaldata_predicted_result,
                               after_process_ori_data, r2_score,
-                              Vs30, Mw, rrup, rake, station_id, station_id_num)
+                              Vs30, Mw, rrup, rake, station_id, station_id_num, station_map)
 
 elif plot_subset == "test subset":
     if dataset_type != "no SMOGN": # 若是SMOGN test subset需考慮資料重複問題
@@ -140,9 +141,9 @@ elif plot_subset == "test subset":
 
 # ? plot figure
 # plot_something.data_distribution()
-plot_something.measured_predict(lowerbound, higherbound)
+# plot_something.measured_predict(lowerbound, higherbound)
 # plot_something.residual()
-# plot_something.distance_scaling(True, total_Mw_data, model_path)
+plot_something.distance_scaling(True, total_Mw_data, model_path)
 # plot_something.respond_spectrum(False, True, *model_name)
 #! SHAP
 # TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")

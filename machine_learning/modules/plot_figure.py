@@ -16,6 +16,7 @@ import pandas as pd
 import math
 import numpy as np
 from collections import Counter
+from matplotlib.collections import LineCollection
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import shap
@@ -44,10 +45,9 @@ class plot_fig:
         self.dataset_type = dataset_type
         self.target = target
         self.fault_type_dict = {90: "REV", -90: "NM", 0: "SS"}
-        self.period_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
-                            0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
-                            7.5, 10.0]
-        
+        self.high_period_list = [5.0, 7.5, 10.0]
+        self.lower_period_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17,
+                            0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0]
         self.Vs30 = Vs30
         self.Mw = Mw
         self.rrup = rrup
@@ -322,11 +322,6 @@ class plot_fig:
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
             j += 1
 
-        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
-        newcmp = LinearSegmentedColormap.from_list('testCmap',
-                                                   colors=colorlist,
-                                                   N=256)
-
         plt.grid(linestyle=':', color='darkgrey', zorder=0)
         plt.scatter(self.x_total[:, 1], residual,
                     s=8, c=color_column, cmap=newcmp,
@@ -422,11 +417,6 @@ class plot_fig:
             y_net = (round(residual[j], 2) - (-3)) / ((3 - (-3)) / net)
             color_column.append(zz[math.floor(x_net), math.floor(y_net)])
             j += 1
-
-        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
-        newcmp = LinearSegmentedColormap.from_list('testCmap',
-                                                   colors=colorlist,
-                                                   N=256)
 
         plt.grid(which="both",
                  axis="both",
@@ -649,11 +639,6 @@ class plot_fig:
                 color_column.append(zz[math.floor(x_net), net-1])
             j += 1
 
-        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
-        newcmp = LinearSegmentedColormap.from_list('testCmap',
-                                                   colors=colorlist,
-                                                   N=256)
-
         plt.grid(which="both",
                  axis="both",
                  linestyle="--",
@@ -731,11 +716,6 @@ class plot_fig:
             else:
                 color_column.append(zz[net-1, net-1])
             j += 1
-
-        colorlist = ["darkgrey", "blue", "yellow", "orange", "red"]
-        newcmp = LinearSegmentedColormap.from_list('testCmap',
-                                                   colors=colorlist,
-                                                   N=256)
 
         plt.grid(linestyle=':', color='darkgrey', zorder=0)
         plt.scatter(total_data_df['Vs30'],
@@ -859,7 +839,6 @@ class plot_fig:
         index = 0
         for station_id in range(self.station_num):  # 依照station_num、Rrup的順序建recarray
             Vs30 = self.station_map.iloc[station_id]["Vs30"]
-            print(station_id,Vs30)
             for rrup in rrup_num:
                 ctx[index] = (Vs30, self.Mw, rrup,
                             self.rake, station_id + 1)
@@ -1279,7 +1258,8 @@ class plot_fig:
                    booster_Sa02, booster_Sa025, booster_Sa03, booster_Sa04, booster_Sa05, booster_Sa075,
                    booster_Sa10, booster_Sa15, booster_Sa20, booster_Sa30, booster_Sa40, booster_Sa50, booster_Sa75,
                    booster_Sa100]
-
+        colorlist = ["blue", "orange", "green", "red"]
+        
         # * 1. focal.type independent
         if plot_all_rake == True:
             for _rake in self.fault_type_dict:
@@ -1309,7 +1289,7 @@ class plot_fig:
                        [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
             plt.legend()
             plt.savefig(
-                f"response spectrum-all_rake-{plot_all_rake} Mw-{self.Mw} Rrup-{self.rrup} Vs30-{self.Vs30} station-{self.station_id}.png",
+                f"response spectrum-all_rake-{plot_all_rake} Mw-{self.Mw} Rrup-{self.rrup} station-{self.station_id}.png",
                 dpi=300)
             plt.show()
 
@@ -1321,14 +1301,17 @@ class plot_fig:
             for _model in booster:
                 predict_value = np.exp(_model.predict(RSCon)) / 980
                 single_sta_predict.append(predict_value)
+
             plt.grid(which="both",
                      axis="both",
                      linestyle="-",
                      linewidth=0.5,
                      alpha=0.5)
-            plt.plot(self.period_list,
-                     single_sta_predict, label=self.fault_type_dict[self.rake])
-            plt.title(f"Mw = {self.Mw}, Rrup = {self.rrup}km, Vs30 = {self.Vs30}m/s")
+            plt.plot(self.lower_period_list, single_sta_predict[:len(self.lower_period_list)], 
+                     color=colorlist[0], label=self.fault_type_dict[self.rake])
+            plt.plot(self.high_period_list, single_sta_predict[len(self.lower_period_list) - 1:], 
+                     color=colorlist[0], linestyle='--')
+            plt.title(f"Mw = {self.Mw}, Rrup = {self.rrup}km")
             plt.xlabel("Period(s)", fontsize=12)
             plt.ylabel("PSA(g)", fontsize=12)
             plt.ylim(10e-6, 1)
@@ -1339,7 +1322,7 @@ class plot_fig:
                        [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
             plt.legend()
             plt.savefig(
-                f"response spectrum-all_rake-{plot_all_rake} Mw-{self.Mw} Rrup-{self.rrup} Vs30-{self.Vs30} fault-type-{self.fault_type_dict[self.rake]} station-{self.station_id}.png",
+                f"response spectrum-all_rake-{plot_all_rake} Mw-{self.Mw} Rrup-{self.rrup} fault-type-{self.fault_type_dict[self.rake]} station-{self.station_id}.png",
                 dpi=300)
             plt.show()
 
@@ -1348,18 +1331,22 @@ class plot_fig:
         if avg_station_id:
             for i, _Mw in enumerate(Mw_list):
                 total_sta_predict = []
-                for sta in tqdm(range(self.station_num)):  # 預測所有station取平均
+                for station_id in tqdm(range(self.station_num)):  # 預測所有station取平均
                     single_sta_predict = []
-                    RSCon = xgb.DMatrix(np.array([[np.log(self.Vs30), _Mw,
-                                                   np.log(self.rrup), self.rake, sta]]))
+                    Vs30 = self.station_map.iloc[station_id]["Vs30"]
+                    RSCon = xgb.DMatrix(np.array([[np.log(Vs30), _Mw,
+                                                   np.log(self.rrup), self.rake, station_id + 1]]))
                     for _model in booster:
                         predict_value = np.exp(_model.predict(RSCon)) / 980
                         single_sta_predict.append(predict_value)
 
                     total_sta_predict.append(single_sta_predict)
-                plt.plot(self.period_list,
-                         np.array(total_sta_predict).mean(axis=0),
-                         linewidth='1.2', zorder=20, label=f'Mw:{_Mw}')
+                plt.plot(self.lower_period_list,
+                         np.array(total_sta_predict).mean(axis=0)[:len(self.lower_period_list)],
+                         linewidth='1.2', zorder=20, color=colorlist[i], label=f'Mw:{_Mw}')
+                plt.plot(self.high_period_list,
+                         np.array(total_sta_predict).mean(axis=0)[len(self.lower_period_list)-1:],
+                         linewidth='1.2', linestyle='--', color=colorlist[i], zorder=20)
 
         else:
             for i, _Mw in enumerate(Mw_list):
@@ -1378,7 +1365,7 @@ class plot_fig:
                  linewidth=0.5,
                  alpha=0.5)
         plt.title(
-            f"Fault_type = {self.fault_type_dict[self.rake]}, Rrup = {self.rrup}km, Vs30 = {self.Vs30}m/s")
+            f"Fault_type = {self.fault_type_dict[self.rake]}, Rrup = {self.rrup}km")
         plt.xlabel("Period(s)", fontsize=12)
         plt.ylabel("PSA(g)", fontsize=12)
         plt.ylim(10e-6, 1)
@@ -1389,7 +1376,7 @@ class plot_fig:
                    [0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 3.0, 4.0, 10.0])
         plt.legend(loc="lower left")
         plt.savefig(
-            f"response spectrum-all_rake-{plot_all_rake} avg_station_id-{avg_station_id} Fault_type-{self.fault_type_dict[self.rake]} Rrup-{self.rrup} Vs30-{self.Vs30} station-{self.station_id}.png",
+            f"response spectrum-all_rake-{plot_all_rake} avg_station_id-{avg_station_id} Fault_type-{self.fault_type_dict[self.rake]} Rrup-{self.rrup} station-{self.station_id}.png",
             dpi=300)
         plt.show()
 

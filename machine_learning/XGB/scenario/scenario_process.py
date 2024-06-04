@@ -232,11 +232,15 @@ class scenario():
         ax.add_patch(patch)
 
         # 內插作圖
+        colors = ["#0000a3", "#2525ff", "#fff5f5", "#fff5f5", "#ff3535", "#ea0000"]
+        cmap = ListedColormap(colors)
+        norm = BoundaryNorm(boundaries=np.linspace(-0.3, 0.3, 7), ncolors=len(colors))
+
         x_map, y_map = m(lons, lats)
         scatter = m.scatter(x_map, y_map, c=PGA_residual,
-                            cmap='turbo', marker='o', edgecolor='none', vmin=-0.5, vmax=0.5, s=4)
+                            cmap=cmap, norm=norm, marker='o', edgecolor='none', s=4)
         cbar = m.colorbar(scatter, boundaries=np.linspace(
-            -0.5, 0.5, 10), location='right', pad="3%", extend='both', ticks=[-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
+            -0.3, 0.3, 7), location='right', pad="3%", extend='both', ticks=[-0.2, -0.1, 0.0, 0.1, 0.2])
         cbar.set_label('PGA(g)')
 
         # 畫測站
@@ -301,9 +305,9 @@ class scenario():
 
 
 if __name__ == '__main__':
-    eq = "0403"
+    eq = "chichi"
     scenario_record_dict = {}
-    cal_gmm = ['true']
+    cal_gmm = ['chang2023']
     fault_data = [
         120.6436, 23.6404, 120.6480, 23.6424, 120.6511, 23.6459, 120.6543, 23.6493,
         120.6574, 23.6528, 120.6601, 23.6566, 120.6632, 23.6600, 120.6665, 23.6633,
@@ -353,8 +357,8 @@ if __name__ == '__main__':
         120.8276, 24.3040, 120.8299, 24.3080, 120.8310, 24.3123, 120.8323, 24.3167,
         120.8334, 24.3203
     ]
-    hyp_lat = 23.77  # chichi: 23.85
-    hyp_lon = 121.66  # chichi: 120.82
+    hyp_lat = 23.85  # chichi: 23.85、0403: 23.77
+    hyp_lon = 120.82  # chichi: 120.82、0403: 121.66
 
     sce = scenario(eq)
     for gmm in cal_gmm:
@@ -364,8 +368,8 @@ if __name__ == '__main__':
         # scenario_record = pd.read_csv(
         #     f"{eq}/{gmm}/{eq}_scenario_record_{gmm}.csv")
         # _ = sce.get_interpolation(gmm, scenario_record)
-        _ = sce.hazard_distribution(
-            gmm, True, fault_data, hyp_lat, hyp_lon)
-        # PGA_residual = sce.residual_distribution(
-        #     gmm, fault_data, hyp_lat, hyp_lon)
+        # _ = sce.hazard_distribution(
+        #     gmm, True, fault_data, hyp_lat, hyp_lon)
+        PGA_residual = sce.residual_distribution(
+            gmm, fault_data, hyp_lat, hyp_lon)
         # _ = sce.residual_statistic(gmm, PGA_residual)

@@ -6,6 +6,7 @@ import json
 sys.path.append("..")
 from modules.process_train import dataprocess
 from modules.plot_figure import plot_fig
+from modules.enhancement_plot import SeismicDataPlotter
 
 targets = ["PGA", "PGV", "Sa001", "Sa002", "Sa003", "Sa004", "Sa005",
            "Sa0075", "Sa01", "Sa012", "Sa015", "Sa017", "Sa02",
@@ -21,7 +22,7 @@ Mw = 7.65
 rrup = 30
 Vs30 = 360
 rake = 90
-station_id = 250
+station_id = 350
 station_id_num = 732  # station 總量
 station_map = pd.read_csv("station_id_info.csv")
 model_path = f'model/{dataset_type}/{model_type}_{target}.json'
@@ -95,6 +96,15 @@ if dataset_type != "no SMOGN":
     new_result_ori = dataset.resetTrainTest(result_SMOGN[0], result_SMOGN[2],
                                             original_data[0], original_data[1], model_feature, f'ln{target}(gal)')
 
+# ? enhancement plot
+seismic_data_plotter = SeismicDataPlotter(result_ori)
+seismic_data_plotter.plot_mw_distribution()
+seismic_data_plotter.plot_fault_type_distribution()
+seismic_data_plotter.plot_ln_pga_distribution()
+eq_distribution_file = pd.read_csv("../../../TSMIP_FF_eq_distribution.csv")
+# seismic_data_plotter.plot_event_distribution_map(eq_distribution_file)
+# seismic_data_plotter.plot_distance_scaling(total_Mw_data, model_path)
+
 # ? model train
 # if dataset_type != "no SMOGN":
 #     ML_model = dataset.training(target, f"{model_type}",
@@ -106,33 +116,33 @@ if dataset_type != "no SMOGN":
 #                             result_ori[2], result_ori[3])
 
 # ? model predicted
-booster = xgb.Booster()
-booster.load_model(model_path)
-if plot_subset == "all dataset":
-    originaldata_predicted_result = dataset.predicted_original(
-        booster, original_data)
+# booster = xgb.Booster()
+# booster.load_model(model_path)
+# if plot_subset == "all dataset":
+#     originaldata_predicted_result = dataset.predicted_original(
+#         booster, original_data)
 
-    plot_something = plot_fig("XGBooster", f"{model_type}", dataset_type, target,
-                              original_data[0], original_data[1], originaldata_predicted_result,
-                              after_process_ori_data, r2_score,
-                              Vs30, Mw, rrup, rake, station_id, station_id_num, station_map)
+#     plot_something = plot_fig("XGBooster", f"{model_type}", dataset_type, target,
+#                               original_data[0], original_data[1], originaldata_predicted_result,
+#                               after_process_ori_data, r2_score,
+#                               Vs30, Mw, rrup, rake, station_id, station_id_num, station_map)
 
-elif plot_subset == "test subset":
-    if dataset_type != "no SMOGN": # 若是SMOGN test subset需考慮資料重複問題
-        result_ori_dataset = [new_result_ori[0], new_result_ori[1]]
-    else:
-        result_ori_dataset = [result_ori[1], result_ori[3]]
-    combined_data = np.concatenate(
-        (result_ori_dataset[0], result_ori_dataset[1][:, np.newaxis]), axis=1)
-    originaldata_predicted_result_df = pd.DataFrame(combined_data,
-                                                    columns=['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank', f'ln{target}(gal)'])
-    originaldata_predicted_result = dataset.predicted_original(
-        booster, result_ori_dataset)
+# elif plot_subset == "test subset":
+#     if dataset_type != "no SMOGN": # 若是SMOGN test subset需考慮資料重複問題
+#         result_ori_dataset = [new_result_ori[0], new_result_ori[1]]
+#     else:
+#         result_ori_dataset = [result_ori[1], result_ori[3]]
+#     combined_data = np.concatenate(
+#         (result_ori_dataset[0], result_ori_dataset[1][:, np.newaxis]), axis=1)
+#     originaldata_predicted_result_df = pd.DataFrame(combined_data,
+#                                                     columns=['lnVs30', 'MW', 'lnRrup', 'fault.type', 'STA_rank', f'ln{target}(gal)'])
+#     originaldata_predicted_result = dataset.predicted_original(
+#         booster, result_ori_dataset)
 
-    plot_something = plot_fig("XGBooster", f"{model_type}", dataset_type, target,
-                              result_ori_dataset[0], result_ori_dataset[1], originaldata_predicted_result,
-                              originaldata_predicted_result_df, r2_score,
-                              Vs30, Mw, rrup, rake, station_id, station_id_num)
+#     plot_something = plot_fig("XGBooster", f"{model_type}", dataset_type, target,
+#                               result_ori_dataset[0], result_ori_dataset[1], originaldata_predicted_result,
+#                               originaldata_predicted_result_df, r2_score,
+#                               Vs30, Mw, rrup, rake, station_id, station_id_num, station_map)
 #! 檢測模型
 # for i in [6,6.2,6.3,6.4,6.6,6.7,6.9,7.0,7.1,7.2,7.4,7.5,7.7,7.9,8.0]:
 #     ans = booster.predict(xgb.DMatrix([(np.log(760), i, np.log(300), -90, 700)]))
@@ -143,7 +153,7 @@ elif plot_subset == "test subset":
 # plot_something.data_distribution()
 # plot_something.measured_predict(lowerbound, higherbound)
 # plot_something.residual()
-plot_something.distance_scaling(True, total_Mw_data, model_path)
+# plot_something.distance_scaling(False, total_Mw_data, model_path)
 # plot_something.respond_spectrum(False, True, *model_name)
 #! SHAP
 # TSMIP_all_df = pd.read_csv(f"../../../TSMIP_FF.csv")

@@ -171,7 +171,7 @@ class SeismicDataPlotter:
         lats = df['Hyp.Lat'].values
         longs = df['Hyp.Long'].values
         mags = df['MW'].values
-        sizes = (mags ** 3) * 0.02  # 調整圓圈大小比例以適應 PyGMT
+        sizes = (mags ** 3) * 0.002  # 調整圓圈大小比例以適應 PyGMT
 
         # 創建 PyGMT 圖
         fig = pygmt.Figure()
@@ -186,16 +186,16 @@ class SeismicDataPlotter:
             land="lightgray",
             water="white",
             shorelines="0.5p,black",
-            frame=["ag", "+tEarthquake Epicenter Distribution in Taiwan"],  # 包含標題
+            frame=["ag", "+tEarthquake Distribution in Taiwan"],  # 包含標題
         )
 
         # 繪製地震事件
         fig.plot(
             x=longs,
             y=lats,
-            sizes=sizes,
+            size=sizes,
             style="cc",  # 圓形標記（cc 表示以厘米為單位的圓）
-            fill="crimson",
+            fill="#DC143C",
             transparency=50,  # 透明度 50%
             pen="0.5p,black",  # 黑色邊框
         )
@@ -203,6 +203,43 @@ class SeismicDataPlotter:
         # 顯示圖表
         fig.show()
     
+    def get_data_less_than_10km(self, total_Mw_data):
+        """
+        取得距離小於10km的資料, 儲存成csv檔案
+
+        Args:
+            total_Mw_data ([array]): [original dataset sperate by Mw]
+
+        Returns:
+            data_less_than_10km ([array]): [data of less than 10km]
+        """
+        pass
+
+    def predict_less_than_10km_data(self, total_Mw_data, model_path):
+        """
+        計算距離縮放圖
+
+        Args:
+            total_Mw_data ([array]): [original dataset sperate by Mw]
+            model_path ([str]): [the place which the model be stored]
+        
+        Returns:
+            各GMPE結果([array]): [residual of less than 10km]
+        """
+        pass
+
+    def calculate_and_plot_residual_std(self, residual_data):
+        """
+        計算residual的標準差
+
+        Args:
+            residual_data ([array]): [residual of less than 10km]
+
+        Returns:
+            residual_std ([array]): [residual std of less than 10km]
+        """
+        pass
+
     def plot_distance_scaling(self, total_Mw_data, model_path):
         """
 

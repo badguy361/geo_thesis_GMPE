@@ -101,9 +101,10 @@ seismic_data_plotter = SeismicDataPlotter(result_ori)
 # seismic_data_plotter.plot_mw_distribution()
 # seismic_data_plotter.plot_fault_type_distribution()
 # seismic_data_plotter.plot_ln_pga_distribution()
-eq_distribution_file = pd.read_csv("../../../TSMIP_FF_eq_distribution.csv")
-seismic_data_plotter.plot_event_distribution_map(eq_distribution_file)
-# seismic_data_plotter.plot_distance_scaling(total_Mw_data, model_path)
+# eq_distribution_file = pd.read_csv("../../../TSMIP_FF_eq_distribution.csv")
+# seismic_data_plotter.plot_event_distribution_map(eq_distribution_file)
+total_data = pd.read_csv("../../../TSMIP_FF.csv")
+seismic_data_plotter.get_data_less_than_10km(total_data)
 
 # ? model train
 # if dataset_type != "no SMOGN":

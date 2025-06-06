@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..")
+sys.path.append("../modules/gsim")
 import numpy as np
 import collections
 import matplotlib.pyplot as plt
@@ -203,19 +206,20 @@ class SeismicDataPlotter:
         # 顯示圖表
         fig.show()
     
-    def get_data_less_than_10km(self, total_Mw_data):
+    def get_data_less_than_10km(self, total_data: pd.DataFrame):
         """
         取得距離小於10km的資料, 儲存成csv檔案
 
         Args:
-            total_Mw_data ([array]): [original dataset sperate by Mw]
+            total_data ([array]): [original dataset sperate by Mw]
 
         Returns:
             data_less_than_10km ([array]): [data of less than 10km]
         """
-        pass
+        data_less_than_10km = total_data[total_data['Rrup'] < 10]
+        data_less_than_10km.to_csv('../../../data_less_than_10km.csv', index=False)
 
-    def predict_less_than_10km_data(self, total_Mw_data, model_path):
+    def predict_less_than_10km_data(self, data_less_than_10km):
         """
         計算距離縮放圖
 
@@ -226,45 +230,14 @@ class SeismicDataPlotter:
         Returns:
             各GMPE結果([array]): [residual of less than 10km]
         """
-        pass
-
-    def calculate_and_plot_residual_std(self, residual_data):
-        """
-        計算residual的標準差
-
-        Args:
-            residual_data ([array]): [residual of less than 10km]
-
-        Returns:
-            residual_std ([array]): [residual std of less than 10km]
-        """
-        pass
-
-    def plot_distance_scaling(self, total_Mw_data, model_path):
-        """
-
-        Compute distance scaling figure follow condition given by ourself.
-
-        Args:
-            total_data ([array]): [original dataset sperate by Mw]
-            model_path ([str]): [the place which the model be stored]
-        """
-
-        # * comparsion ohter GMMs
-
         dtype = [('vs30', '<f8'), ('mag', '<f8'), ('rrup', '<f8'),
                 ('rake', '<f8'), ('sta_id', '<i8')]
-        rrup_num = [0.1, 0.5, 0.75, 1, 5, 10, 20, 30,
-                    40, 50, 60, 70, 80, 90, 100, 150, 200, 300]
-        total_elements = len(rrup_num) * self.station_num
-        ctx = np.empty(total_elements, dtype=dtype)
+        ctx = np.empty(len(data_less_than_10km), dtype=dtype)
         index = 0
-        for station_id in range(self.station_num):  # 依照station_num、Rrup的順序建recarray
-            Vs30 = self.station_map.iloc[station_id]["Vs30"]
-            for rrup in rrup_num:
-                ctx[index] = (Vs30, self.Mw, rrup,
-                            self.rake, station_id + 1)
-                index += 1
+        for record in range(len(data_less_than_10km)):  # 依照station_num、Rrup的順序建recarray
+            ctx[index] = (data_less_than_10km.iloc[record]["Vs30"], data_less_than_10km.iloc[record]["MW"], data_less_than_10km.iloc[record]["Rrup"],
+                        data_less_than_10km.iloc[record]["Rake"], data_less_than_10km.iloc[record]["STA_ID_int"])
+            index += 1
         ctx = ctx.view(np.recarray)
 
         imts = [PGA()]
@@ -274,16 +247,12 @@ class SeismicDataPlotter:
         ch_phi = [[0] * len(imts)]
 
         # calculate Chang2023 total station value
-        chang = Chang2023(model_path)
+        chang = Chang2023("model/no SMOGN/XGB_PGA.json")
         ch_mean, ch_sig, ch_tau, ch_phi = chang.compute(
             ctx, imts, ch_mean, ch_sig, ch_tau, ch_phi)
         ch_mean = np.exp(ch_mean)
-        split_mean = np.split(ch_mean[0], self.station_num) 
-        # 預測結果依station_num數量分組 shape:(732,18)
-        
-        avg_mean = np.array(split_mean).mean(axis=0)
-        plt.plot(rrup_num, avg_mean, 'r',
-                linewidth='1.6', label="This study avg", zorder=20)
+        print(ch_mean[0])
+        data_less_than_10km["Chang2023"] = ch_mean[0]
 
         # others GMM
         dtype = [('dip', '<f8'), ('mag', '<f8'), ('rake', '<f8'),
@@ -291,11 +260,11 @@ class SeismicDataPlotter:
                 ('rjb', '<f8'), ('rrup', '<f8'), ('rx', '<f8'),
                 ('ry0', '<f8'), ('width', '<f8'), ('vs30measured', 'bool'),
                 ('hypo_depth', '<f8'), ('z2pt5', '<f8')]
-        ctx = np.empty(len(rrup_num), dtype=dtype)
+        ctx = np.empty(len(data_less_than_10km), dtype=dtype)
         index = 0
-        for rrup in rrup_num:
-            ctx[index] = (40, self.Mw, self.rake, 0, self.Vs30,
-                          1, rrup, rrup, rrup, rrup, 10, True, 10, 1)
+        for record in range(len(data_less_than_10km)):
+            ctx[index] = (40, data_less_than_10km.iloc[record]["MW"], data_less_than_10km.iloc[record]["Rake"], 0, data_less_than_10km.iloc[record]["Vs30"],
+                        1, data_less_than_10km.iloc[record]["Rrup"], data_less_than_10km.iloc[record]["Rrup"], data_less_than_10km.iloc[record]["Rrup"], data_less_than_10km.iloc[record]["Rrup"], 10, True, 10, 1)
             index += 1
         ctx = ctx.view(np.recarray)
 
@@ -308,6 +277,7 @@ class SeismicDataPlotter:
         ph_mean, ph_sig, ph_tau, ph_phi = phung.compute(
             ctx, imts, ph_mean, ph_sig, ph_tau, ph_phi)
         ph_mean = np.exp(ph_mean)
+        data_less_than_10km["Phung2020"] = ph_mean[0]
         lin = Lin2009()
         lin_mean = [[0] * len(imts)]
         lin_sig = [[0] * len(imts)]
@@ -316,6 +286,7 @@ class SeismicDataPlotter:
         lin_mean, lin_sig = lin.compute(
             ctx, imts, lin_mean, lin_sig, lin_tau, lin_phi)
         lin_mean = np.exp(lin_mean)
+        data_less_than_10km["Lin2009"] = lin_mean[0]
         abrahamson = AbrahamsonEtAl2014()
         abr_mean = [[0] * len(imts)]
         abr_sig = [[0] * len(imts)]
@@ -324,6 +295,7 @@ class SeismicDataPlotter:
         abr_mean, abr_sig, abr_tau, abr_phi = abrahamson.compute(
             ctx, imts, abr_mean, abr_sig, abr_tau, abr_phi)
         abr_mean = np.exp(abr_mean)
+        data_less_than_10km["Abrahamson2014"] = abr_mean[0]
         campbell = CampbellBozorgnia2014()
         cam_mean = [[0] * len(imts)]
         cam_sig = [[0] * len(imts)]
@@ -332,6 +304,7 @@ class SeismicDataPlotter:
         cam_mean, cam_sig, cam_tau, cam_phi = campbell.compute(
             ctx, imts, cam_mean, cam_sig, cam_tau, cam_phi)
         cam_mean = np.exp(cam_mean)
+        data_less_than_10km["Campbell2014"] = cam_mean[0]
         choa = ChaoEtAl2020Asc()
         choa_mean = [[0] * len(imts)]
         choa_sig = [[0] * len(imts)]
@@ -340,3 +313,30 @@ class SeismicDataPlotter:
         choa_mean, choa_sig, choa_tau, choa_phi = choa.compute(
             ctx, imts, choa_mean, choa_sig, choa_tau, choa_phi)
         choa_mean = np.exp([choa_mean])
+        data_less_than_10km["Chao2020"] = choa_mean[0]
+
+        data_less_than_10km.to_csv('../../../data_less_than_10km_predicted.csv', index=False)
+
+    def calculate_and_plot_residual_std(self, data_less_than_10km_predicted):
+        """
+        計算residual的標準差
+
+        Args:
+            data_less_than_10km_predicted ([array]): [residual of less than 10km]
+
+        Returns:
+            residual_std ([array]): [residual std of less than 10km]
+        """
+        data_less_than_10km_predicted["residual_Chang2023"] = np.log(data_less_than_10km_predicted["PGA"]) - np.log(data_less_than_10km_predicted["Chang2023"])
+        data_less_than_10km_predicted["residual_Phung2020"] = np.log(data_less_than_10km_predicted["PGA"]) - np.log(data_less_than_10km_predicted["Phung2020"])
+        data_less_than_10km_predicted["residual_Lin2009"] = np.log(data_less_than_10km_predicted["PGA"]) - np.log(data_less_than_10km_predicted["Lin2009"])
+        data_less_than_10km_predicted["residual_Abrahamson2014"] = np.log(data_less_than_10km_predicted["PGA"]) - np.log(data_less_than_10km_predicted["Abrahamson2014"])
+        data_less_than_10km_predicted["residual_Campbell2014"] = np.log(data_less_than_10km_predicted["PGA"]) - np.log(data_less_than_10km_predicted["Campbell2014"])
+        data_less_than_10km_predicted["residual_Chao2020"] = np.log(data_less_than_10km_predicted["PGA"]) - np.log(data_less_than_10km_predicted["Chao2020"])
+
+        print("Chang2023: ", data_less_than_10km_predicted["residual_Chang2023"].std())
+        print("Phung2020: ", data_less_than_10km_predicted["residual_Phung2020"].std())
+        print("Lin2009: ", data_less_than_10km_predicted["residual_Lin2009"].std())
+        print("Abrahamson2014: ", data_less_than_10km_predicted["residual_Abrahamson2014"].std())
+        print("Campbell2014: ", data_less_than_10km_predicted["residual_Campbell2014"].std())
+        print("Chao2020: ", data_less_than_10km_predicted["residual_Chao2020"].std())
